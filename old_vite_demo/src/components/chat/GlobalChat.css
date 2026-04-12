@@ -1,0 +1,24 @@
+/* GlobalChat.css */
+.chat-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: var(--border-color);
+  border-radius: 10px;
+}
+
+.chat-input input {
+  padding: 8px 16px;
+  background-color: var(--bg-surface-hover);
+  border: 1px solid var(--border-color);
+}
+
+.chat-input input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}

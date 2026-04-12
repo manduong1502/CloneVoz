@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ----------------------------------------------------------------------------
+// GLOBAL SETTINGS
+// ----------------------------------------------------------------------------
+model GlobalSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+// ----------------------------------------------------------------------------
+// USERS & GROUPS
+// ----------------------------------------------------------------------------
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String   @unique
+  passwordHash  String
+  avatar        String?
+  customTitle   String?
+  signature     String?
+  
+  // Stats
+  messageCount  Int      @default(0)
+  reactionScore Int      @default(0)
+  points        Int      @default(0)
+
+  // Status
+  isBanned      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relationships
+  userGroups    UserGroup[] @relation("UserToGroup")
+  threads       Thread[]
+  posts         Post[]
+  reactions     Reaction[]
+}
+
+model UserGroup {
+  id          String  @id @default(cuid())
+  name        String  @unique // e.g. "Admin", "Moderator", "Registered"
+  styling     String? // CSS class or color for username
+  priority    Int     @default(10) // 1000 for Admin, 10 for basic...
+  
+  // Privileges (simplified)
+  canBan      Boolean @default(false)
+  canDelete   Boolean @default(false)
+  canEditAny  Boolean @default(false)
+
+  // Relationships
+  users       User[]  @relation("UserToGroup")
+}
+
+// ----------------------------------------------------------------------------
+// NODES (Categories & Forums)
+// ----------------------------------------------------------------------------
+model Node {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  nodeType    String   @default("Forum") // "Category", "Forum", "Link"
+  
+  // Nested Set & Ordering
+  parentId    String?
+  parent      Node?    @relation("NodeHierarchy", fields: [parentId], references: [id])
+  children    Node[]   @relation("NodeHierarchy")
+  displayOrder Int     @default(10)
+  
+  // Stats cache
+  threadsCount Int     @default(0)
+  postsCount   Int     @default(0)
+  lastPostId   String? 
+  
+  // Relationships
+  threads     Thread[]
+  prefixes    ThreadPrefix[] @relation("NodeToPrefix")
+}
+
+// ----------------------------------------------------------------------------
+// THREADS & POSTS
+// ----------------------------------------------------------------------------
+model ThreadPrefix {
+  id      String  @id @default(cuid())
+  title   String  // e.g. "Chú ý", "Tin tức"
+  cssClass String // e.g. "voz-badge-warning"
+  
+  threads Thread[]
+  nodes   Node[]  @relation("NodeToPrefix")
+}
+
+model Thread {
+  id          String    @id @default(cuid())
+  title       String
+  isLocked    Boolean   @default(false)
+  isPinned    Boolean   @default(false)
+  
+  viewCount   Int       @default(0)
+  replyCount  Int       @default(0)
+
+  nodeId      String
+  node        Node      @relation(fields: [nodeId], references: [id])
+  
+  prefixId    String?
+  prefix      ThreadPrefix? @relation(fields: [prefixId], references: [id])
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Fast read references (Denormalization optimization)
+  firstPostId String?   
+  lastPostId  String?   
+
+  posts       Post[]
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  content   String   // HTML from Rich Text Editor
+  position  Int      // 1 for first post, 2 for first reply...
+  
+  threadId  String
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reactions Reaction[]
+}
+
+// ----------------------------------------------------------------------------
+// REACTIONS
+// ----------------------------------------------------------------------------
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String   // "Like", "Haha", "Angry", "Sad", "Love"
+  
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId]) // 1 user can only have 1 reaction per post
+}

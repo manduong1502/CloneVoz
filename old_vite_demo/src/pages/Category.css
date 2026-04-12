@@ -1,0 +1,44 @@
+/* Category.css */
+.category-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.action-bar .pagination {
+  display: flex;
+  gap: 8px;
+}
+
+.action-bar .pagination .btn {
+  padding: 4px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+}
+
+.action-bar .pagination .btn:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.thread-list {
+  background-color: var(--bg-surface);
+}
+
+.thread-item:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+@media (max-width: 768px) {
+  .category-header {
+    display: none !important;
+  }
+  
+  .thread-item {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  
+  .thread-item > div:not(.thread-main) {
+    display: none !important;
+  }
+}

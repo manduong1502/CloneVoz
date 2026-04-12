@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+:root {
+  --voz-blue-dark: #185886;
+  --voz-blue-light: #2574A9;
+  --voz-bg: #ececec;
+  --voz-surface: #ffffff;
+  --voz-border: #dedede;
+  --voz-text: #141414;
+  --voz-text-muted: #8c8c8c;
+  --voz-link: #2574A9;
+  --voz-link-hover: #185886;
+  --voz-accent: #f0f7fd; 
+}
+
+@theme inline {
+  --color-background: var(--voz-bg);
+  --color-foreground: var(--voz-text);
+}
+
+body {
+  background-color: var(--voz-bg);
+  color: var(--voz-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+}
+
+a {
+  color: var(--voz-link);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--voz-link-hover);
+  text-decoration: underline;
+}
+
+.voz-card {
+  background-color: var(--voz-surface);
+  border: 1px solid var(--voz-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.voz-button {
+  background-color: var(--voz-blue-light);
+  color: white;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.2s;
+}
+
+.voz-button:hover {
+  background-color: var(--voz-blue-dark);
+  color: white;
+  text-decoration: none;
+}
+
+.voz-badge-warning {
+  background-color: #ffc107;
+  color: #000;
+  border: 1px solid #d39e00;
+  border-radius: 2px;
+  font-size: 11px;
+  padding: 1px 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.voz-badge-danger {
+  background-color: #dc3545;
+  color: #fff;
+  border: 1px solid #bd2130;
+  border-radius: 2px;
+  font-size: 11px;
+  padding: 1px 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+.voz-badge-info {
+  background-color: #17a2b8;
+  color: #fff;
+  border: 1px solid #117a8b;
+  border-radius: 2px;
+  font-size: 11px;
+  padding: 1px 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
