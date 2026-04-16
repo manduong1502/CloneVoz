@@ -1,28 +1,109 @@
 import Link from 'next/link';
 import { ThumbsUp, Flag, MessageSquareQuote } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
-import { auth } from '@/auth';
-import { createReply } from '@/actions/postActions';
 import { revalidatePath } from 'next/cache';
+import { auth } from '@/auth';
+import { checkNodePermission } from '@/lib/permissions';
+import ThreadReplyBox from '@/components/thread/ThreadReplyBox';
+import QuoteButton from '@/components/thread/QuoteButton';
+import WatchButton from '@/components/thread/WatchButton';
+import ReportModal from '@/components/thread/ReportModal';
+import Pagination from '@/components/ui/Pagination';
+import DOMPurify from 'isomorphic-dompurify';
+import { formatRelativeTime } from '@/lib/formatTime';
 
-export default async function ThreadPage({ params }) {
+export async function generateMetadata({ params }) {
   const { id } = await params;
+  
+  const thread = await prisma.thread.findUnique({ 
+    where: { id: id },
+    include: {
+      node: { select: { title: true } },
+      posts: {
+        orderBy: { position: 'asc' },
+        take: 1,
+        select: { content: true }
+      }
+    }
+  });
+  
+  if (!thread) return { title: 'Bài viết không tồn tại | DanOngThongMinh' };
+
+  let description = `${thread.title} - Thảo luận tại box ${thread.node.title}`;
+  if (thread.posts.length > 0) {
+    // Xóa bớt HTML tag để lấy text description thô cho SEO, độ dài tối đa 160 ký tự.
+    const rawText = thread.posts[0].content.replace(/<[^>]*>?/gm, ' ');
+    if (rawText.length > 10) {
+      description = rawText.substring(0, 160) + (rawText.length > 160 ? '...' : '');
+    }
+  }
+  
+  return {
+    title: `${thread.title} | DanOngThongMinh`,
+    description: description,
+    openGraph: {
+      title: thread.title,
+      description: description,
+      siteName: "DanOngThongMinh Forum",
+      type: "article",
+    }
+  };
+}
+
+export default async function ThreadPage({ params, searchParams }) {
+  const { id } = await params;
+  const sp = await searchParams;
   const session = await auth();
+
+  const page = parseInt(sp.page) || 1;
+  const postsPerPage = 15;
+  const skip = (page - 1) * postsPerPage;
+
+  const totalPosts = await prisma.post.count({ where: { threadId: id } });
+  const totalPages = Math.ceil(totalPosts / postsPerPage);
 
   const thread = await prisma.thread.findUnique({
     where: { id },
     include: {
       author: true,
-      node: true,
+      node: { include: { parent: true } },
       posts: {
         orderBy: { position: 'asc' },
+        skip: skip,
+        take: postsPerPage,
         include: { author: true }
       }
     }
   });
 
+  let isWatching = false;
+  if (session?.user?.id) {
+    const bookmark = await prisma.bookmark.findFirst({
+      where: { userId: session.user.id, threadId: id }
+    });
+    if (bookmark) isWatching = true;
+  }
+
   if (!thread) {
-    return <div className="p-8 text-center text-red-500 text-xl font-bold">XenForo Error: Thread not found.</div>;
+    return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: Thread not found.</div>;
+  }
+
+  // ==== KÍCH HOẠT RÀO CHẮN ======
+  const perm = await checkNodePermission(thread.nodeId);
+  if (!perm.granted) {
+    return (
+      <div className="voz-card overflow-hidden my-6 max-w-3xl mx-auto">
+        <h2 className="bg-[#185886] text-white px-4 py-3 text-[15px] font-bold">DanOngThongMinh Error</h2>
+        <div className="p-8 text-center text-[#141414] font-medium bg-white">
+          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="48px" width="48px" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4 text-red-500"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path></svg>
+          <div className="text-lg mb-2 text-red-600">Bạn không có quyền truy cập vào nội dung này.</div>
+          <div className="text-sm text-gray-600">{perm.reason}</div>
+          {!session?.user && (
+            <Link href="/" className="mt-4 inline-block bg-[#185886] text-white px-4 py-2 rounded-sm text-sm hover:no-underline">Đăng nhập ngay</Link>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // Tăng View Count (Fake simple mode, no IP checks)
@@ -31,11 +112,7 @@ export default async function ThreadPage({ params }) {
     data: { viewCount: { increment: 1 } }
   });
 
-  // Action wrapper cho Reply
-  const handleReply = async (formData) => {
-    "use server";
-    await createReply(id, formData);
-  };
+  // ViewCount Update logic here.
 
   return (
     <div className="w-full">
@@ -43,7 +120,13 @@ export default async function ThreadPage({ params }) {
       <div className="text-[13px] mb-2 text-[#8c8c8c]">
         <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
         <span className="mx-1">›</span>
-        <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">{thread.node.title}</Link>
+        {thread.node.parent && (
+          <>
+            <Link href={`/category/${thread.node.parent.id}`} className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">{thread.node.parent.title}</Link>
+            <span className="mx-1">›</span>
+          </>
+        )}
+        <Link href={`/category/${thread.node.id}`} className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">{thread.node.title}</Link>
       </div>
 
       <div className="mb-4">
@@ -52,27 +135,21 @@ export default async function ThreadPage({ params }) {
            <img src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username.charAt(0)}&background=random`} className="w-[16px] h-[16px] rounded-sm" />
            <Link href={`/profile/${thread.author.username}`} className="text-[var(--voz-text)] hover:underline hover:text-[var(--voz-link)] font-medium">{thread.author.username}</Link>
            <span>·</span>
-           <span>{thread.createdAt.toLocaleString()}</span>
+           <span>{formatRelativeTime(thread.createdAt)}</span>
         </div>
       </div>
 
-      <div className="flex justify-between items-center mb-2">
-        {/* Pagination Dummy */}
-        <div className="flex bg-[#f5f5f5] border border-[var(--voz-border)] rounded-sm text-[13px]">
-          <span className="px-3 py-[6px] border-r border-[var(--voz-border)] bg-[#185886] text-white font-medium">1</span>
-          <span className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-gray-200 cursor-pointer">2</span>
-          <span className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-gray-200 cursor-pointer">3</span>
-          <span className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-gray-200 cursor-pointer text-[var(--voz-link)]">Next ›</span>
-        </div>
-        <div className="flex gap-2 text-[13px]">
-           <button className="bg-white border border-[var(--voz-border)] rounded-sm px-3 py-[6px] hover:bg-gray-50">Watch</button>
+      <div className="flex justify-between items-center mb-2 min-h-[30px]">
+        <Pagination basePath={`/thread/${id}`} currentPage={page} totalPages={totalPages} />
+        <div className="flex gap-2 text-[13px] ml-auto">
+           {session && <WatchButton threadId={id} initialIsWatching={isWatching} />}
         </div>
       </div>
 
       <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3">
         {thread.posts.map((post, index) => (
-          <div key={post.id} className="voz-card flex flex-col md:flex-row overflow-hidden">
+          <div key={post.id} id={`post-${post.id}`} className="voz-card flex flex-col md:flex-row overflow-hidden">
             
             {/* User Block (Left Side) */}
             <div className="bg-[#f5f5f5] md:w-[140px] lg:w-[150px] shrink-0 p-3 md:border-r border-[var(--voz-border)] flex flex-row md:flex-col items-center md:items-start gap-4 md:gap-0">
@@ -91,12 +168,12 @@ export default async function ThreadPage({ params }) {
 
             {/* Content Block */}
             <div className="flex-1 bg-white flex flex-col min-w-0">
-               <div className="flex justify-between text-[11px] text-[#8c8c8c] px-4 py-2 border-b border-[#f0f0f0]">
-                  <span>{post.createdAt.toLocaleString()}</span>
-                  <Link href={`#post-${post.id}`} className="hover:underline">#{post.position}</Link>
+               <div className="bg-[#f5f5f5] px-4 py-2 text-[12px] text-[#8c8c8c] flex justify-between border-b border-[var(--voz-border)]">
+                 <div>{formatRelativeTime(post.createdAt)}</div>
+                 <div className="flex gap-3"><Link href={`#post-${post.id}`} className="hover:underline">#{post.position}</Link></div>
                </div>
                
-               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: post.content }} />
+               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
                
                {post.author.signature && (
                  <div className="mx-4 pb-2 text-[12px] text-[#8c8c8c] border-t border-[#f0f0f0] pt-2 italic">
@@ -111,8 +188,8 @@ export default async function ThreadPage({ params }) {
                  </div>
                  
                  <div className="flex gap-3 text-[12px] text-[#8c8c8c]">
-                    <button className="flex items-center gap-1 hover:text-[var(--voz-link)]"><Flag size={14}/> Report</button>
-                    <button className="flex items-center gap-1 hover:text-[var(--voz-link)]"><MessageSquareQuote size={14}/> Reply</button>
+                    {session?.user && <ReportModal postId={post.id} threadId={id} />}
+                    <QuoteButton username={post.author.username} content={post.content} />
                  </div>
                </div>
             </div>
@@ -124,21 +201,7 @@ export default async function ThreadPage({ params }) {
 
       {/* Reply Box */}
       {/* Reply Box */}
-      {session ? (
-        <form action={handleReply} className="voz-card mt-4 overflow-hidden">
-           <div className="bg-[#f5f5f5] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
-              <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
-           </div>
-           <div className="p-4 bg-white flex flex-col items-end">
-              <textarea name="content" className="w-full min-h-[120px] p-2 border border-[var(--voz-border)] rounded-[2px] focus:outline-none focus:border-[var(--voz-link)] resize-y text-[14px]" placeholder="Viết bình luận..."></textarea>
-              <button type="submit" className="voz-button mt-3 px-6 py-[6px]">Post reply</button>
-           </div>
-        </form>
-      ) : (
-        <div className="voz-card mt-4 p-4 text-center bg-[#f9f9f9]">
-           <span className="text-gray-500">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> hoặc <span className="text-[#185886] font-bold cursor-pointer">đăng ký</span> để trả lời bài viết.</span>
-        </div>
-      )}
+      <ThreadReplyBox session={session} threadId={id} />
     </div>
   );
 }

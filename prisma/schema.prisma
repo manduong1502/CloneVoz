@@ -23,7 +23,8 @@ model User {
   id            String   @id @default(cuid())
   username      String   @unique
   email         String   @unique
-  passwordHash  String
+  emailVerified DateTime?
+  passwordHash  String?
   avatar        String?
   customTitle   String?
   signature     String?
@@ -39,10 +40,26 @@ model User {
   updatedAt     DateTime @updatedAt
 
   // Relationships
-  userGroups    UserGroup[] @relation("UserToGroup")
-  threads       Thread[]
-  posts         Post[]
-  reactions     Reaction[]
+  userGroups        UserGroup[] @relation("UserToGroup")
+  threads           Thread[]
+  posts             Post[]
+  reactions         Reaction[]
+  
+  // Phase 2 Relationships
+  notifications     Notification[] @relation("UserNotifications")
+  sentNotifications Notification[] @relation("NotificationSender")
+  bookmarks         Bookmark[]
+  conversations     Conversation[] @relation("ConversationParticipants")
+  messages          ConversationMessage[]
+
+  accounts          Account[]
+  sessions          Session[]
+
+  // Phase 3 Relationships
+  reportsFiled      Report[]  @relation("UserReports")
+  reportsAssigned   Report[]  @relation("ModAssignedReports")
+  warningsReceived  Warning[] @relation("UserWarnings")
+  warningsIssued    Warning[] @relation("ModIssuedWarnings")
 }
 
 model UserGroup {
@@ -80,9 +97,14 @@ model Node {
   postsCount   Int     @default(0)
   lastPostId   String? 
   
+  // Phase 3 Permissions (Anti-Spam / Restricted Box)
+  minAccountAgeDays Int @default(0) // Số ngày tuổi tối thiểu của nick (VD: f33 cần 60 ngày)
+  minMessageCount   Int @default(0) // Số comment tối thiểu để được vào (VD: f33 cần 15 comment)
+
   // Relationships
   threads     Thread[]
   prefixes    ThreadPrefix[] @relation("NodeToPrefix")
+  bookmarks   Bookmark[]
 }
 
 // ----------------------------------------------------------------------------
@@ -123,6 +145,8 @@ model Thread {
   lastPostId  String?   
 
   posts       Post[]
+  bookmarks   Bookmark[]
+  reports     Report[]
 }
 
 model Post {
@@ -140,6 +164,7 @@ model Post {
   updatedAt DateTime @updatedAt
 
   reactions Reaction[]
+  reports   Report[]
 }
 
 // ----------------------------------------------------------------------------
@@ -159,3 +184,141 @@ model Reaction {
 
   @@unique([postId, userId]) // 1 user can only have 1 reaction per post
 }
+
+// ----------------------------------------------------------------------------
+// PHASE 2: NOTIFICATIONS & INTERACTIONS
+// ----------------------------------------------------------------------------
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String   // "quote", "reaction", "mention", "reply"
+  content   String   // Chứa text ngắn gọn gọn, hoặc JSON data
+  isRead    Boolean  @default(false)
+  link      String?  // Link tới bài viết/thread
+  
+  userId    String   // Người NHẬN thông báo
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  
+  senderId  String?  // Người GÂY RA thông báo (tùy chọn)
+  sender    User?    @relation("NotificationSender", fields: [senderId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  label     String?  // Ghi chú khi lưu
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  threadId  String?
+  thread    Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  nodeId    String?
+  node      Node?    @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  title       String
+  isLocked    Boolean  @default(false)
+  
+  // Những người tham gia đoạn chat
+  participants User[]  @relation("ConversationParticipants")
+  
+  messages    ConversationMessage[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastMessageId String?
+}
+
+model ConversationMessage {
+  id             String       @id @default(cuid())
+  content        String
+  
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  authorId       String
+  author         User         @relation(fields: [authorId], references: [id])
+
+  createdAt      DateTime     @default(now())
+}
+
+// ----------------------------------------------------------------------------
+// PHASE 3: REPORTS & WARNINGS
+// ----------------------------------------------------------------------------
+
+model Report {
+  id          String   @id @default(cuid())
+  reason      String   // Nội dung báo cáo (Spam, Xúc phạm, Ngôn từ đả kích...)
+  status      String   @default("pending") // pending, resolved, rejected
+  
+  reporterId  String
+  reporter    User     @relation("UserReports", fields: [reporterId], references: [id])
+  
+  // Đối tượng bị report (Thread or Post)
+  postId      String?
+  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  threadId    String?
+  thread      Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  assignedToId String? // Admin/Mod nào đang xử lý
+  assignedTo   User?   @relation("ModAssignedReports", fields: [assignedToId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Warning {
+  id          String   @id @default(cuid())
+  reason      String   // Lý do phạt
+  points      Int      // Số điểm phạt phụ thuộc mức độ nghiêm trọng
+  expiresAt   DateTime? // Thẻ phạt hết hạn (hoặc null nếu vĩnh viễn)
+  
+  userId      String   // Người bị phạt
+  user        User     @relation("UserWarnings", fields: [userId], references: [id], onDelete: Cascade)
+
+  issuerId    String   // Admin/Mod ra quyết định
+  issuer      User     @relation("ModIssuedWarnings", fields: [issuerId], references: [id])
+
+  createdAt   DateTime @default(now())
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  @@unique([identifier, token])
+}
+

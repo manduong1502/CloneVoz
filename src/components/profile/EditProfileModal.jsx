@@ -1,0 +1,96 @@
+'use client';
+
+import React, { useState } from 'react';
+import { updateProfile } from '@/actions/userActions';
+import Modal from '@/components/ui/Modal';
+import { Settings } from 'lucide-react';
+
+export default function EditProfileModal({ user }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setIsLoading(true);
+    const formData = new FormData(e.target);
+    const res = await updateProfile(formData);
+    setIsLoading(false);
+    
+    if (res?.success) {
+      setIsOpen(false);
+    } else {
+      alert(res?.error || "Có lỗi xảy ra");
+    }
+  }
+
+  return (
+    <>
+      <button 
+        onClick={() => setIsOpen(true)}
+        className="bg-[#f2930d] hover:bg-[#d88107] text-white px-4 py-2 font-medium text-[13px] rounded flex items-center gap-2 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all"
+      >
+        <Settings size={16} /> Chỉnh sửa Hồ Sơ
+      </button>
+
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Cài Đặt Hồ Sơ Cá Nhân" width="550px">
+        <div className="p-6 bg-[#f5f5f5]">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <input type="hidden" name="userId" value={user.id} />
+            
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-[13px] text-[var(--voz-text)]">Link Ảnh Đại Diện (Avatar URL)</label>
+              <input 
+                name="avatarUrl" 
+                type="url" 
+                defaultValue={user.avatar || ''} 
+                placeholder="https://imgur.com/your-image.png" 
+                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+              />
+              <span className="text-[11px] text-[#8c8c8c]">Chỉ nhận link hình ảnh trực tiếp (đuôi .jpg, .png...)</span>
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-[13px] text-[var(--voz-text)]">Bút Danh (Custom Title)</label>
+              <input 
+                name="customTitle" 
+                type="text" 
+                defaultValue={user.customTitle || ''} 
+                placeholder="Ví dụ: Đại gia chân đất, Dân chơi phố huyện..." 
+                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-[13px] text-[var(--voz-text)]">Chữ Ký (Signature)</label>
+              <textarea 
+                name="signature" 
+                rows="3"
+                defaultValue={user.signature || ''} 
+                placeholder="Mọi nội dung dưới này sẽ hiển thị dưới mỗi bài cmt của bạn." 
+                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+              />
+               <span className="text-[11px] text-[#8c8c8c] italic">Hỗ trợ mã HTML cơ bản. Đã được bọc khử trùng XSS.</span>
+            </div>
+
+            <div className="mt-4 flex gap-3 justify-center border-t border-[var(--voz-border)] pt-4">
+              <button 
+                type="button" 
+                onClick={() => setIsOpen(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-[#141414] px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-gray-400 active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                type="submit" 
+                disabled={isLoading}
+                className="bg-[#185886] hover:bg-[#134970] text-white px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-[#0e3b5e] active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
+              >
+                {isLoading ? 'Đang lưu...' : 'Lưu Thay Đổi'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Modal>
+    </>
+  );
+}

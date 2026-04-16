@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
 import { prisma } from '@/lib/prisma'; // 🚀 Nhúng Database
+import { formatRelativeTime } from '@/lib/formatTime';
 
 export default async function Home() {
   
@@ -40,6 +41,12 @@ export default async function Home() {
      if (num >= 1000) return (num / 1000).toFixed(1).replace('.0', '') + 'K';
      return num;
   };
+
+  // 4. Kéo Forum Statistics
+  const totalForumThreads = await prisma.thread.count();
+  const totalForumPosts = await prisma.post.count();
+  const totalForumUsers = await prisma.user.count();
+  const latestUser = await prisma.user.findFirst({ orderBy: { createdAt: 'desc' } });
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
@@ -94,7 +101,7 @@ export default async function Home() {
                               {node.threads[0].title}
                            </Link>
                            <div className="text-[#8c8c8c] truncate mt-[2px]">
-                              {node.threads[0].createdAt.toLocaleDateString()} · <Link href={`/profile/${node.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{node.threads[0].author.username}</Link>
+                              {formatRelativeTime(node.threads[0].createdAt)} · <Link href={`/profile/${node.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{node.threads[0].author.username}</Link>
                            </div>
                         </div>
                       </>
@@ -127,7 +134,7 @@ export default async function Home() {
                           {t.title}
                        </Link>
                        <div className="text-[12px] text-[#8c8c8c]">
-                          {t.author.username} · {t.createdAt.toLocaleDateString()}
+                          {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
                        <div className="text-[12px] text-[#8c8c8c]">
                           Replies: {formatNumber(t.replyCount)}
@@ -152,7 +159,7 @@ export default async function Home() {
                           {t.title}
                        </Link>
                        <div className="text-[12px] text-[#8c8c8c]">
-                          {t.author.username} · {t.createdAt.toLocaleDateString()}
+                          {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
                        <div className="text-[12px] text-[#8c8c8c]">
                           Replies: {formatNumber(t.replyCount)}
@@ -169,10 +176,10 @@ export default async function Home() {
               Forum statistics
            </div>
            <div className="bg-[#f9f9f9] p-3 text-[12px] text-[#141414] flex flex-col gap-1">
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Threads:</span> <span>3,500,201</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Messages:</span> <span>49,521,090</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Members:</span> <span>1,200,560</span></div>
-               <div className="flex justify-between"><span>Latest member:</span> <Link href="#" className="text-[var(--voz-link)] hover:underline">Kuang2</Link></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Threads:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Messages:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Members:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
+               <div className="flex justify-between"><span>Latest member:</span> <Link href={latestUser ? `/profile/${latestUser.username}` : '#'} className="text-[var(--voz-link)] hover:underline">{latestUser?.username || 'Chưa rõ'}</Link></div>
            </div>
         </div>
 

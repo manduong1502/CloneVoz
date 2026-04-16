@@ -1,28 +1,109 @@
 import Link from 'next/link';
 import { PenSquare } from 'lucide-react';
-import { prisma } from '@/lib/prisma'; // 🚀 Nhúng Database
+import { prisma } from '@/lib/prisma';
+import Pagination from '@/components/ui/Pagination';
+import { auth } from '@/auth';
+import { checkNodePermission } from '@/lib/permissions';
+import WatchNodeButton from '@/components/category/WatchNodeButton';
+import { formatRelativeTime } from '@/lib/formatTime';
 
-export default async function CategoryPage({ params }) {
+export async function generateMetadata({ params }) {
   const { id } = await params;
+  const node = await prisma.node.findUnique({ where: { id: id }, select: { title: true, description: true } });
+  
+  if (!node) return { title: 'Box không tồn tại | DanOngThongMinh' };
+  
+  return {
+    title: `${node.title} | DanOngThongMinh`,
+    description: node.description || `Tham gia thảo luận về ${node.title} tại diễn đàn DanOngThongMinh.`,
+    openGraph: {
+      title: `${node.title} | DanOngThongMinh`,
+      description: node.description || `Tham gia thảo luận về ${node.title}.`,
+      siteName: "DanOngThongMinh Forum",
+    }
+  };
+}
+
+export default async function CategoryPage({ params, searchParams }) {
+  const { id } = await params;
+  const sp = await searchParams;
+  
+  const page = parseInt(sp.page) || 1;
+  const threadsPerPage = 20;
+  const skip = (page - 1) * threadsPerPage;
 
   // Gọi CSDL để lấy cái Box (Node) hiện trường
   const node = await prisma.node.findUnique({
     where: { id: id },
+    include: { parent: true }
   });
 
   if (!node) {
-    return <div className="p-8 text-center text-red-500 text-xl font-bold">XenForo Error: The requested forum could not be found.</div>;
+    return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: The requested forum could not be found.</div>;
   }
 
-  // Kéo 50 Thread ra list
+  // ==== KÍCH HOẠT RÀO CHẮN ======
+  const perm = await checkNodePermission(id);
+  if (!perm.granted) {
+    return (
+      <div className="voz-card overflow-hidden my-6 max-w-3xl mx-auto">
+        <h2 className="bg-[#185886] text-white px-4 py-3 text-[15px] font-bold">DanOngThongMinh Error</h2>
+        <div className="p-8 text-center text-[#141414] font-medium bg-white">
+          <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="48px" width="48px" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4 text-red-500"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path></svg>
+          <div className="text-lg mb-2 text-red-600">Bạn không có quyền truy cập vào trang này.</div>
+          <div className="text-sm text-gray-600">{perm.reason}</div>
+          {!session?.user && (
+            <Link href="/" className="mt-4 inline-block bg-[#185886] text-white px-4 py-2 rounded-sm text-sm hover:no-underline">Đăng nhập ngay</Link>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  const prefixId = sp.prefix || null;
+  const whereCondition = { nodeId: id };
+  if (prefixId) whereCondition.prefixId = prefixId;
+
+  // Lấy tổng số Thread để tính số trang
+  const totalThreads = await prisma.thread.count({ where: whereCondition });
+  const totalPages = Math.ceil(totalThreads / threadsPerPage) || 1;
+
+  const session = await auth();
+  let isWatchingNode = false;
+  if (session?.user?.id) {
+    const bookmark = await prisma.bookmark.findFirst({
+      where: { userId: session.user.id, nodeId: id }
+    });
+    if (bookmark) isWatchingNode = true;
+  }
+
+  // Lấy danh sách Prefix đang có của Box này
+  const availablePrefixes = await prisma.threadPrefix.findMany({
+    where: { nodes: { some: { id } } }
+  });
+
+  // Kéo Thread ra list (BUMPING FIX: Sắp xếp theo updatedAt)
   const threadsDb = await prisma.thread.findMany({
-    where: { nodeId: id },
-    orderBy: { createdAt: 'desc' },
-    take: 50,
+    where: whereCondition,
+    orderBy: { updatedAt: 'desc' },
+    skip: skip,
+    take: threadsPerPage,
     include: {
       author: true,
       prefix: true,
+      posts: {
+        take: 1,
+        orderBy: { position: 'desc' },
+        include: { author: true }
+      }
     }
+  });
+
+  // Kéo Trending Content (Nhiều Reply nhất) cho Sidebar
+  const trendingThreads = await prisma.thread.findMany({
+    orderBy: { replyCount: 'desc' },
+    take: 5,
+    include: { author: true }
   });
 
   return (
@@ -32,8 +113,12 @@ export default async function CategoryPage({ params }) {
         <div className="text-[13px] mb-2 text-[#8c8c8c]">
           <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
           <span className="mx-1">›</span>
-          <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Đại sảnh</Link>
-          <span className="mx-1">›</span>
+          {node.parent && (
+            <>
+              <Link href={`/category/${node.parent.id}`} className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">{node.parent.title}</Link>
+              <span className="mx-1">›</span>
+            </>
+          )}
         </div>
 
         <div className="mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -46,40 +131,43 @@ export default async function CategoryPage({ params }) {
           </div>
         </div>
 
-        <div className="flex justify-between items-center mb-2">
-          {/* Pagination */}
-          <div className="flex bg-[#f5f5f5] border border-[var(--voz-border)] rounded-sm text-[13px]">
-            <span className="px-3 py-[6px] border-r border-[var(--voz-border)] bg-[#185886] text-white font-medium">1</span>
-            <span className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-gray-200 cursor-pointer">2</span>
-            <span className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-gray-200 cursor-pointer">3</span>
-            <span className="px-3 py-[6px] hover:bg-gray-200 cursor-pointer text-[var(--voz-link)]">Next ›</span>
-          </div>
+        <div className="flex justify-between items-center mb-2 min-h-[30px]">
+          <Pagination basePath={`/category/${id}`} currentPage={page} totalPages={totalPages} />
 
-          <div className="flex gap-2 text-[13px]">
-            <button className="bg-white border border-[var(--voz-border)] rounded-sm px-3 py-[6px] hover:bg-gray-50">Watch</button>
+          <div className="flex gap-2 text-[13px] ml-auto">
+             {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
           </div>
         </div>
 
         <div className="voz-card overflow-hidden">
           {/* Filters Bar */}
           <div className="bg-[#f9f9f9] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[12px] text-[#8c8c8c]">
-             <div></div>
-             <button className="hover:text-[var(--voz-text)]">Filters ▾</button>
+             <div>{prefixId && <Link href={`/category/${id}`} className="hover:underline text-[var(--voz-link)] flex items-center gap-1 font-medium bg-[#e3e3e3] px-2 py-1 rounded">✖ Bỏ lọc Prefix</Link>}</div>
+             <div className="group relative">
+               <button className="hover:text-[var(--voz-text)] pb-1">Filters ▾</button>
+               <div className="hidden group-hover:flex absolute right-0 top-full mt-[-4px] bg-white border border-[#ccc] shadow-[0_4px_8px_rgba(0,0,0,0.1)] z-10 flex-col w-[200px] text-left">
+                  <div className="px-3 py-2 bg-[#f5f5f5] border-b border-[#f0f0f0] font-bold text-[13px] text-[#141414]">Lọc theo Tiền tố</div>
+                  <Link href={`/category/${id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574a9] hover:text-white transition">(Tất cả)</Link>
+                  {availablePrefixes.map(p => (
+                     <Link key={p.id} href={`/category/${id}?prefix=${p.id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574A9] hover:text-white transition">{p.title}</Link>
+                  ))}
+               </div>
+             </div>
           </div>
           
           {/* Table Header mimicking "Thread title" fake input */}
           <div className="p-3 border-b border-[#f0f0f0] bg-white flex gap-3 items-center text-[13px]">
-             <img src="https://ui-avatars.com/api/?name=YOU&background=random" className="w-[36px] h-[36px] rounded-full opacity-50" />
+             <img src="https://ui-avatars.com/api/?name=YOU&background=random" className="w-[36px] h-[36px] rounded-full opacity-50 object-cover" />
              <div className="flex-1 flex gap-2">
-                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[#8c8c8c] bg-[#f9f9f9]">(No prefix) ▾</span>
-                <input type="text" placeholder="Thread title" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[#8c8c8c]" readOnly/>
+                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[#8c8c8c] bg-[#f9f9f9] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(No prefix)'} ▾</span>
+                <input type="text" placeholder="Thread title" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[#8c8c8c] cursor-not-allowed" readOnly/>
              </div>
           </div>
 
           {/* Thread List */}
           <div className="bg-white">
             {threadsDb.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500">Chưa có bài viết nào trong box này.</div>
+              <div className="p-8 text-center text-sm text-gray-500">Chưa có bài viết nào khớp với bộ lọc.</div>
             )}
             
             {threadsDb.map((thread) => (
@@ -104,7 +192,7 @@ export default async function CategoryPage({ params }) {
                   <div className="text-[12px] text-[#8c8c8c] flex items-center gap-1 mt-1">
                     <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
                     <span>·</span>
-                    <span>{thread.createdAt.toLocaleDateString()}</span>
+                    <span>{formatRelativeTime(thread.createdAt)}</span>
                   </div>
                 </div>
 
@@ -116,13 +204,15 @@ export default async function CategoryPage({ params }) {
                   </div>
                 </div>
 
-                {/* Last Post */}
+                {/* Last Post (LAST POSTER FIX) */}
                 <div className="hidden sm:flex items-center gap-3 w-[160px] lg:w-[150px] shrink-0 min-w-0 justify-end lg:justify-between px-2">
                    <div className="flex-1 min-w-0 text-right text-[12px]">
-                      <div className="text-[var(--voz-text)] truncate mb-1 bg-transparent hover:none">{thread.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                      <Link href={`/profile/${thread.author.username}`} className="text-[#8c8c8c] hover:underline truncate inline-block max-w-full">{thread.author.username}</Link>
+                      <div className="text-[var(--voz-text)] truncate mb-1 bg-transparent hover:none">{formatRelativeTime(thread.updatedAt)}</div>
+                      <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[#8c8c8c] hover:underline truncate inline-block max-w-full">
+                        {thread.posts[0] ? thread.posts[0].author.username : thread.author.username}
+                      </Link>
                    </div>
-                   <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="hidden lg:block w-[24px] h-[24px] rounded-sm shrink-0 object-cover" />
+                   <img src={(thread.posts[0] ? thread.posts[0].author.avatar : thread.author.avatar) || `https://ui-avatars.com/api/?name=${(thread.posts[0] ? thread.posts[0].author.username : thread.author.username)?.charAt(0) || 'U'}&background=random`} className="hidden lg:block w-[24px] h-[24px] rounded-sm shrink-0 object-cover" />
                 </div>
               </div>
             ))}
@@ -135,20 +225,20 @@ export default async function CategoryPage({ params }) {
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
           <h3 className="bg-[#f5f5f5] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Trending content</h3>
-          <div className="bg-white px-3 py-2">
-            
-            <div className="flex gap-2 py-2 border-b border-[#f0f0f0] last:border-0">
-              <img src="https://ui-avatars.com/api/?name=R&background=random" className="w-[24px] h-[24px] rounded-sm mt-1 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <Link href="/thread/trending1" className="text-[13px] text-[var(--voz-text)] hover:no-underline font-medium hover:text-[var(--voz-link)] mb-1 leading-tight flex">
-                  Làm sao để giàu nhanh?
-                </Link>
-                <div className="text-[11px] text-[#8c8c8c] mt-1">
-                  voz_er · Nov 23, 2022<br/>Replies: 5K
+          <div className="bg-[#f9f9f9]">
+            {trendingThreads.map(t => (
+              <div key={t.id} className="flex gap-2 p-3 border-b border-[#f0f0f0] last:border-0 hover:bg-white transition-colors">
+                <img src={t.author.avatar || `https://ui-avatars.com/api/?name=${t.author.username.charAt(0)}&background=random`} className="w-[32px] h-[32px] rounded-full mt-1 shrink-0 bg-gray-100 object-cover" />
+                <div className="flex-1 min-w-0">
+                  <Link href={`/thread/${t.id}`} className="text-[13px] text-[var(--voz-text)] hover:underline font-medium hover:text-[var(--voz-link)] mb-1 leading-snug flex">
+                    {t.title}
+                  </Link>
+                  <div className="text-[11px] text-[#8c8c8c]">
+                    {t.author.username} · {formatRelativeTime(t.createdAt)}<br/>Replies: {t.replyCount}
+                  </div>
                 </div>
               </div>
-            </div>
-
+            ))}
           </div>
         </div>
       </div>

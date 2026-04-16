@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, LayoutList, Users, Settings, Activity } from 'lucide-react';
+import { Home, LayoutList, Users, Settings, Activity, Flag } from 'lucide-react';
 import { Inter } from 'next/font/google';
 import '../globals.css';
 
@@ -7,14 +7,13 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export default function AdminLayout({ children }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-gray-50 text-gray-800 min-h-screen flex`}>
-        {/* Sidebar */}
-        <aside className="w-64 bg-[#1e293b] text-slate-300 flex flex-col pt-4">
-           <div className="px-6 mb-8">
-              <h2 className="text-xl font-bold text-white tracking-wide">XenForo<span className="text-blue-400">Admin</span></h2>
-              <p className="text-xs text-slate-500 mt-1">Control Panel v2.0</p>
-           </div>
+    <div className="fixed inset-0 z-[9999] bg-gray-50 text-gray-800 flex overflow-hidden font-sans">
+      {/* Sidebar */}
+      <aside className="w-64 bg-[#1e293b] text-slate-300 flex flex-col pt-4 shrink-0">
+         <div className="px-6 mb-8">
+            <h2 className="text-xl font-bold text-white tracking-wide">DanOng<span className="text-blue-400">ThongMinh</span></h2>
+            <p className="text-xs text-slate-500 mt-1">Control Panel v2.0</p>
+         </div>
            
            <nav className="flex-1 flex flex-col gap-1 px-3">
               <Link href="/admin" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
@@ -25,6 +24,9 @@ export default function AdminLayout({ children }) {
               </Link>
               <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
                  <Users size={18}/> Users & Groups
+              </Link>
+              <Link href="/admin/reports" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
+                 <Flag size={18}/> Reports & Warnings
               </Link>
               <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
                  <Settings size={18}/> Options
@@ -53,7 +55,6 @@ export default function AdminLayout({ children }) {
              {children}
           </main>
         </div>
-      </body>
-    </html>
+    </div>
   );
 }

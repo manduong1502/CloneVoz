@@ -1,0 +1,97 @@
+"use client";
+
+import { useRef, useState, useEffect, useTransition } from 'react';
+import { RichTextEditor } from '@/components/ui/RichTextEditor';
+import { createReply } from '@/actions/postActions';
+
+export default function ThreadReplyBox({ session, threadId }) {
+  const [content, setContent] = useState('');
+  const [isPending, startTransition] = useTransition();
+  const editorRef = useRef(null);
+
+  // Lắng nghe Event gài Quote
+  useEffect(() => {
+    const handleQuote = (e) => {
+      const { username, text } = e.detail;
+      const quoteHtml = `<blockquote><strong>@${username}:</strong> ${text}</blockquote><p></p>`;
+      
+      const editor = editorRef.current?.getEditor();
+      if (editor) {
+        editor.commands.insertContent(quoteHtml);
+        editor.commands.focus();
+        
+        // Scroll mượt xuống box reply
+        document.getElementById('reply-box')?.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    window.addEventListener('insert-quote', handleQuote);
+    return () => window.removeEventListener('insert-quote', handleQuote);
+  }, []);
+
+  const handleImageUpload = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      return data.url;
+    } catch (e) {
+      console.error(e);
+      alert('Lỗi upload ảnh.');
+      return null;
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!content || content === '<p></p>') return;
+
+    startTransition(async () => {
+      const formData = new FormData();
+      formData.append('content', content);
+      
+      await createReply(threadId, formData);
+      
+      // Xóa mây mù editor khi đăng xong
+      const editor = editorRef.current?.getEditor();
+      if (editor) {
+        editor.commands.setContent('');
+        setContent('');
+      }
+    });
+  };
+
+  if (!session) {
+    return (
+      <div className="voz-card mt-4 p-4 text-center bg-[#f9f9f9]">
+         <span className="text-gray-500">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> hoặc <span className="text-[#185886] font-bold cursor-pointer">đăng ký</span> để trả lời bài viết.</span>
+      </div>
+    );
+  }
+
+  return (
+    <form id="reply-box" onSubmit={handleSubmit} className="voz-card mt-4 overflow-hidden">
+      <div className="bg-[#f5f5f5] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
+         <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
+      </div>
+      <div className="p-4 bg-white flex flex-col items-end w-full">
+         <RichTextEditor 
+            ref={editorRef}
+            content={content}
+            onChange={setContent}
+            onImageUpload={handleImageUpload}
+         />
+         <div className="flex gap-2 items-center mt-3 w-full justify-end">
+           {isPending && <span className="text-sm text-gray-500">Đang gửi...</span>}
+           <button type="submit" disabled={isPending} className="voz-button px-6 py-[6px] disabled:opacity-50">
+             Post reply
+           </button>
+         </div>
+      </div>
+    </form>
+  );
+}

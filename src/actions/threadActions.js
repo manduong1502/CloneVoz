@@ -1,12 +1,20 @@
 "use server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { checkNodePermission } from '@/lib/permissions';
+import { checkRateLimit } from '@/lib/antispam';
 
 export async function createThread(nodeId, formData) {
   const session = await auth();
   if (!session?.user) throw new Error("Chưa đăng nhập");
+
+  const spamCheck = await checkRateLimit();
+  if (!spamCheck.passed) throw new Error(spamCheck.reason);
+
+  const perm = await checkNodePermission(nodeId);
+  if (!perm.granted) throw new Error(perm.reason);
 
   const title = formData.get("title");
   const content = formData.get("content");

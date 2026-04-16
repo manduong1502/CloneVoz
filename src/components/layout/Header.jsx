@@ -1,17 +1,51 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, Bell, Menu, X, ShieldAlert, Mail } from 'lucide-react';
 import Dropdown from '@/components/ui/Dropdown';
 import Modal from '@/components/ui/Modal';
 import { loginWithProvider, loginWithCredentials, handleLogOut } from '@/actions/authActions';
+import { markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/notificationActions';
 
-const Header = ({ session }) => {
+const Header = ({ session, notifications = [], unreadCount = 0 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   
+  const [liveNotifications, setLiveNotifications] = useState(notifications);
+  const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
   const user = session?.user;
+
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/poll');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notifications) setLiveNotifications(data.notifications);
+          if (data.unreadCount !== undefined) setLiveUnreadCount(data.unreadCount);
+        }
+      } catch (e) {}
+    }, 10000); // 10 giây polling 1 lần cho lẹ
+    return () => clearInterval(interval);
+  }, [user]);
+
+  const handleMarkAllAsRead = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    await markAllNotificationsAsRead();
+    setLiveUnreadCount(0);
+    setLiveNotifications(prev => prev.map(n => ({...n, isRead: true})));
+  };
+
+  const handleNotificationClick = async (notiId) => {
+    if (!user) return;
+    await markNotificationAsRead(notiId);
+    // UI sẽ được update ở kỳ polling tiếp theo, hoặc update tạm thời luôn:
+    setLiveNotifications(prev => prev.map(n => n.id === notiId ? {...n, isRead: true} : n));
+    setLiveUnreadCount(prev => Math.max(0, prev - 1));
+  };
 
   return (
     <>
@@ -27,8 +61,11 @@ const Header = ({ session }) => {
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
               <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight hover:no-underline text-white relative top-[-2px]">
+                {/* 🚀 Đổi Logo Ở Đây 🚀 */}
+                {/* Nếu anh có logo hình, hãy copy file logo.png vào thư mục public/ và bật thẻ img dưới này lên */}
+                {/* <img src="/logo.png" alt="Logo" className="h-8 object-contain" /> */}
                 <span className="bg-white text-[#185886] rounded-full p-1"><ShieldAlert size={20} /></span>
-                <span className="italic">VOZ</span>
+                <span className="font-extrabold text-[18px] text-white" style={{color: 'white'}}>DanOngThongMinh</span>
               </Link>
 
               {/* Desktop Nav */}
@@ -62,17 +99,16 @@ const Header = ({ session }) => {
                       <div className="flex flex-col text-[14px] text-[var(--voz-text)] p-2">
                         <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[#f5f5f5] border-b border-[#f0f0f0]">Trang hồ sơ của bạn</Link>
                         {user.name === 'Kuang2' && <Link href="/admin" className="px-3 py-2 hover:bg-[#f5f5f5] text-red-600 font-bold">Vào trang Quản Trị (Admin)</Link>}
-                        <Link href="#" className="px-3 py-2 hover:bg-[#f5f5f5]">Chi tiết tài khoản</Link>
-                        <Link href="#" className="px-3 py-2 hover:bg-[#f5f5f5] border-b border-[#f0f0f0]">Tùy chọn</Link>
+                        <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[#f5f5f5]">Chi tiết tài khoản (Profile)</Link>
                         <form action={handleLogOut}>
-                          <button type="submit" className="text-left w-full px-3 py-2 hover:bg-[#f5f5f5] text-[var(--voz-link)]">Đăng xuất</button>
+                          <button type="submit" className="text-left w-full px-3 py-2 hover:bg-[#f5f5f5] text-[var(--voz-link)] border-t border-[#f0f0f0] mt-1">Đăng xuất</button>
                         </form>
                       </div>
                     </Dropdown>
 
-                    <button className="text-white/80 hover:text-white h-full px-2 hover:bg-white/10 transition cursor-pointer">
+                    <Link href="/conversations" className="text-white/80 hover:text-white h-full px-2 hover:bg-white/10 transition cursor-pointer flex items-center">
                       <Mail size={18} />
-                    </button>
+                    </Link>
 
                     <Dropdown 
                       align="right" 
@@ -80,23 +116,37 @@ const Header = ({ session }) => {
                       trigger={(isOpen) => (
                         <div className={`flex items-center h-full px-2 hover:bg-white/10 transition cursor-pointer relative ${isOpen ? 'bg-white/10' : ''}`}>
                           <Bell size={18} className="text-white/80" />
-                          <span className="absolute top-[12px] right=[8px] w-2 h-2 bg-red-500 rounded-full border border-[#185886]"></span>
-                        </div>
-                      )}
-                    >
-                      <div className="flex flex-col text-[var(--voz-text)]">
-                         <div className="bg-[#f5f5f5] border-b border-[var(--voz-border)] px-3 py-2 text-[13px] font-medium flex justify-between">
-                            <span>Thông báo</span>
-                            <Link href="#" className="text-[var(--voz-link)]">Đánh dấu đã xem</Link>
-                         </div>
+                      <span className={`absolute top-[12px] right=[8px] w-2 h-2 ${liveUnreadCount > 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'hidden'} rounded-full border border-[#185886]`}></span>
+                    </div>
+                  )}
+                >
+                  <div className="flex flex-col text-[var(--voz-text)]">
+                     <div className="bg-[#f5f5f5] border-b border-[var(--voz-border)] px-3 py-2 text-[13px] font-medium flex justify-between hover:no-underline">
+                        <span>Thông báo {liveUnreadCount > 0 && <span className="text-red-500 ml-1">({liveUnreadCount})</span>}</span>
+                        <button onClick={handleMarkAllAsRead} className="text-[var(--voz-link)] font-normal text-[12px] hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">Đánh dấu đã xem</button>
+                     </div>
+                     <div className="flex flex-col max-h-[300px] overflow-y-auto w-full">
+                       {liveNotifications.length === 0 ? (
                          <div className="p-4 text-center text-[13px] text-[#8c8c8c]">
                             Không có thông báo mới nào.
                          </div>
-                         <div className="bg-[#f9f9f9] border-t border-[var(--voz-border)] px-3 py-2 text-[12px] text-center">
-                            <Link href="#" className="text-[var(--voz-link)]">Hiển thị tất cả</Link>
-                         </div>
-                      </div>
-                    </Dropdown>
+                       ) : (
+                         liveNotifications.map(noti => (
+                           <Link href={noti.link || "#"} onClick={() => handleNotificationClick(noti.id)} key={noti.id} className={`flex items-start gap-3 p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors ${!noti.isRead ? 'bg-[#eef4f9]' : 'bg-white'}`}>
+                             <img src={noti.sender?.avatar || `https://ui-avatars.com/api/?name=${noti.sender?.username || 'U'}&background=random`} className="w-8 h-8 rounded-full" />
+                             <div className="flex-1 min-w-0">
+                               <div className="text-[13px] leading-tight mb-1" dangerouslySetInnerHTML={{ __html: noti.content }} />
+                               <div className="text-[11px] text-[#8c8c8c]">{noti.createdAt.toLocaleString()}</div>
+                             </div>
+                           </Link>
+                         ))
+                       )}
+                     </div>
+                     <div className="bg-[#f9f9f9] border-t border-[var(--voz-border)] px-3 py-2 text-[12px] text-center w-full">
+                        <Link href="#" className="text-[var(--voz-link)] block w-full hover:underline">Hiển thị tất cả</Link>
+                     </div>
+                  </div>
+                </Dropdown>
                   </>
                 ) : (
                   <>
@@ -148,9 +198,9 @@ const Header = ({ session }) => {
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
-                    <Link href="#" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Your threads</Link>
-                    <Link href="#" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads with your replies</Link>
-                    <Link href="#" className="px-3 py-2 hover:bg-[#f5f5f5]">Unanswered threads</Link>
+                    <Link href="/find-threads?type=your_threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Your threads</Link>
+                    <Link href="/find-threads?type=contributed" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads with your replies</Link>
+                    <Link href="/find-threads?type=unanswered" className="px-3 py-2 hover:bg-[#f5f5f5]">Unanswered threads</Link>
                   </div>
                 </Dropdown>
 
@@ -162,13 +212,13 @@ const Header = ({ session }) => {
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
-                    <Link href="#" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads</Link>
-                    <Link href="#" className="px-3 py-2 hover:bg-[#f5f5f5]">Forums</Link>
+                    <Link href="/watched/threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads</Link>
+                    <Link href="/watched/nodes" className="px-3 py-2 hover:bg-[#f5f5f5]">Forums</Link>
                   </div>
                 </Dropdown>
 
                 <Link href="/search" className="hover:text-[#2574A9] flex items-center h-full">Search forums</Link>
-                <Link href="#" className="hover:text-[#2574A9] flex items-center h-full ml-auto">Mark forums read</Link>
+                <span className="text-gray-400 flex items-center h-full ml-auto cursor-not-allowed" title="Coming soon">Mark forums read</span>
               </nav>
            </div>
         </div>

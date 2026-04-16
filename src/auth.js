@@ -2,14 +2,26 @@ import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
 import { prisma } from "@/lib/prisma"
+import { PrismaAdapter } from "@auth/prisma-adapter"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: {
+    ...PrismaAdapter(prisma),
+    createUser: async (data) => {
+      return prisma.user.create({
+        data: {
+          email: data.email,
+          emailVerified: data.emailVerified,
+          username: data.name || data.email.split('@')[0],
+          avatar: data.image || null,
+        }
+      });
+    }
+  },
   secret: process.env.AUTH_SECRET || "default_super_secret_dev_key",
+  session: { strategy: "jwt" },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-    }),
+    Google(),
     CredentialsProvider({
       name: "Tài khoản (Mock)",
       credentials: {
@@ -40,6 +52,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session, token }) {
       if (token?.sub) {
         session.user.id = token.sub;
+        
+        // Fetch real username and avatar from database
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { username: true, avatar: true }
+        });
+        
+        if (dbUser) {
+          session.user.name = dbUser.username;
+          session.user.image = dbUser.avatar;
+        }
       }
       return session;
     }
