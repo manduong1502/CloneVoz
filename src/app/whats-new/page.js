@@ -17,19 +17,19 @@ export default async function WhatsNewPage() {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">What's new</h1>
+        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Có gì mới</h1>
       </div>
 
       {/* Tabs */}
       <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
-        <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">New posts</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886]">New profile posts</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886]">Latest activity</Link>
+        <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Bài viết mới</Link>
+        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886]">Bài viết hồ sơ mới</Link>
+        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886]">Hoạt động mới nhất</Link>
       </div>
 
       <div className="voz-card overflow-hidden">
         <div className="bg-[#f9f9f9] border-b border-[var(--voz-border)] px-3 py-[6px] flex justify-end items-center text-[12px] text-[#8c8c8c]">
-           <button className="hover:text-[var(--voz-text)]">Filters ▾</button>
+           <button className="hover:text-[var(--voz-text)]">Bộ lọc ▾</button>
         </div>
         
         <div className="bg-white">
@@ -45,7 +45,7 @@ export default async function WhatsNewPage() {
                   </Link>
                 </div>
                 <div className="text-[12px] text-[#8c8c8c] flex flex-wrap items-center gap-1 mt-1">
-                  Latest: <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
+                  Mới nhất: <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
                   <span>·</span>
                   <span>{thread.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                   <span>·</span>
@@ -55,8 +55,8 @@ export default async function WhatsNewPage() {
 
               <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[#8c8c8c] w-[140px]">
                 <div className="flex flex-col items-end w-full">
-                    <div className="flex gap-2"><span>Replies:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
-                    <div className="flex gap-2"><span>Views:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
+                    <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
+                    <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
                 </div>
               </div>
             </div>
@@ -67,7 +67,7 @@ export default async function WhatsNewPage() {
         </div>
 
         <div className="bg-[#f9f9f9] border-t border-[var(--voz-border)] px-3 py-[6px] text-center text-[12px]">
-           <Link href="#" className="text-[var(--voz-link)] hover:underline">Show more...</Link>
+           <Link href="#" className="text-[var(--voz-link)] hover:underline">Xem thêm...</Link>
         </div>
       </div>
     </div>

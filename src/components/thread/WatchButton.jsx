@@ -26,7 +26,7 @@ export default function WatchButton({ threadId, initialIsWatching }) {
           : 'bg-white border-[var(--voz-border)] hover:bg-gray-50'
       } disabled:opacity-50`}
     >
-      {isPending ? 'Đang xử lý...' : (initialIsWatching ? 'Unwatch' : 'Watch')}
+      {isPending ? 'Đang xử lý...' : (initialIsWatching ? 'Bỏ theo dõi' : 'Theo dõi')}
     </button>
   );
 }

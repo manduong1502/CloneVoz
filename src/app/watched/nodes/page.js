@@ -20,12 +20,12 @@ export default async function WatchedNodesPage() {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Forums đang theo dõi</h1>
+        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Diễn đàn đang theo dõi</h1>
       </div>
 
       <div className="voz-card overflow-hidden">
          <div className="bg-[#f5f5f5] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
-            <span>Danh sách Forum</span>
+            <span>Danh sách diễn đàn</span>
          </div>
          <div className="bg-white">
             {bookmarks.length === 0 && (

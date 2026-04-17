@@ -88,7 +88,7 @@ export default function ThreadReplyBox({ session, threadId }) {
          <div className="flex gap-2 items-center mt-3 w-full justify-end">
            {isPending && <span className="text-sm text-gray-500">Đang gửi...</span>}
            <button type="submit" disabled={isPending} className="voz-button px-6 py-[6px] disabled:opacity-50">
-             Post reply
+             Gửi trả lời
            </button>
          </div>
       </div>

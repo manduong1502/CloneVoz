@@ -159,9 +159,9 @@ export default async function ThreadPage({ params, searchParams }) {
                   <div className="text-[11px] text-[#2574A9] md:mb-2">{post.author.customTitle || 'Member'}</div>
                   
                   <div className="hidden md:flex flex-col items-start w-full text-[11px] text-[#8c8c8c] gap-[2px]">
-                     <div className="flex justify-between w-full"><span>Joined</span> <span className="font-medium text-[#141414]">{post.author.createdAt.toLocaleDateString()}</span></div>
-                     <div className="flex justify-between w-full"><span>Messages</span> <span className="font-medium text-[#141414]">{post.author.messageCount}</span></div>
-                     <div className="flex justify-between w-full"><span>Reaction score</span> <span className="font-medium text-[#141414]">{post.author.reactionScore}</span></div>
+                     <div className="flex justify-between w-full"><span>Ngày tham gia</span> <span className="font-medium text-[#141414]">{post.author.createdAt.toLocaleDateString()}</span></div>
+                     <div className="flex justify-between w-full"><span>Bài viết</span> <span className="font-medium text-[#141414]">{post.author.messageCount}</span></div>
+                     <div className="flex justify-between w-full"><span>Điểm reaction</span> <span className="font-medium text-[#141414]">{post.author.reactionScore}</span></div>
                   </div>
                </div>
             </div>

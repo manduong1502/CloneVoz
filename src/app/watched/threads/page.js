@@ -25,12 +25,12 @@ export default async function WatchedThreadsPage() {
   return (
     <div className="w-full">
       <div className="mb-4">
-        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Threads đang theo dõi</h1>
+        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Chủ đề đang theo dõi</h1>
       </div>
 
       <div className="voz-card overflow-hidden">
          <div className="bg-[#f5f5f5] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
-            <span>Danh sách Thread</span>
+            <span>Danh sách Chủ đề</span>
          </div>
          <div className="bg-white">
             {bookmarks.length === 0 && (

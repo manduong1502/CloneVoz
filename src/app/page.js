@@ -82,11 +82,11 @@ export default async function Home() {
                   {/* Stats */}
                   <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[#8c8c8c] gap-5">
                      <div className="flex flex-col items-center">
-                        <div>Threads</div>
+                        <div>Chủ đề</div>
                         <div className="text-[#141414] text-[13px]">{formatNumber(node.threadsCount)}</div>
                      </div>
                      <div className="flex flex-col items-center">
-                        <div>Messages</div>
+                        <div>Bài viết</div>
                         <div className="text-[#141414] text-[13px]">{formatNumber(node.postsCount)}</div>
                      </div>
                   </div>
@@ -123,7 +123,7 @@ export default async function Home() {
         {/* Featured Content */}
         <div className="voz-card overflow-hidden">
            <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
-              Featured content
+              Đáng chú ý
            </div>
            <div className="flex flex-col bg-[#f9f9f9]">
               {featuredThreads.map(t => (
@@ -137,7 +137,7 @@ export default async function Home() {
                           {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
                        <div className="text-[12px] text-[#8c8c8c]">
-                          Replies: {formatNumber(t.replyCount)}
+                          Trả lời: {formatNumber(t.replyCount)}
                        </div>
                     </div>
                  </div>
@@ -148,7 +148,7 @@ export default async function Home() {
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
            <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
-              Trending content
+              Đang thịnh hành
            </div>
            <div className="flex flex-col bg-[#f9f9f9]">
               {trendingThreads.map(t => (
@@ -162,7 +162,7 @@ export default async function Home() {
                           {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
                        <div className="text-[12px] text-[#8c8c8c]">
-                          Replies: {formatNumber(t.replyCount)}
+                          Trả lời: {formatNumber(t.replyCount)}
                        </div>
                     </div>
                  </div>
@@ -173,13 +173,13 @@ export default async function Home() {
         {/* Forum statistics */}
         <div className="voz-card overflow-hidden">
            <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[14px] font-normal hover:underline cursor-pointer">
-              Forum statistics
+              Thống kê diễn đàn
            </div>
            <div className="bg-[#f9f9f9] p-3 text-[12px] text-[#141414] flex flex-col gap-1">
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Threads:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Messages:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Members:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
-               <div className="flex justify-between"><span>Latest member:</span> <Link href={latestUser ? `/profile/${latestUser.username}` : '#'} className="text-[var(--voz-link)] hover:underline">{latestUser?.username || 'Chưa rõ'}</Link></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Chủ đề:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Bài viết:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Thành viên:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
+               <div className="flex justify-between"><span>Mới nhất:</span> <Link href={latestUser ? `/profile/${latestUser.username}` : '#'} className="text-[var(--voz-link)] font-medium hover:underline truncate max-w-[120px] text-right">{latestUser?.username || 'Chưa rõ'}</Link></div>
            </div>
         </div>
 

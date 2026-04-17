@@ -71,13 +71,13 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
               {/* Desktop Nav */}
               <nav className="hidden md:flex ml-4 h-full items-end gap-1">
                 <Link href="/" className="bg-[#f5f5f5] text-[#185886] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[#185886] hover:no-underline rounded-t-sm">
-                  Forums
+                  Diễn đàn
                 </Link>
                 <Link href="/whats-new" className="px-4 py-[14px] text-[15px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
-                  Latests
+                  Mới nhất
                 </Link>
                 <Link href="#" className="px-4 py-[14px] text-[15px] font-medium text-white/90 hover:text-white hover:bg-white/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
-                  pik.vn
+                  Nội quy
                 </Link>
               </nav>
             </div>
@@ -151,10 +151,10 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 ) : (
                   <>
                     <button onClick={() => setIsLoginModalOpen(true)} className="text-[13px] font-medium hover:bg-white/10 h-full px-3 transition flex items-center">
-                      Log in
+                      Đăng nhập
                     </button>
                     <button onClick={() => setIsLoginModalOpen(true)} className="text-[13px] font-medium hover:bg-white/10 h-full px-3 transition hidden md:flex items-center">
-                      Register
+                      Đăng ký
                     </button>
                   </>
                 )}
@@ -164,18 +164,18 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                   width="300px"
                   trigger={(isOpen) => (
                     <div className={`flex items-center h-full px-3 hover:bg-white/10 transition cursor-pointer gap-1 text-[13px] font-medium hidden md:flex ${isOpen ? 'bg-white/10' : ''}`}>
-                      <Search size={18} /> Search
+                      <Search size={18} /> Tìm kiếm
                     </div>
                   )}
                 >
                    <div className="p-3 text-[14px]">
-                      <input type="text" placeholder="Search..." className="w-full border border-[var(--voz-border)] p-2 rounded-[2px] mb-2 focus:border-[var(--voz-link)] outline-none" />
+                      <input type="text" placeholder="Tìm kiếm..." className="w-full border border-[var(--voz-border)] p-2 rounded-[2px] mb-2 focus:border-[var(--voz-link)] outline-none" />
                       <div className="flex flex-col gap-2 mb-3">
-                        <label className="flex items-center gap-2 cursor-pointer text-[13px]"><input type="checkbox"/> Search titles only</label>
+                        <label className="flex items-center gap-2 cursor-pointer text-[13px]"><input type="checkbox"/> Chỉ tìm trong tiêu đề</label>
                       </div>
                       <div className="border-t border-[var(--voz-border)] pt-2 flex justify-between items-center text-[13px]">
-                         <Link href="/search" className="text-[var(--voz-link)] hover:underline">Advanced search...</Link>
-                         <button className="voz-button">Search</button>
+                         <Link href="/search" className="text-[var(--voz-link)] hover:underline">Tìm kiếm nâng cao...</Link>
+                         <button className="voz-button">Tìm</button>
                       </div>
                    </div>
                 </Dropdown>
@@ -188,19 +188,19 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
         <div className="bg-[#f5f5f5] border-b border-[#dedede] min-h-[36px] items-center hidden md:flex text-[13px]">
            <div className="max-w-[1240px] px-4 mx-auto w-full">
               <nav className="flex gap-4 text-[#185886] h-[36px]">
-                <Link href="/whats-new" className="hover:text-[#2574A9] flex items-center h-full border-b-[3px] border-transparent hover:border-[#2574A9]">New posts</Link>
+                <Link href="/whats-new" className="hover:text-[#2574A9] flex items-center h-full border-b-[3px] border-transparent hover:border-[#2574A9]">Bài viết mới</Link>
                 
                 <Dropdown
                   align="left"
                   width="200px"
                   trigger={(isOpen) => (
-                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Find threads ▾</div>
+                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Tìm chủ đề ▾</div>
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
-                    <Link href="/find-threads?type=your_threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Your threads</Link>
-                    <Link href="/find-threads?type=contributed" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads with your replies</Link>
-                    <Link href="/find-threads?type=unanswered" className="px-3 py-2 hover:bg-[#f5f5f5]">Unanswered threads</Link>
+                    <Link href="/find-threads?type=your_threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Chủ đề của bạn</Link>
+                    <Link href="/find-threads?type=contributed" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Chủ đề có bạn tham gia</Link>
+                    <Link href="/find-threads?type=unanswered" className="px-3 py-2 hover:bg-[#f5f5f5]">Chủ đề chưa có trả lời</Link>
                   </div>
                 </Dropdown>
 
@@ -208,17 +208,17 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                   align="left"
                   width="200px"
                   trigger={(isOpen) => (
-                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Watched ▾</div>
+                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Đang theo dõi ▾</div>
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
-                    <Link href="/watched/threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Threads</Link>
-                    <Link href="/watched/nodes" className="px-3 py-2 hover:bg-[#f5f5f5]">Forums</Link>
+                    <Link href="/watched/threads" className="px-3 py-2 border-b border-[#f0f0f0] hover:bg-[#f5f5f5]">Chủ đề</Link>
+                    <Link href="/watched/nodes" className="px-3 py-2 hover:bg-[#f5f5f5]">Diễn đàn</Link>
                   </div>
                 </Dropdown>
 
-                <Link href="/search" className="hover:text-[#2574A9] flex items-center h-full">Search forums</Link>
-                <span className="text-gray-400 flex items-center h-full ml-auto cursor-not-allowed" title="Coming soon">Mark forums read</span>
+                <Link href="/search" className="hover:text-[#2574A9] flex items-center h-full">Tìm trong diễn đàn</Link>
+                <span className="text-gray-400 flex items-center h-full ml-auto cursor-not-allowed" title="Sắp ra mắt">Đánh dấu đã đọc</span>
               </nav>
            </div>
         </div>
@@ -226,16 +226,16 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
         {/* Mobile Sliding Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-[50px] left-0 w-full bg-[#185886] border-t border-white/10 z-40 text-white flex flex-col shadow-lg transition-all duration-300 transform origin-top">
-            <Link href="/" className="px-4 py-3 border-b border-white/10 font-bold hover:bg-white/10 block">Forums</Link>
-            <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-white/10 block font-bold">Latests</Link>
+            <Link href="/" className="px-4 py-3 border-b border-white/10 font-bold hover:bg-white/10 block">Diễn đàn</Link>
+            <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-white/10 block font-bold">Mới nhất</Link>
             <div className="px-4 py-3 border-b border-white/10 font-bold flex justify-between items-center bg-[#134970]">
-              <input type="text" placeholder="Search..." className="bg-white/10 border border-white/20 px-2 py-1 outline-none rounded-sm w-full placeholder-white/50 text-sm" />
+              <input type="text" placeholder="Tìm kiếm..." className="bg-white/10 border border-white/20 px-2 py-1 outline-none rounded-sm w-full placeholder-white/50 text-sm" />
               <Search size={18} className="ml-2" />
             </div>
             {!user && (
                <div className="px-4 py-3 bg-[#134970] flex gap-2">
-                 <button className="bg-white text-[#185886] px-3 py-1 font-medium rounded-sm text-sm" onClick={() => {setIsLoginModalOpen(true); setIsMobileMenuOpen(false);}}>Log in</button>
-                 <button className="border border-white/50 px-3 py-1 font-medium rounded-sm text-sm" onClick={() => {setIsLoginModalOpen(true); setIsMobileMenuOpen(false);}}>Register</button>
+                 <button className="bg-white text-[#185886] px-3 py-1 font-medium rounded-sm text-sm" onClick={() => {setIsLoginModalOpen(true); setIsMobileMenuOpen(false);}}>Đăng nhập</button>
+                 <button className="border border-white/50 px-3 py-1 font-medium rounded-sm text-sm" onClick={() => {setIsLoginModalOpen(true); setIsMobileMenuOpen(false);}}>Đăng ký</button>
                </div>
             )}
           </div>
@@ -243,10 +243,10 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
       </header>
 
       {/* Login Modal */}
-      <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} title="Log in" width="500px">
+      <Modal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} title="Đăng nhập" width="500px">
         <div className="p-6 bg-[#f5f5f5] flex flex-col gap-4 text-[14px]">
           <div className="bg-white p-4 border border-[var(--voz-border)] rounded-sm text-center mb-2">
-            <p className="text-[#8c8c8c] text-[13px] mb-3">Login faster using your preferred service:</p>
+            <p className="text-[#8c8c8c] text-[13px] mb-3">Đăng nhập cực nhanh bằng nền tảng có sẵn:</p>
             <div className="flex justify-center gap-3">
               <form action={() => loginWithProvider('google')}>
                 <button type="submit" className="bg-[#4285F4] text-white px-4 py-2 font-medium rounded-sm w-[140px] text-[13px]">Google</button>

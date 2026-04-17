@@ -20,7 +20,7 @@ export default function QuoteButton({ username, content }) {
 
   return (
     <button onClick={handleQuote} className="flex items-center gap-1 hover:text-[var(--voz-link)]">
-      <MessageSquareQuote size={14}/> Reply
+      <MessageSquareQuote size={14}/> Trả lời
     </button>
   );
 }

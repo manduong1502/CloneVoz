@@ -26,7 +26,7 @@ export default function WatchNodeButton({ nodeId, initialIsWatching }) {
           : 'bg-white border-[var(--voz-border)] hover:bg-gray-50 text-[#141414]'
       } disabled:opacity-50 h-[30px] flex items-center justify-center min-w-[70px]`}
     >
-      {isPending ? '...' : (initialIsWatching ? 'Unwatch' : 'Watch')}
+      {isPending ? '...' : (initialIsWatching ? 'Bỏ theo dõi' : 'Theo dõi')}
     </button>
   );
 }

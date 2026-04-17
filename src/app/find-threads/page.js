@@ -22,15 +22,15 @@ export default async function FindThreadsPage({ searchParams }) {
 
   if (type === 'unanswered') {
     whereCondition = { replyCount: 0 };
-    pageTitle = "Chủ đề chưa có ai trả lời (Unanswered threads)";
+    pageTitle = "Chủ đề chưa có ai trả lời";
   } else if (type === 'your_threads') {
     if (!session?.user) return <div className="p-8 text-center text-red-500 font-bold">Vui lòng đăng nhập để xem chủ đề của bạn.</div>;
     whereCondition = { authorId: session.user.id };
-    pageTitle = "Chủ đề của bạn (Your threads)";
+    pageTitle = "Chủ đề của bạn";
   } else if (type === 'contributed') {
     if (!session?.user) return <div className="p-8 text-center text-red-500 font-bold">Vui lòng đăng nhập để xem chủ đề bạn đã tham gia.</div>;
     whereCondition = { posts: { some: { authorId: session.user.id } } };
-    pageTitle = "Chủ đề bạn đã tham gia (Threads with your replies)";
+    pageTitle = "Chủ đề bạn đã tham gia";
   }
 
   const totalThreads = await prisma.thread.count({ where: whereCondition });
@@ -95,8 +95,8 @@ export default async function FindThreadsPage({ searchParams }) {
               {/* Stats */}
               <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[#8c8c8c] w-[140px] border-r border-transparent">
                 <div className="flex flex-col items-end w-full">
-                   <div className="flex gap-2"><span>Replies:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
-                   <div className="flex gap-2"><span>Views:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
+                   <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
+                   <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
                 </div>
               </div>
 
