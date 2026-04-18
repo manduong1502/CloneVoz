@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { pusherServer } from '@/lib/pusher.server';
 
 export async function createConversation(formData) {
   const session = await auth();
@@ -54,15 +55,20 @@ export async function createConversation(formData) {
   });
 
   // (Optional) Bắn Notification cho người nhận là có tin nhắn mới
-  await prisma.notification.create({
+  const notif = await prisma.notification.create({
     data: {
       type: "pm",
       content: `${session.user.name} đã gửi cho bạn một tin nhắn cá nhân: "${title}".`,
       userId: targetUser.id,
       senderId: session.user.id,
       link: `/conversations/${conversation.id}`
-    }
+    },
+    include: { sender: { select: { username: true, avatar: true } } }
   });
+
+  if (pusherServer) {
+    pusherServer.trigger(`user-${targetUser.id}`, 'new-notification', notif).catch(e => console.error(e));
+  }
 
   revalidatePath('/conversations');
   return { success: true, conversationId: conversation.id };
@@ -103,16 +109,21 @@ export async function replyToConversation(conversationId, formData) {
 
   // Gửi thông báo cho TẤT CẢ các bên còn lại
   const others = conv.participants.filter(p => p.id !== session.user.id);
-  if (others.length > 0) {
-    await prisma.notification.createMany({
-      data: others.map(u => ({
-        userId: u.id,
-        senderId: session.user.id,
-        type: "pm_reply",
-        content: `${session.user.name} đã trả lời trong hộp thư: "${conv.title}".`,
-        link: `/conversations/${conversationId}#msg-${newMessage.id}`
-      }))
-    });
+  for (const u of others) {
+      const notif = await prisma.notification.create({
+          data: {
+              userId: u.id,
+              senderId: session.user.id,
+              type: "pm_reply",
+              content: `${session.user.name} đã trả lời trong hộp thư: "${conv.title}".`,
+              link: `/conversations/${conversationId}#msg-${newMessage.id}`
+          },
+          include: { sender: { select: { username: true, avatar: true } } }
+      });
+
+      if (pusherServer) {
+          pusherServer.trigger(`user-${u.id}`, 'new-notification', notif).catch(e => console.error(e));
+      }
   }
 
   return { success: true };

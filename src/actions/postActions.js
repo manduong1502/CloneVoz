@@ -5,13 +5,17 @@ import { revalidatePath } from "next/cache";
 import { pusherServer } from '@/lib/pusher.server';
 import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
-import { checkRateLimit } from '@/lib/antispam';
+import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
 
 export async function createReply(threadId, formData) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
   const content = formData.get("content");
   if (!content || typeof content !== 'string' || content.trim() === '') throw new Error("Nội dung trống");
+
+  const turnstileToken = formData.get("turnstileToken");
+  const tsCheck = await verifyTurnstile(turnstileToken);
+  if (!tsCheck.success) throw new Error(tsCheck.error);
 
   const spamCheck = await checkRateLimit();
   if (!spamCheck.passed) throw new Error(spamCheck.reason);

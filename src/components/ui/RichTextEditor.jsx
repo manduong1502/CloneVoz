@@ -109,7 +109,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       }),
       Image.configure({
         inline: true,
-        allowBase64: true,
+        allowBase64: false, // TUYỆT ĐỐI CẤM BASE64 ĐỂ BẢO VỆ DATABASE!
       }),
       Placeholder.configure({
         placeholder,
@@ -121,6 +121,40 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       attributes: {
         class: 'prose prose-sm xl:prose-base focus:outline-none min-h-[120px] max-h-[400px] overflow-y-auto p-3 text-[14px] w-full',
       },
+      handlePaste: (view, event, slice) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        for (const item of items) {
+          if (item.type.indexOf('image') === 0) {
+            const file = item.getAsFile();
+            if (file && onImageUpload) {
+              onImageUpload(file).then(url => {
+                if (url) editor.chain().focus().setImage({ src: url }).run();
+              });
+              return true; // Báo cho Tiptap biết mình đã xử lý Paste
+            }
+          }
+        }
+        return false;
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (!moved && event.dataTransfer?.files?.length > 0) {
+          const file = event.dataTransfer.files[0];
+          if (file.type.indexOf('image') === 0 && onImageUpload) {
+            onImageUpload(file).then(url => {
+              if (url) {
+                const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                if (coordinates) {
+                  editor.chain().focus().insertContentAt(coordinates.pos, { type: 'image', attrs: { src: url } }).run();
+                } else {
+                  editor.chain().focus().setImage({ src: url }).run();
+                }
+              }
+            });
+            return true; // Báo cho Tiptap biết mình đã xử lý Drop
+          }
+        }
+        return false;
+      }
     },
     onUpdate: ({ editor }) => {
       onChange?.(editor.getHTML());

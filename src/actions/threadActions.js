@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { pusherServer } from '@/lib/pusher.server';
 import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
-import { checkRateLimit } from '@/lib/antispam';
+import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
 
 export async function createThread(nodeId, formData) {
   const session = await auth();
@@ -23,6 +23,10 @@ export async function createThread(nodeId, formData) {
   
   if (!title || !content) throw new Error("Vui lòng nhập đủ Tiêu đề và Nội dung");
 
+  const turnstileToken = formData.get("turnstileToken");
+  const tsCheck = await verifyTurnstile(turnstileToken);
+  if (!tsCheck.success) throw new Error(tsCheck.error);
+
   const newThread = await prisma.thread.create({
     data: {
       title,
@@ -35,7 +39,7 @@ export async function createThread(nodeId, formData) {
 
   await prisma.post.create({
     data: {
-      content: `<p>${content}</p>`,
+      content: content,
       position: 1,
       threadId: newThread.id,
       authorId: session.user.id

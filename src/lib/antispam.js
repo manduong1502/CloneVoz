@@ -46,3 +46,31 @@ export async function checkRateLimit() {
 
   return { passed: true };
 }
+
+// 🛡️ Bức Tường Lửa Cloudflare Turnstile
+export async function verifyTurnstile(token) {
+  if (!token) return { success: false, error: "Thiếu Token bảo vệ." };
+  // Khóa bí mật (Chỉ Server biết)
+  const secretKey = process.env.TURNSTILE_SECRET_KEY;
+  if (!secretKey) return { success: true }; // Bỏ qua nếu ko cài cấu hình
+
+  try {
+    const formData = new URLSearchParams();
+    formData.append('secret', secretKey);
+    formData.append('response', token);
+
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
+    });
+    
+    const outcome = await res.json();
+    if (outcome.success) {
+       return { success: true };
+    }
+    return { success: false, error: "Lá chắn Cloudflare đã chặn bạn vì có dấu hiệu Bot tự động." };
+  } catch (err) {
+    return { success: false, error: "Hệ thống xác thực tạm thời gặp sự cố." };
+  }
+}
+

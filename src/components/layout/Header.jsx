@@ -21,9 +21,12 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
   useEffect(() => {
     if (!user) return;
     
+    const pusherKey = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    if (!pusherKey) return; // Bảo vệ an toàn nếu chưa cấu hình Pusher
+
     // Khởi tạo Pusher
-    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    const pusher = new Pusher(pusherKey, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || 'ap1',
     });
 
     const channel = pusher.subscribe(`user-${user.id}`);

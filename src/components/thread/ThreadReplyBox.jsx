@@ -3,9 +3,11 @@
 import { useRef, useState, useEffect, useTransition } from 'react';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { createReply } from '@/actions/postActions';
+import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function ThreadReplyBox({ session, threadId }) {
   const [content, setContent] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState(null);
   const [isPending, startTransition] = useTransition();
   const editorRef = useRef(null);
 
@@ -49,10 +51,15 @@ export default function ThreadReplyBox({ session, threadId }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!content || content === '<p></p>') return;
+    if (!turnstileToken) {
+       alert("Vui lòng xác minh bảo vệ Cloudflare!");
+       return;
+    }
 
     startTransition(async () => {
       const formData = new FormData();
       formData.append('content', content);
+      formData.append('turnstileToken', turnstileToken);
       
       await createReply(threadId, formData);
       
@@ -85,11 +92,18 @@ export default function ThreadReplyBox({ session, threadId }) {
             onChange={setContent}
             onImageUpload={handleImageUpload}
          />
-         <div className="flex gap-2 items-center mt-3 w-full justify-end">
-           {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
-           <button type="submit" disabled={isPending} className="voz-button px-6 py-[6px] disabled:opacity-50">
-             Gửi trả lời
-           </button>
+         <div className="flex flex-col sm:flex-row gap-3 items-center mt-3 w-full justify-between">
+           <Turnstile 
+              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} 
+              onSuccess={(token) => setTurnstileToken(token)}
+              options={{ theme: 'auto', size: 'compact' }}
+           />
+           <div className="flex gap-2 items-center">
+             {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
+             <button type="submit" disabled={isPending || !turnstileToken} className="voz-button px-6 py-[6px] disabled:opacity-50">
+               Gửi trả lời
+             </button>
+           </div>
          </div>
       </div>
     </form>
