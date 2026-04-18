@@ -24,25 +24,25 @@ export default async function WatchedNodesPage() {
       </div>
 
       <div className="voz-card overflow-hidden">
-         <div className="bg-[#f5f5f5] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
+         <div className="bg-[var(--voz-accent)] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
             <span>Danh sách diễn đàn</span>
          </div>
-         <div className="bg-white">
+         <div className="bg-[var(--voz-surface)]">
             {bookmarks.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500">Bạn chưa theo dõi chuyên mục nào.</div>
+              <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Bạn chưa theo dõi chuyên mục nào.</div>
             )}
             {bookmarks.map(b => {
               const node = b.node;
               if (!node) return null;
               
               return (
-                <div key={b.id} className="flex p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors">
+                <div key={b.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors">
                   <div className="flex-1 min-w-0">
                     <div className="text-[15px] font-semibold mb-[2px]">
                       <Link href={`/category/${node.id}`} className="hover:underline text-[var(--voz-link)]">{node.title}</Link>
                     </div>
                     {node.description && (
-                      <div className="text-[12px] text-[#8c8c8c] mt-1 line-clamp-1">{node.description}</div>
+                      <div className="text-[12px] text-[var(--voz-text-muted)] mt-1 line-clamp-1">{node.description}</div>
                     )}
                   </div>
                 </div>

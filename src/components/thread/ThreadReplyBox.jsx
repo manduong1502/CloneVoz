@@ -67,18 +67,18 @@ export default function ThreadReplyBox({ session, threadId }) {
 
   if (!session) {
     return (
-      <div className="voz-card mt-4 p-4 text-center bg-[#f9f9f9]">
-         <span className="text-gray-500">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> hoặc <span className="text-[#185886] font-bold cursor-pointer">đăng ký</span> để trả lời bài viết.</span>
+      <div className="voz-card mt-4 p-4 text-center bg-[var(--voz-accent)]">
+         <span className="text-[var(--voz-text-muted)]">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> hoặc <span className="text-[#185886] font-bold cursor-pointer">đăng ký</span> để trả lời bài viết.</span>
       </div>
     );
   }
 
   return (
     <form id="reply-box" onSubmit={handleSubmit} className="voz-card mt-4 overflow-hidden">
-      <div className="bg-[#f5f5f5] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
+      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
          <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
       </div>
-      <div className="p-4 bg-white flex flex-col items-end w-full">
+      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full">
          <RichTextEditor 
             ref={editorRef}
             content={content}
@@ -86,7 +86,7 @@ export default function ThreadReplyBox({ session, threadId }) {
             onImageUpload={handleImageUpload}
          />
          <div className="flex gap-2 items-center mt-3 w-full justify-end">
-           {isPending && <span className="text-sm text-gray-500">Đang gửi...</span>}
+           {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
            <button type="submit" disabled={isPending} className="voz-button px-6 py-[6px] disabled:opacity-50">
              Gửi trả lời
            </button>

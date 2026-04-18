@@ -5,18 +5,18 @@ export default function SearchPage() {
     <div className="w-full flex justify-center mt-2">
       <div className="voz-card w-full max-w-[800px] overflow-hidden">
         
-        <div className="bg-[#f5f5f5] px-4 py-[10px] text-[15px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex justify-between items-center">
+        <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[15px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex justify-between items-center">
            <span>Search threads</span>
            <Link href="#" className="font-normal text-[13px] text-[var(--voz-link)] hover:underline">Search profile posts...</Link>
         </div>
 
-        <div className="p-4 md:p-6 bg-white flex flex-col gap-6 text-[13px]">
+        <div className="p-4 md:p-6 bg-[var(--voz-surface)] flex flex-col gap-6 text-[13px]">
            {/* Row 1 */}
            <div className="flex flex-col md:flex-row gap-2 md:gap-4">
               <div className="w-full md:w-[150px] text-[var(--voz-text)] font-semibold md:text-right pt-2 shrink-0">Keywords:</div>
               <div className="flex-1 flex flex-col gap-2">
                  <input type="text" className="w-full border border-[var(--voz-border)] p-[6px] rounded-[2px] focus:outline-none focus:border-[var(--voz-link)]" />
-                 <label className="flex items-center gap-2 cursor-pointer text-[#8c8c8c]">
+                 <label className="flex items-center gap-2 cursor-pointer text-[var(--voz-text-muted)]">
                     <input type="checkbox" /> Search titles only
                  </label>
               </div>
@@ -27,13 +27,13 @@ export default function SearchPage() {
               <div className="w-full md:w-[150px] text-[var(--voz-text)] font-semibold md:text-right pt-2 shrink-0">Posted by:</div>
               <div className="flex-1 flex flex-col gap-2">
                  <input type="text" placeholder="Separate names with a comma." className="w-full border border-[var(--voz-border)] p-[6px] rounded-[2px] focus:outline-none focus:border-[var(--voz-link)]" />
-                 <label className="flex items-center gap-2 cursor-pointer text-[#8c8c8c]">
+                 <label className="flex items-center gap-2 cursor-pointer text-[var(--voz-text-muted)]">
                     <input type="checkbox" /> Exact name match
                  </label>
               </div>
            </div>
 
-           <hr className="border-t border-[#f0f0f0] my-2" />
+           <hr className="border-t border-[var(--voz-border-light)] my-2" />
 
            {/* Row 3 */}
            <div className="flex flex-col md:flex-row gap-2 md:gap-4">

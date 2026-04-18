@@ -64,13 +64,13 @@ export default async function FindThreadsPage({ searchParams }) {
 
       <div className="voz-card overflow-hidden">
         {/* Thread List */}
-        <div className="bg-white">
+        <div className="bg-[var(--voz-surface)]">
           {threadsDb.length === 0 && (
-            <div className="p-8 text-center text-sm text-gray-500">Không tìm thấy bài viết nào.</div>
+            <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Không tìm thấy bài viết nào.</div>
           )}
           
           {threadsDb.map((thread) => (
-            <div key={thread.id} className="flex p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] last:border-0 transition-colors">
+            <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors">
               
               <div className="shrink-0 mr-3 mt-1">
                 <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[40px] h-[40px] rounded-full object-cover" />
@@ -83,7 +83,7 @@ export default async function FindThreadsPage({ searchParams }) {
                   </Link>
                 </div>
                 
-                <div className="text-[12px] text-[#8c8c8c] flex items-center gap-1 mt-1">
+                <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1 mt-1">
                   <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
                   <span>·</span>
                   <span>{thread.createdAt.toLocaleDateString()}</span>
@@ -93,10 +93,10 @@ export default async function FindThreadsPage({ searchParams }) {
               </div>
 
               {/* Stats */}
-              <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[#8c8c8c] w-[140px] border-r border-transparent">
+              <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[140px] border-r border-transparent">
                 <div className="flex flex-col items-end w-full">
-                   <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
-                   <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
+                   <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
+                   <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
                 </div>
               </div>
 
@@ -104,7 +104,7 @@ export default async function FindThreadsPage({ searchParams }) {
               <div className="hidden sm:flex items-center gap-3 w-[160px] lg:w-[150px] shrink-0 min-w-0 justify-end lg:justify-between px-2">
                  <div className="flex-1 min-w-0 text-right text-[12px]">
                     <div className="text-[var(--voz-text)] truncate mb-1 bg-transparent hover:none">{thread.updatedAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-                    <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[#8c8c8c] hover:underline truncate inline-block max-w-full">
+                    <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[var(--voz-text-muted)] hover:underline truncate inline-block max-w-full">
                       {thread.posts[0] ? thread.posts[0].author.username : thread.author.username}
                     </Link>
                  </div>

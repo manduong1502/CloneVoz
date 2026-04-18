@@ -66,9 +66,9 @@ export default function NewConversationPage() {
         </div>
       )}
 
-      <form onSubmit={handleCreate} className="voz-card bg-[#f5f5f5] p-4 text-[13px]">
+      <form onSubmit={handleCreate} className="voz-card bg-[var(--voz-accent)] p-4 text-[13px]">
          <div className="flex flex-col md:flex-row mb-4 gap-4 md:items-center">
-            <label className="md:w-[200px] text-right font-medium text-[#141414]">Người nhận:</label>
+            <label className="md:w-[200px] text-right font-medium text-[var(--voz-text-strong)]">Người nhận:</label>
             <input 
               type="text" 
               value={toUsername}
@@ -79,7 +79,7 @@ export default function NewConversationPage() {
          </div>
          
          <div className="flex flex-col md:flex-row mb-4 gap-4 md:items-center">
-            <label className="md:w-[200px] text-right font-medium text-[#141414]">Tiêu đề:</label>
+            <label className="md:w-[200px] text-right font-medium text-[var(--voz-text-strong)]">Tiêu đề:</label>
             <input 
               type="text" 
               value={title}
@@ -90,8 +90,8 @@ export default function NewConversationPage() {
          </div>
 
          <div className="flex flex-col md:flex-row mb-4 gap-4">
-            <label className="md:w-[200px] text-right font-medium text-[#141414] mt-2">Nội dung:</label>
-            <div className="flex-1 bg-white">
+            <label className="md:w-[200px] text-right font-medium text-[var(--voz-text-strong)] mt-2">Nội dung:</label>
+            <div className="flex-1 bg-[var(--voz-surface)]">
               <RichTextEditor 
                 content={content}
                 onChange={setContent}

@@ -48,10 +48,10 @@ export default function ConversationReplyBox({ session, conversationId }) {
 
   return (
     <form id="reply-box" onSubmit={handleSubmit} className="voz-card mt-4 overflow-hidden">
-      <div className="bg-[#f5f5f5] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
+      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
          <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi tin nhắn
       </div>
-      <div className="p-4 bg-white flex flex-col items-end w-full">
+      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full">
          <RichTextEditor 
             ref={editorRef}
             content={content}
@@ -60,7 +60,7 @@ export default function ConversationReplyBox({ session, conversationId }) {
             placeholder="Nhập nội dung tin nhắn..."
          />
          <div className="flex gap-2 items-center mt-3 w-full justify-end">
-           {isPending && <span className="text-sm text-gray-500">Đang gửi...</span>}
+           {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
            <button type="submit" disabled={isPending} className="voz-button px-6 py-[6px] disabled:opacity-50">
              Gửi tin
            </button>

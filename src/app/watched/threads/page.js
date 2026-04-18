@@ -29,19 +29,19 @@ export default async function WatchedThreadsPage() {
       </div>
 
       <div className="voz-card overflow-hidden">
-         <div className="bg-[#f5f5f5] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
+         <div className="bg-[var(--voz-accent)] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] font-medium">
             <span>Danh sách Chủ đề</span>
          </div>
-         <div className="bg-white">
+         <div className="bg-[var(--voz-surface)]">
             {bookmarks.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500">Bạn chưa theo dõi chủ đề nào.</div>
+              <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Bạn chưa theo dõi chủ đề nào.</div>
             )}
             {bookmarks.map(b => {
               const thread = b.thread;
               if (!thread) return null;
               
               return (
-                <div key={b.id} className="flex p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors">
+                <div key={b.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors">
                   <div className="shrink-0 mr-3 mt-1 relative">
                      <img src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username.charAt(0)}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
                   </div>
@@ -50,7 +50,7 @@ export default async function WatchedThreadsPage() {
                     <div className="text-[15px] font-semibold mb-[2px]">
                       <Link href={`/thread/${thread.id}`} className="hover:underline text-[var(--voz-link)]">{thread.title}</Link>
                     </div>
-                    <div className="text-[12px] text-[#8c8c8c] flex items-center gap-1">
+                    <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1">
                       <span>{thread.author.username}</span>
                       <span>·</span>
                       <span>Chuyên mục: <Link href={`/category/${thread.nodeId}`} className="hover:underline">{thread.node?.title || 'Unknown'}</Link></span>

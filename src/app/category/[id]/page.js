@@ -48,7 +48,7 @@ export default async function CategoryPage({ params, searchParams }) {
     return (
       <div className="voz-card overflow-hidden my-6 max-w-3xl mx-auto">
         <h2 className="bg-[#185886] text-white px-4 py-3 text-[15px] font-bold">DanOngThongMinh Error</h2>
-        <div className="p-8 text-center text-[#141414] font-medium bg-white">
+        <div className="p-8 text-center text-[var(--voz-text-strong)] font-medium bg-[var(--voz-surface)]">
           <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="48px" width="48px" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4 text-red-500"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path></svg>
           <div className="text-lg mb-2 text-red-600">Bạn không có quyền truy cập vào trang này.</div>
           <div className="text-sm text-gray-600">{perm.reason}</div>
@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }) {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
       <div className="flex flex-col">
         {/* Breadcrumb */}
-        <div className="text-[13px] mb-2 text-[#8c8c8c]">
+        <div className="text-[13px] mb-2 text-[var(--voz-text-muted)]">
           <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
           <span className="mx-1">›</span>
           {node.parent && (
@@ -141,12 +141,12 @@ export default async function CategoryPage({ params, searchParams }) {
 
         <div className="voz-card overflow-hidden">
           {/* Filters Bar */}
-          <div className="bg-[#f9f9f9] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[12px] text-[#8c8c8c]">
+          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[12px] text-[var(--voz-text-muted)]">
              <div>{prefixId && <Link href={`/category/${id}`} className="hover:underline text-[var(--voz-link)] flex items-center gap-1 font-medium bg-[#e3e3e3] px-2 py-1 rounded">✖ Bỏ lọc Prefix</Link>}</div>
              <div className="group relative">
                <button className="hover:text-[var(--voz-text)] pb-1">Filters ▾</button>
-               <div className="hidden group-hover:flex absolute right-0 top-full mt-[-4px] bg-white border border-[#ccc] shadow-[0_4px_8px_rgba(0,0,0,0.1)] z-10 flex-col w-[200px] text-left">
-                  <div className="px-3 py-2 bg-[#f5f5f5] border-b border-[#f0f0f0] font-bold text-[13px] text-[#141414]">Lọc theo Tiền tố</div>
+               <div className="hidden group-hover:flex absolute right-0 top-full mt-[-4px] bg-[var(--voz-surface)] border border-[#ccc] shadow-[0_4px_8px_rgba(0,0,0,0.1)] z-10 flex-col w-[200px] text-left">
+                  <div className="px-3 py-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border-light)] font-bold text-[13px] text-[var(--voz-text-strong)]">Lọc theo Tiền tố</div>
                   <Link href={`/category/${id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574a9] hover:text-white transition">(Tất cả)</Link>
                   {availablePrefixes.map(p => (
                      <Link key={p.id} href={`/category/${id}?prefix=${p.id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574A9] hover:text-white transition">{p.title}</Link>
@@ -156,22 +156,22 @@ export default async function CategoryPage({ params, searchParams }) {
           </div>
           
           {/* Table Header mimicking "Thread title" fake input */}
-          <div className="p-3 border-b border-[#f0f0f0] bg-white flex gap-3 items-center text-[13px]">
+          <div className="p-3 border-b border-[var(--voz-border-light)] bg-[var(--voz-surface)] flex gap-3 items-center text-[13px]">
              <img src="https://ui-avatars.com/api/?name=YOU&background=random" className="w-[36px] h-[36px] rounded-full opacity-50 object-cover" />
              <div className="flex-1 flex gap-2">
-                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[#8c8c8c] bg-[#f9f9f9] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(No prefix)'} ▾</span>
-                <input type="text" placeholder="Thread title" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[#8c8c8c] cursor-not-allowed" readOnly/>
+                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[var(--voz-text-muted)] bg-[var(--voz-accent)] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(No prefix)'} ▾</span>
+                <input type="text" placeholder="Thread title" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[var(--voz-text-muted)] cursor-not-allowed" readOnly/>
              </div>
           </div>
 
           {/* Thread List */}
-          <div className="bg-white">
+          <div className="bg-[var(--voz-surface)]">
             {threadsDb.length === 0 && (
-              <div className="p-8 text-center text-sm text-gray-500">Chưa có bài viết nào khớp với bộ lọc.</div>
+              <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Chưa có bài viết nào khớp với bộ lọc.</div>
             )}
             
             {threadsDb.map((thread) => (
-              <div key={thread.id} className="flex p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] last:border-0 transition-colors">
+              <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors">
                 
                 <div className="shrink-0 mr-3 mt-1">
                   <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
@@ -189,7 +189,7 @@ export default async function CategoryPage({ params, searchParams }) {
                     </Link>
                   </div>
                   
-                  <div className="text-[12px] text-[#8c8c8c] flex items-center gap-1 mt-1">
+                  <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1 mt-1">
                     <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
                     <span>·</span>
                     <span>{formatRelativeTime(thread.createdAt)}</span>
@@ -197,10 +197,10 @@ export default async function CategoryPage({ params, searchParams }) {
                 </div>
 
                 {/* Stats */}
-                <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[#8c8c8c] w-[140px] border-r border-transparent">
+                <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[140px] border-r border-transparent">
                   <div className="flex flex-col items-end w-full">
-                     <div className="flex gap-2"><span>Replies:</span> <span className="text-[#141414] font-medium">{thread.replyCount}</span></div>
-                     <div className="flex gap-2"><span>Views:</span> <span className="text-[#141414]">{thread.viewCount}</span></div>
+                     <div className="flex gap-2"><span>Replies:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
+                     <div className="flex gap-2"><span>Views:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
                   </div>
                 </div>
 
@@ -208,7 +208,7 @@ export default async function CategoryPage({ params, searchParams }) {
                 <div className="hidden sm:flex items-center gap-3 w-[160px] lg:w-[150px] shrink-0 min-w-0 justify-end lg:justify-between px-2">
                    <div className="flex-1 min-w-0 text-right text-[12px]">
                       <div className="text-[var(--voz-text)] truncate mb-1 bg-transparent hover:none">{formatRelativeTime(thread.updatedAt)}</div>
-                      <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[#8c8c8c] hover:underline truncate inline-block max-w-full">
+                      <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[var(--voz-text-muted)] hover:underline truncate inline-block max-w-full">
                         {thread.posts[0] ? thread.posts[0].author.username : thread.author.username}
                       </Link>
                    </div>
@@ -224,16 +224,16 @@ export default async function CategoryPage({ params, searchParams }) {
       <div className="hidden lg:flex flex-col gap-4 pt-[36px]">
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[#f5f5f5] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Trending content</h3>
-          <div className="bg-[#f9f9f9]">
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Trending content</h3>
+          <div className="bg-[var(--voz-accent)]">
             {trendingThreads.map(t => (
-              <div key={t.id} className="flex gap-2 p-3 border-b border-[#f0f0f0] last:border-0 hover:bg-white transition-colors">
+              <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">
                 <img src={t.author.avatar || `https://ui-avatars.com/api/?name=${t.author.username.charAt(0)}&background=random`} className="w-[32px] h-[32px] rounded-full mt-1 shrink-0 bg-gray-100 object-cover" />
                 <div className="flex-1 min-w-0">
                   <Link href={`/thread/${t.id}`} className="text-[13px] text-[var(--voz-text)] hover:underline font-medium hover:text-[var(--voz-link)] mb-1 leading-snug flex">
                     {t.title}
                   </Link>
-                  <div className="text-[11px] text-[#8c8c8c]">
+                  <div className="text-[11px] text-[var(--voz-text-muted)]">
                     {t.author.username} · {formatRelativeTime(t.createdAt)}<br/>Replies: {t.replyCount}
                   </div>
                 </div>

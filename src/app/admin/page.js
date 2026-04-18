@@ -18,36 +18,36 @@ export default async function AdminDashboard() {
       
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-gray-500 font-medium mb-1">Total Users</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Users</p>
                <h3 className="text-2xl font-bold text-gray-800">{usersCount}</h3>
             </div>
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
                <Users size={24} />
             </div>
          </div>
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-gray-500 font-medium mb-1">Total Threads</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Threads</p>
                <h3 className="text-2xl font-bold text-gray-800">{threadsCount}</h3>
             </div>
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
                <FileText size={24} />
             </div>
          </div>
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-gray-500 font-medium mb-1">Total Posts</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Posts</p>
                <h3 className="text-2xl font-bold text-gray-800">{postsCount}</h3>
             </div>
             <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center">
                <MessageSquare size={24} />
             </div>
          </div>
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-gray-500 font-medium mb-1">Nodes (Rooms)</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Nodes (Rooms)</p>
                <h3 className="text-2xl font-bold text-gray-800">{nodesCount}</h3>
             </div>
             <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center">
@@ -58,13 +58,13 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
          {/* Recent Users Table */}
-         <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 overflow-hidden">
             <div className="bg-gray-50 border-b border-gray-100 px-5 py-3">
-               <h3 className="font-semibold text-gray-700">Latest Registered Users</h3>
+               <h3 className="font-semibold text-[var(--voz-text)]">Latest Registered Users</h3>
             </div>
             <div className="p-0">
                <table className="w-full text-sm text-left">
-                  <thead className="bg-white text-gray-400 font-medium border-b border-gray-100">
+                  <thead className="bg-[var(--voz-surface)] text-gray-400 font-medium border-b border-gray-100">
                      <tr>
                         <th className="px-5 py-3">USERNAME</th>
                         <th className="px-5 py-3">GROUP</th>
@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
                   </thead>
                   <tbody className="divide-y divide-gray-50 text-gray-600">
                      {recentUsers.map(u => (
-                       <tr key={u.id} className="hover:bg-gray-50">
+                       <tr key={u.id} className="hover:bg-[var(--voz-hover)]">
                           <td className="px-5 py-3 font-medium text-gray-800">{u.username}</td>
                           <td className="px-5 py-3">{u.customTitle || "Member"}</td>
                           <td className="px-5 py-3">{u.createdAt.toLocaleDateString()}</td>

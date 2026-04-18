@@ -29,12 +29,12 @@ const MenuBar = ({ editor, onImageUpload }) => {
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 bg-[#f5f5f5] border-b border-[var(--voz-border)] text-[#185886]">
+    <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[#185886]">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('bold') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('bold') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Bold"
       >
         <Bold size={16} />
@@ -43,7 +43,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
         disabled={!editor.can().chain().focus().toggleItalic().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('italic') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('italic') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Italic"
       >
         <Italic size={16} />
@@ -52,7 +52,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
         type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
         disabled={!editor.can().chain().focus().toggleStrike().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('strike') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('strike') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Strikethrough"
       >
         <Strikethrough size={16} />
@@ -63,7 +63,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('bulletList') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('bulletList') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Bullet List"
       >
         <List size={16} />
@@ -71,7 +71,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('orderedList') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('orderedList') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Ordered List"
       >
         <ListOrdered size={16} />
@@ -79,7 +79,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
-        className={`p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors ${editor.isActive('blockquote') ? 'bg-white text-[var(--voz-text)] shadow-sm' : ''}`}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${editor.isActive('blockquote') ? 'bg-[var(--voz-surface)] text-[var(--voz-text)] shadow-sm' : ''}`}
         title="Quote"
       >
         <Quote size={16} />
@@ -90,7 +90,7 @@ const MenuBar = ({ editor, onImageUpload }) => {
       <button
         type="button"
         onClick={handleImageClick}
-        className="p-1.5 rounded hover:bg-white hover:text-[var(--voz-text)] transition-colors"
+        className="p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors"
         title="Upload Image"
       >
         <ImageIcon size={16} />
@@ -134,9 +134,9 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
   }));
 
   return (
-    <div className="border border-[var(--voz-border)] rounded-[2px] bg-white flex flex-col focus-within:border-[var(--voz-link)] transition-colors w-full">
+    <div className="border border-[var(--voz-border)] rounded-[2px] bg-[var(--voz-surface)] flex flex-col focus-within:border-[var(--voz-link)] transition-colors w-full">
       <MenuBar editor={editor} onImageUpload={onImageUpload} />
-      <div className="flex-1 cursor-text bg-white" onClick={() => editor?.commands.focus()}>
+      <div className="flex-1 cursor-text bg-[var(--voz-surface)]" onClick={() => editor?.commands.focus()}>
         <EditorContent editor={editor} />
       </div>
     </div>

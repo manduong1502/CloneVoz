@@ -1,16 +1,37 @@
 @import "tailwindcss";
 
 :root {
+  /* SÁNG (Light Mode) */
   --voz-blue-dark: #185886;
   --voz-blue-light: #2574A9;
   --voz-bg: #ececec;
   --voz-surface: #ffffff;
   --voz-border: #dedede;
+  --voz-border-light: #f0f0f0;
   --voz-text: #141414;
+  --voz-text-strong: #000000;
   --voz-text-muted: #8c8c8c;
   --voz-link: #2574A9;
   --voz-link-hover: #185886;
-  --voz-accent: #f0f7fd; 
+  --voz-accent: #f9f9f9; 
+  --voz-hover: #fafafa;
+}
+
+.dark {
+  /* TỐI (Dark Mode) */
+  --voz-blue-dark: #1a4260;
+  --voz-blue-light: #3884b2;
+  --voz-bg: #1e1e1e;
+  --voz-surface: #2d2d2d;
+  --voz-border: #444;
+  --voz-border-light: #3a3a3a;
+  --voz-text: #d0d0d0;
+  --voz-text-strong: #ffffff;
+  --voz-text-muted: #8c8c8c;
+  --voz-link: #66b2ff;
+  --voz-link-hover: #99ccff;
+  --voz-accent: #333333; 
+  --voz-hover: #3a3a3a;
 }
 
 @theme inline {

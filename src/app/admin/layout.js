@@ -40,7 +40,7 @@ export default function AdminLayout({ children }) {
 
         {/* Main Area */}
         <div className="flex-1 flex flex-col">
-          <header className="h-[60px] bg-white border-b border-gray-200 px-6 flex justify-between items-center shadow-sm">
+          <header className="h-[60px] bg-[var(--voz-surface)] border-b border-[var(--voz-border)] px-6 flex justify-between items-center shadow-sm">
              <div className="font-semibold text-gray-600">Administrator Control Panel</div>
              <div className="flex items-center gap-4 text-sm font-medium">
                 <Link href="/" className="text-blue-600 hover:underline">Exit to Forum</Link>

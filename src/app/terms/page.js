@@ -13,8 +13,8 @@ export default function TermsPage() {
         <h2 className="bg-[#185886] text-white px-4 py-3 text-[16px] font-medium flex items-center justify-between">
            <span className="flex items-center gap-2"><Book size={18} /> Nội quy hoạt động tại DanOngThongMinh</span>
         </h2>
-        <div className="p-6 bg-white text-[#141414] leading-relaxed text-[15px]">
-          <p className="mb-4 text-[#8c8c8c] italic text-sm">Cập nhật lần cuối: 16 tháng 4, 2026</p>
+        <div className="p-6 bg-[var(--voz-surface)] text-[var(--voz-text-strong)] leading-relaxed text-[15px]">
+          <p className="mb-4 text-[var(--voz-text-muted)] italic text-sm">Cập nhật lần cuối: 16 tháng 4, 2026</p>
           
           <h3 className="font-bold text-lg mb-2 text-[#2574A9]">1. Nguyên tắc chung</h3>
           <ul className="list-disc pl-6 mb-6 flex flex-col gap-2">

@@ -33,7 +33,7 @@ export default function EditProfileModal({ user }) {
       </button>
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Cài Đặt Hồ Sơ Cá Nhân" width="550px">
-        <div className="p-6 bg-[#f5f5f5]">
+        <div className="p-6 bg-[var(--voz-accent)]">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input type="hidden" name="userId" value={user.id} />
             
@@ -46,7 +46,7 @@ export default function EditProfileModal({ user }) {
                 placeholder="https://imgur.com/your-image.png" 
                 className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
               />
-              <span className="text-[11px] text-[#8c8c8c]">Chỉ nhận link hình ảnh trực tiếp (đuôi .jpg, .png...)</span>
+              <span className="text-[11px] text-[var(--voz-text-muted)]">Chỉ nhận link hình ảnh trực tiếp (đuôi .jpg, .png...)</span>
             </div>
 
             <div className="flex flex-col gap-1">
@@ -69,14 +69,14 @@ export default function EditProfileModal({ user }) {
                 placeholder="Mọi nội dung dưới này sẽ hiển thị dưới mỗi bài cmt của bạn." 
                 className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
               />
-               <span className="text-[11px] text-[#8c8c8c] italic">Hỗ trợ mã HTML cơ bản. Đã được bọc khử trùng XSS.</span>
+               <span className="text-[11px] text-[var(--voz-text-muted)] italic">Hỗ trợ mã HTML cơ bản. Đã được bọc khử trùng XSS.</span>
             </div>
 
             <div className="mt-4 flex gap-3 justify-center border-t border-[var(--voz-border)] pt-4">
               <button 
                 type="button" 
                 onClick={() => setIsOpen(false)}
-                className="bg-gray-200 hover:bg-gray-300 text-[#141414] px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-gray-400 active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
+                className="bg-[var(--voz-border)] hover:bg-[var(--voz-border-light)] text-[var(--voz-text-strong)] px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-gray-400 active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
               >
                 Hủy bỏ
               </button>

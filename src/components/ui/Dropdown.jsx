@@ -27,12 +27,12 @@ export default function Dropdown({ trigger, children, align = 'left', width = 'a
 
       {isOpen && (
         <div 
-          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-1 bg-white border border-[var(--voz-border)] shadow-xl z-50`}
+          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-1 bg-[var(--voz-surface)] border border-[var(--voz-border)] shadow-xl z-50`}
           style={{ width: width, minWidth: '150px' }}
         >
           {/* Arrow pointing up */}
-          <div className={`absolute -top-2 ${align === 'right' ? 'right-4' : 'left-4'} w-3 h-3 bg-white border-t border-l border-[var(--voz-border)] transform rotate-45`}></div>
-          <div className="relative z-10 bg-white">
+          <div className={`absolute -top-2 ${align === 'right' ? 'right-4' : 'left-4'} w-3 h-3 bg-[var(--voz-surface)] border-t border-l border-[var(--voz-border)] transform rotate-45`}></div>
+          <div className="relative z-10 bg-[var(--voz-surface)]">
             {children}
           </div>
         </div>

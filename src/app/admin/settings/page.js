@@ -28,14 +28,14 @@ export default async function AdminSettings() {
     <div className="flex flex-col gap-6 max-w-3xl">
       <div>
         <h1 className="text-2xl font-semibold text-gray-800">Options (Global Settings)</h1>
-        <p className="text-sm text-gray-500 mt-1">Configure global site variables from the database.</p>
+        <p className="text-sm text-[var(--voz-text-muted)] mt-1">Configure global site variables from the database.</p>
       </div>
       
-      <form action={updateSettings} className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col gap-6">
+      <form action={updateSettings} className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col gap-6">
          
          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-sm text-gray-700">Site Title</label>
-            <p className="text-xs text-gray-500 mb-1">The name of your forum, displayed in the browser tab and header.</p>
+            <label className="font-semibold text-sm text-[var(--voz-text)]">Site Title</label>
+            <p className="text-xs text-[var(--voz-text-muted)] mb-1">The name of your forum, displayed in the browser tab and header.</p>
             <input 
               type="text" 
               name="setting_site_title" 
@@ -45,8 +45,8 @@ export default async function AdminSettings() {
          </div>
 
          <div className="flex flex-col gap-2">
-            <label className="font-semibold text-sm text-gray-700">Site Description</label>
-            <p className="text-xs text-gray-500 mb-1">Used for SEO meta tags and social media sharing.</p>
+            <label className="font-semibold text-sm text-[var(--voz-text)]">Site Description</label>
+            <p className="text-xs text-[var(--voz-text-muted)] mb-1">Used for SEO meta tags and social media sharing.</p>
             <textarea 
               name="setting_site_description" 
               defaultValue={settingsMap['site_description'] || ''} 

@@ -28,10 +28,10 @@ export default async function ConversationsPage() {
       {/* Sidebar */}
       <div className="flex flex-col gap-2">
          <div className="voz-card overflow-hidden">
-            <h3 className="bg-[#f5f5f5] text-[13px] font-medium px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Hộp thư</h3>
+            <h3 className="bg-[var(--voz-accent)] text-[13px] font-medium px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Hộp thư</h3>
             <div className="flex flex-col text-[13px]">
-               <Link href="/conversations" className="px-3 py-2 border-l-2 border-[#185886] bg-[#f9f9f9] text-[var(--voz-text)] flex items-center justify-between font-bold">Danh sách <Mail size={14}/></Link>
-               <Link href="/conversations/add" className="px-3 py-2 border-l-2 border-transparent hover:bg-[#f9f9f9] text-[var(--voz-link)]">Bắt đầu cuộc trò chuyện mới</Link>
+               <Link href="/conversations" className="px-3 py-2 border-l-2 border-[#185886] bg-[var(--voz-accent)] text-[var(--voz-text)] flex items-center justify-between font-bold">Danh sách <Mail size={14}/></Link>
+               <Link href="/conversations/add" className="px-3 py-2 border-l-2 border-transparent hover:bg-[var(--voz-accent)] text-[var(--voz-link)]">Bắt đầu cuộc trò chuyện mới</Link>
             </div>
          </div>
       </div>
@@ -44,14 +44,14 @@ export default async function ConversationsPage() {
         </div>
 
         <div className="voz-card overflow-hidden">
-           <div className="bg-[#f5f5f5] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] flex justify-between font-medium">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 border-b border-[var(--voz-border)] text-[12px] flex justify-between font-medium">
               <span>Tiêu đề</span>
               <span className="w-[150px] text-right hidden sm:block">Tin nhắn cuối</span>
            </div>
 
-           <div className="bg-white">
+           <div className="bg-[var(--voz-surface)]">
               {conversations.length === 0 && (
-                <div className="p-8 text-center text-sm text-gray-500">Bạn chưa có cuộc trò chuyện nào.</div>
+                <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Bạn chưa có cuộc trò chuyện nào.</div>
               )}
               
               {conversations.map(conv => {
@@ -60,7 +60,7 @@ export default async function ConversationsPage() {
                 const lastMsg = conv.messages[0];
 
                 return (
-                  <div key={conv.id} className="flex p-3 border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors">
+                  <div key={conv.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors">
                     <div className="shrink-0 mr-3 mt-1 relative">
                        {otherParticipants[0] ? (
                          <img src={otherParticipants[0].avatar || `https://ui-avatars.com/api/?name=${otherParticipants[0].username.charAt(0)}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
@@ -73,7 +73,7 @@ export default async function ConversationsPage() {
                       <div className="text-[15px] font-semibold mb-[2px]">
                         <Link href={`/conversations/${conv.id}`} className="hover:underline text-[var(--voz-link)]">{conv.title}</Link>
                       </div>
-                      <div className="text-[12px] text-[#8c8c8c]">
+                      <div className="text-[12px] text-[var(--voz-text-muted)]">
                         Người tham gia: {participantNames || 'Không có ai'}
                       </div>
                     </div>
@@ -81,8 +81,8 @@ export default async function ConversationsPage() {
                     <div className="hidden sm:flex flex-col items-end w-[150px] shrink-0 min-w-0 text-[12px]">
                        {lastMsg ? (
                          <>
-                           <div className="text-[#141414] whitespace-nowrap">{lastMsg.createdAt.toLocaleString()}</div>
-                           <div className="text-[#8c8c8c] whitespace-nowrap">{lastMsg.author.username}</div>
+                           <div className="text-[var(--voz-text-strong)] whitespace-nowrap">{lastMsg.createdAt.toLocaleString()}</div>
+                           <div className="text-[var(--voz-text-muted)] whitespace-nowrap">{lastMsg.author.username}</div>
                          </>
                        ) : (
                          <span className="text-gray-400">Trống</span>

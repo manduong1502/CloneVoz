@@ -55,16 +55,16 @@ export default async function Home() {
         {categoriesDb.map(category => (
           <div key={category.id} className="voz-card overflow-hidden">
             {/* Header */}
-            <div className="bg-[#f5f5f5] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[#185886]">
+            <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[#185886]">
               <h2 className="text-[16px] font-normal m-0 hover:underline cursor-pointer">{category.title}</h2>
             </div>
             
             {/* List */}
-            <div className="flex flex-col bg-white">
+            <div className="flex flex-col bg-[var(--voz-surface)]">
               {category.children.length === 0 ? (
-                 <div className="p-4 text-sm text-gray-500 text-center">Chưa có box con nào được tạo.</div>
+                 <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
               ) : category.children.map((node, i) => (
-                <div key={node.id} className={`flex items-center p-3 hover:bg-[#fafafa] transition-colors ${i !== category.children.length -1 ? 'border-b border-[#f0f0f0]' : ''}`}>
+                <div key={node.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== category.children.length -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
                   
                   {/* Icon & Title */}
                   <div className="flex-1 flex items-center min-w-0 pr-4">
@@ -75,19 +75,19 @@ export default async function Home() {
                       <Link href={`/category/${node.id}`} className="text-[15px] font-normal hover:no-underline hover:text-[var(--voz-link-hover)] text-[#2574A9]">
                         {node.title}
                       </Link>
-                      {node.description && <div className="text-xs text-gray-500 mt-1">{node.description}</div>}
+                      {node.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{node.description}</div>}
                     </div>
                   </div>
 
                   {/* Stats */}
-                  <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[#8c8c8c] gap-5">
+                  <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
                      <div className="flex flex-col items-center">
                         <div>Chủ đề</div>
-                        <div className="text-[#141414] text-[13px]">{formatNumber(node.threadsCount)}</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{formatNumber(node.threadsCount)}</div>
                      </div>
                      <div className="flex flex-col items-center">
                         <div>Bài viết</div>
-                        <div className="text-[#141414] text-[13px]">{formatNumber(node.postsCount)}</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{formatNumber(node.postsCount)}</div>
                      </div>
                   </div>
 
@@ -100,13 +100,13 @@ export default async function Home() {
                            <Link href={`/thread/${node.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
                               {node.threads[0].title}
                            </Link>
-                           <div className="text-[#8c8c8c] truncate mt-[2px]">
+                           <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
                               {formatRelativeTime(node.threads[0].createdAt)} · <Link href={`/profile/${node.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{node.threads[0].author.username}</Link>
                            </div>
                         </div>
                       </>
                     ) : (
-                      <div className="flex-1 text-[12px] text-gray-500 italic">Chưa có bài viết</div>
+                      <div className="flex-1 text-[12px] text-[var(--voz-text-muted)] italic">Chưa có bài viết</div>
                     )}
                   </div>
 
@@ -122,21 +122,21 @@ export default async function Home() {
         
         {/* Featured Content */}
         <div className="voz-card overflow-hidden">
-           <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
               Đáng chú ý
            </div>
-           <div className="flex flex-col bg-[#f9f9f9]">
+           <div className="flex flex-col bg-[var(--voz-accent)]">
               {featuredThreads.map(t => (
-                 <div key={t.id} className="p-3 border-b border-[var(--voz-border)] flex gap-3 last:border-b-0 hover:bg-white transition-colors">
+                 <div key={t.id} className="p-3 border-b border-[var(--voz-border)] flex gap-3 last:border-b-0 hover:bg-[var(--voz-surface)] transition-colors">
                     <img src={t.author.avatar || `https://ui-avatars.com/api/?name=${t.author.username}&background=random`} className="w-[32px] h-[32px] rounded-full object-cover shrink-0" />
                     <div className="flex flex-col min-w-0 flex-1">
                        <Link href={`/thread/${t.id}`} className="text-[14px] text-[var(--voz-link)] hover:underline leading-snug mb-[2px]">
                           {t.title}
                        </Link>
-                       <div className="text-[12px] text-[#8c8c8c]">
+                       <div className="text-[12px] text-[var(--voz-text-muted)]">
                           {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
-                       <div className="text-[12px] text-[#8c8c8c]">
+                       <div className="text-[12px] text-[var(--voz-text-muted)]">
                           Trả lời: {formatNumber(t.replyCount)}
                        </div>
                     </div>
@@ -147,21 +147,21 @@ export default async function Home() {
 
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
-           <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
               Đang thịnh hành
            </div>
-           <div className="flex flex-col bg-[#f9f9f9]">
+           <div className="flex flex-col bg-[var(--voz-accent)]">
               {trendingThreads.map(t => (
-                 <div key={t.id} className="p-3 border-b border-[var(--voz-border)] flex gap-3 last:border-b-0 hover:bg-white transition-colors">
+                 <div key={t.id} className="p-3 border-b border-[var(--voz-border)] flex gap-3 last:border-b-0 hover:bg-[var(--voz-surface)] transition-colors">
                     <img src={t.author.avatar || `https://ui-avatars.com/api/?name=${t.author.username}&background=random`} className="w-[32px] h-[32px] rounded-full object-cover shrink-0" />
                     <div className="flex flex-col min-w-0 flex-1">
                        <Link href={`/thread/${t.id}`} className="text-[14px] text-[var(--voz-link)] hover:underline leading-snug mb-[2px]">
                           {t.title}
                        </Link>
-                       <div className="text-[12px] text-[#8c8c8c]">
+                       <div className="text-[12px] text-[var(--voz-text-muted)]">
                           {t.author.username} · {formatRelativeTime(t.createdAt)}
                        </div>
-                       <div className="text-[12px] text-[#8c8c8c]">
+                       <div className="text-[12px] text-[var(--voz-text-muted)]">
                           Trả lời: {formatNumber(t.replyCount)}
                        </div>
                     </div>
@@ -172,13 +172,13 @@ export default async function Home() {
 
         {/* Forum statistics */}
         <div className="voz-card overflow-hidden">
-           <div className="bg-[#f5f5f5] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[14px] font-normal hover:underline cursor-pointer">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[#185886] border-b border-[var(--voz-border)] text-[14px] font-normal hover:underline cursor-pointer">
               Thống kê diễn đàn
            </div>
-           <div className="bg-[#f9f9f9] p-3 text-[12px] text-[#141414] flex flex-col gap-1">
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Chủ đề:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Bài viết:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
-               <div className="flex justify-between border-b border-[#f0f0f0] pb-1"><span>Thành viên:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
+           <div className="bg-[var(--voz-accent)] p-3 text-[12px] text-[var(--voz-text-strong)] flex flex-col gap-1">
+               <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Chủ đề:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Bài viết:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Thành viên:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
                <div className="flex justify-between"><span>Mới nhất:</span> <Link href={latestUser ? `/profile/${latestUser.username}` : '#'} className="text-[var(--voz-link)] font-medium hover:underline truncate max-w-[120px] text-right">{latestUser?.username || 'Chưa rõ'}</Link></div>
            </div>
         </div>

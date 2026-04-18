@@ -18,7 +18,7 @@ export default function Modal({ isOpen, onClose, title, children, width = '500px
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
       <div 
-        className="bg-white border border-[var(--voz-border)] shadow-2xl flex flex-col VozModal slide-down" 
+        className="bg-[var(--voz-surface)] border border-[var(--voz-border)] shadow-2xl flex flex-col VozModal slide-down" 
         style={{ width: width, maxWidth: '100%', maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
       >

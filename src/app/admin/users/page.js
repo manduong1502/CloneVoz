@@ -11,12 +11,12 @@ export default async function AdminUsers() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-semibold text-gray-800">Users</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage all registered users in the database.</p>
+          <p className="text-sm text-[var(--voz-text-muted)] mt-1">Manage all registered users in the database.</p>
         </div>
         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium">Create New User</button>
       </div>
       
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 overflow-hidden">
         {/* Toolbar */}
         <div className="p-4 border-b border-gray-100 flex justify-between bg-gray-50">
            <div className="relative">
@@ -27,7 +27,7 @@ export default async function AdminUsers() {
         
         {/* Table */}
         <table className="w-full text-sm text-left">
-           <thead className="bg-[#f8fafc] text-gray-500 font-medium border-b border-gray-200 uppercase text-xs">
+           <thead className="bg-[#f8fafc] text-[var(--voz-text-muted)] font-medium border-b border-[var(--voz-border)] uppercase text-xs">
               <tr>
                  <th className="px-5 py-3">User</th>
                  <th className="px-5 py-3">Email</th>
@@ -44,7 +44,7 @@ export default async function AdminUsers() {
                          <img src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}`} className="w-10 h-10 rounded-full" />
                          <div>
                             <div className="font-semibold text-gray-800">{u.username}</div>
-                            <div className="text-xs text-gray-500">{u.customTitle}</div>
+                            <div className="text-xs text-[var(--voz-text-muted)]">{u.customTitle}</div>
                          </div>
                       </div>
                    </td>
@@ -64,8 +64,8 @@ export default async function AdminUsers() {
                    </td>
                    <td className="px-5 py-4 text-right">
                       <div className="flex justify-end gap-2">
-                         <button className="p-2 text-slate-400 hover:text-blue-600 bg-white hover:bg-blue-50 border border-slate-200 rounded transition"><Edit2 size={16} /></button>
-                         <button className="p-2 text-slate-400 hover:text-red-600 bg-white hover:bg-red-50 border border-slate-200 rounded transition"><Ban size={16} /></button>
+                         <button className="p-2 text-slate-400 hover:text-blue-600 bg-[var(--voz-surface)] hover:bg-blue-50 border border-slate-200 rounded transition"><Edit2 size={16} /></button>
+                         <button className="p-2 text-slate-400 hover:text-red-600 bg-[var(--voz-surface)] hover:bg-red-50 border border-slate-200 rounded transition"><Ban size={16} /></button>
                       </div>
                    </td>
                 </tr>

@@ -18,44 +18,44 @@ export default function MembersPage() {
         {/* Tabs */}
         <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
           <Link href="/members" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Most messages</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886] hidden sm:block">Highest reaction score</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[#8c8c8c] hover:text-[#185886] hidden sm:block">Most points</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Highest reaction score</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Most points</Link>
         </div>
 
         <div className="voz-card overflow-hidden">
-          <div className="bg-[#f9f9f9] border-b border-[var(--voz-border)] px-3 py-[8px] text-[13px] text-[#185886] font-medium">
+          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-[8px] text-[13px] text-[#185886] font-medium">
              Most messages
           </div>
           
-          <div className="bg-white">
+          <div className="bg-[var(--voz-surface)]">
             {topMembers.map((member, index) => (
-              <div key={member.id} className="flex p-4 border-b border-[#f0f0f0] hover:bg-[#fafafa] last:border-0 transition-colors">
+              <div key={member.id} className="flex p-4 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors">
                 <div className="shrink-0 mr-4">
                    <img src={`https://ui-avatars.com/api/?name=${member.name.charAt(0)}&background=random&size=100`} className="w-[64px] h-[64px] rounded-sm object-cover border border-black/10 shadow-sm" />
                 </div>
                 
                 <div className="flex-1 flex flex-col min-w-0 pr-4">
                   <div className="text-[16px] mb-1 leading-tight flex items-center gap-2">
-                    <span className="font-bold text-[#8c8c8c]">#{index + 1}</span>
+                    <span className="font-bold text-[var(--voz-text-muted)]">#{index + 1}</span>
                     <Link href={`/profile/${member.name}`} className="font-bold hover:underline text-[var(--voz-link)]">
                       {member.name}
                     </Link>
                   </div>
-                  <div className="text-[12px] text-[#8c8c8c] mb-2">{member.title}</div>
+                  <div className="text-[12px] text-[var(--voz-text-muted)] mb-2">{member.title}</div>
                   
-                  <div className="text-[12px] text-[#8c8c8c] flex flex-wrap items-center gap-4">
+                  <div className="text-[12px] text-[var(--voz-text-muted)] flex flex-wrap items-center gap-4">
                     <div className="flex flex-col">
-                       <span className="text-[#141414] font-medium">{member.messages}</span>
+                       <span className="text-[var(--voz-text-strong)] font-medium">{member.messages}</span>
                        <span className="text-[10px] uppercase">Messages</span>
                     </div>
-                    <div className="flex flex-col scale-y-[-1] border-l border-[#f0f0f0] h-[24px]"></div>
+                    <div className="flex flex-col scale-y-[-1] border-l border-[var(--voz-border-light)] h-[24px]"></div>
                     <div className="flex flex-col">
-                       <span className="text-[#141414] font-medium">{member.reactionScore}</span>
+                       <span className="text-[var(--voz-text-strong)] font-medium">{member.reactionScore}</span>
                        <span className="text-[10px] uppercase">Reaction score</span>
                     </div>
-                    <div className="flex flex-col scale-y-[-1] border-l border-[#f0f0f0] h-[24px]"></div>
+                    <div className="flex flex-col scale-y-[-1] border-l border-[var(--voz-border-light)] h-[24px]"></div>
                     <div className="flex flex-col">
-                       <span className="text-[#141414] font-medium">{member.points}</span>
+                       <span className="text-[var(--voz-text-strong)] font-medium">{member.points}</span>
                        <span className="text-[10px] uppercase">Points</span>
                     </div>
                   </div>
@@ -70,8 +70,8 @@ export default function MembersPage() {
       <div className="hidden lg:flex flex-col gap-4 pt-[46px]">
         {/* Find Member */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[#f5f5f5] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Find member</h3>
-          <div className="bg-white px-3 py-3">
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Find member</h3>
+          <div className="bg-[var(--voz-surface)] px-3 py-3">
              <input type="text" placeholder="Name..." className="w-full border border-[var(--voz-border)] rounded-[2px] px-2 py-[6px] text-[13px] focus:outline-none focus:border-[var(--voz-link)] mb-2" />
              <button className="bg-[#185886] hover:bg-[#2574A9] text-white w-full rounded-[2px] py-[6px] text-[13px] font-medium transition-colors">Search</button>
           </div>
@@ -79,14 +79,14 @@ export default function MembersPage() {
 
         {/* Member Online */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[#f5f5f5] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Members online</h3>
-          <div className="bg-white px-3 py-3 text-[12px] text-[#8c8c8c]">
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Members online</h3>
+          <div className="bg-[var(--voz-surface)] px-3 py-3 text-[12px] text-[var(--voz-text-muted)]">
              <div className="flex flex-wrap gap-1 mb-2">
                <Link href="#" className="hover:underline text-[var(--voz-link)] font-medium">Bimbim2002</Link>, 
                <Link href="#" className="hover:underline text-[var(--voz-link)] font-medium">VozTroller_9x</Link>, 
                <Link href="#" className="hover:underline text-[#c84448] font-bold">thuyvan</Link>
              </div>
-             <div className="border-t border-[#f0f0f0] pt-2 mt-2">
+             <div className="border-t border-[var(--voz-border-light)] pt-2 mt-2">
                 Total: 24,012 (members: 1,400, guests: 22,612)
              </div>
           </div>

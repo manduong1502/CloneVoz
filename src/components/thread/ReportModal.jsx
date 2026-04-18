@@ -47,14 +47,14 @@ export default function ReportModal({ postId, threadId }) {
       </button>
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Báo cáo nội dung vi phạm" width="500px">
-        <div className="p-4 bg-[#f5f5f5] text-[14px]">
+        <div className="p-4 bg-[var(--voz-accent)] text-[14px]">
            {success ? (
              <div className="text-green-600 font-bold p-4 text-center">Báo cáo của bạn đã được gửi. Đội ngũ quản trị sẽ xử lý sớm nhất!</div>
            ) : (
              <form onSubmit={handleReport} className="flex flex-col gap-3">
                 {errorCode && <div className="text-red-500 font-bold text-sm bg-red-50 p-2 border border-red-200">{errorCode}</div>}
                 
-                <label className="font-semibold text-[#141414] text-[13px]">Lý do báo cáo:</label>
+                <label className="font-semibold text-[var(--voz-text-strong)] text-[13px]">Lý do báo cáo:</label>
                 <textarea 
                   value={reason} 
                   onChange={e => setReason(e.target.value)}
@@ -63,7 +63,7 @@ export default function ReportModal({ postId, threadId }) {
                 />
 
                 <div className="flex justify-end gap-2 mt-2 pt-3 border-t border-[var(--voz-border)]">
-                   <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-sm hover:bg-gray-300 text-[13px] font-medium">Hủy bỏ</button>
+                   <button type="button" onClick={() => setIsOpen(false)} className="px-4 py-2 bg-[var(--voz-border)] text-[var(--voz-text)] rounded-sm hover:bg-[var(--voz-border-light)] text-[13px] font-medium">Hủy bỏ</button>
                    <button type="submit" disabled={isPending} className="voz-button px-4 py-2 min-w-[100px]">
                       {isPending ? 'Đang gửi...' : 'Gửi Báo Cáo'}
                    </button>
