@@ -39,8 +39,8 @@ export default async function RootLayout({ children }) {
   }
 
   return (
-    <html lang="vi">
-      <body className={`${inter.className} min-h-screen flex flex-col pt-0 bg-[var(--voz-bg)] text-[var(--voz-text)]`}>
+    <html lang="vi" suppressHydrationWarning>
+      <body className={`${inter.className} min-h-screen flex flex-col pt-0 bg-[var(--voz-bg)] text-[var(--voz-text)]`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} />
           <main className="max-w-[1240px] px-2 md:px-4 mx-auto w-full flex-1 py-4 md:py-6">

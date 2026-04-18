@@ -152,14 +152,14 @@ export default async function ThreadPage({ params, searchParams }) {
           <div key={post.id} id={`post-${post.id}`} className="voz-card flex flex-col md:flex-row overflow-hidden">
             
             {/* User Block (Left Side) */}
-            <div className="bg-[var(--voz-accent)] md:w-[140px] lg:w-[150px] shrink-0 p-3 md:border-r border-[var(--voz-border)] flex flex-row md:flex-col items-center md:items-start gap-4 md:gap-0">
-               <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`} className="w-[48px] h-[48px] md:w-[96px] md:h-[96px] rounded-sm shrink-0 border border-black/10" />
-               <div className="flex-1 text-left md:text-center mt-2 w-full">
+            <div className="bg-[var(--voz-accent)] md:w-[140px] lg:w-[150px] shrink-0 p-3 md:border-r border-[var(--voz-border)] flex flex-row md:flex-col items-center gap-4 md:gap-3">
+               <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`} className="w-[48px] h-[48px] md:w-full md:aspect-square md:h-auto rounded-sm shrink-0 border border-black/10 object-cover" />
+               <div className="flex-1 text-left md:text-center w-full">
                   <div className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words pb-1">{post.author.username}</div>
-                  <div className="text-[11px] text-[#2574A9] md:mb-2">{post.author.customTitle || 'Member'}</div>
+                  <div className="text-[11px] text-[var(--voz-link)] md:mb-2">{post.author.customTitle || 'Member'}</div>
                   
-                  <div className="hidden md:flex flex-col items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
-                     <div className="flex justify-between w-full"><span>Ngày tham gia</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.createdAt.toLocaleDateString()}</span></div>
+                  <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
+                     <div className="flex justify-between w-full"><span>Tham gia:</span> <span className="font-medium text-[var(--voz-text-strong)] whitespace-nowrap">{post.author.createdAt.toLocaleDateString()}</span></div>
                      <div className="flex justify-between w-full"><span>Bài viết</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.messageCount}</span></div>
                      <div className="flex justify-between w-full"><span>Điểm reaction</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.reactionScore}</span></div>
                   </div>

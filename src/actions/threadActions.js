@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { pusherServer } from '@/lib/pusher.server';
+import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
 import { checkRateLimit } from '@/lib/antispam';
 
@@ -51,6 +53,34 @@ export async function createThread(nodeId, formData) {
     where: { id: session.user.id },
     data: { messageCount: { increment: 1 } }
   });
+
+  // Thông báo cho những người đang theo dõi Node
+  const nodeWatchers = await prisma.bookmark.findMany({ where: { nodeId } });
+  const watcherIds = new Set(nodeWatchers.map(w => w.userId));
+  watcherIds.delete(session.user.id);
+  
+  const nodeName = await prisma.node.findUnique({ where: { id: nodeId }, select: { title: true }});
+  
+  for (const uid of watcherIds) {
+      const notif = await prisma.notification.create({
+          data: {
+             userId: uid,
+             senderId: session.user.id,
+             type: "reply",
+             content: `${session.user.name} đã tạo một chủ đề mới trong chuyên mục ${nodeName?.title || 'bạn đang theo dõi'}.`,
+             link: `/thread/${newThread.id}`
+          },
+          include: { sender: { select: { username: true, avatar: true } } }
+      });
+      
+      if (pusherServer) {
+         pusherServer.trigger(`user-${uid}`, 'new-notification', notif).catch(e => console.error(e));
+      }
+  }
+
+  // Dọn Redis Cache
+  await deleteCache('voz_homepage_data');
+  await deleteCache(`voz_node_${nodeId}_page_1_prefix_none`);
 
   revalidatePath(`/category/${nodeId}`);
   revalidatePath(`/`);

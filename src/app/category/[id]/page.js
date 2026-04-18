@@ -6,6 +6,7 @@ import { auth } from '@/auth';
 import { checkNodePermission } from '@/lib/permissions';
 import WatchNodeButton from '@/components/category/WatchNodeButton';
 import { formatRelativeTime } from '@/lib/formatTime';
+import { getCache, setCache } from '@/lib/redis';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -32,11 +33,18 @@ export default async function CategoryPage({ params, searchParams }) {
   const threadsPerPage = 20;
   const skip = (page - 1) * threadsPerPage;
 
-  // Gọi CSDL để lấy cái Box (Node) hiện trường
-  const node = await prisma.node.findUnique({
-    where: { id: id },
-    include: { parent: true }
-  });
+  // Dùng bộ nhớ Cache siêu tốc để tiết kiệm RAM Database
+  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix||'none'}`;
+  let cachedData = await getCache(cacheKey);
+
+  // Gọi CSDL nếu chưa có Cache
+  let node = cachedData?.node;
+  if (!node) {
+      node = await prisma.node.findUnique({
+        where: { id: id },
+        include: { parent: true }
+      });
+  }
 
   if (!node) {
     return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: The requested forum could not be found.</div>;
@@ -78,33 +86,47 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   // Lấy danh sách Prefix đang có của Box này
-  const availablePrefixes = await prisma.threadPrefix.findMany({
-    where: { nodes: { some: { id } } }
-  });
+  let availablePrefixes = cachedData?.availablePrefixes;
+  if (!availablePrefixes) {
+      availablePrefixes = await prisma.threadPrefix.findMany({
+        where: { nodes: { some: { id } } }
+      });
+  }
 
   // Kéo Thread ra list (BUMPING FIX: Sắp xếp theo updatedAt)
-  const threadsDb = await prisma.thread.findMany({
-    where: whereCondition,
-    orderBy: { updatedAt: 'desc' },
-    skip: skip,
-    take: threadsPerPage,
-    include: {
-      author: true,
-      prefix: true,
-      posts: {
-        take: 1,
-        orderBy: { position: 'desc' },
-        include: { author: true }
-      }
-    }
-  });
+  let threadsDb = cachedData?.threadsDb;
+  if (!threadsDb) {
+      threadsDb = await prisma.thread.findMany({
+        where: whereCondition,
+        orderBy: { updatedAt: 'desc' },
+        skip: skip,
+        take: threadsPerPage,
+        include: {
+          author: true,
+          prefix: true,
+          posts: {
+            take: 1,
+            orderBy: { position: 'desc' },
+            include: { author: true }
+          }
+        }
+      });
+  }
 
   // Kéo Trending Content (Nhiều Reply nhất) cho Sidebar
-  const trendingThreads = await prisma.thread.findMany({
-    orderBy: { replyCount: 'desc' },
-    take: 5,
-    include: { author: true }
-  });
+  let trendingThreads = cachedData?.trendingThreads;
+  if (!trendingThreads) {
+      trendingThreads = await prisma.thread.findMany({
+        orderBy: { replyCount: 'desc' },
+        take: 5,
+        include: { author: true }
+      });
+  }
+
+  if (!cachedData) {
+      // Save full compiled data into Cache
+      await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads }, 10);
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">

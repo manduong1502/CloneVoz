@@ -8,6 +8,7 @@ import Modal from '@/components/ui/Modal';
 import { loginWithProvider, loginWithCredentials, handleLogOut } from '@/actions/authActions';
 import { markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/notificationActions';
 import ThemeToggle from '@/components/layout/ThemeToggle';
+import Pusher from 'pusher-js';
 
 const Header = ({ session, notifications = [], unreadCount = 0 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -19,17 +20,22 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
 
   useEffect(() => {
     if (!user) return;
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch('/api/poll');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.notifications) setLiveNotifications(data.notifications);
-          if (data.unreadCount !== undefined) setLiveUnreadCount(data.unreadCount);
-        }
-      } catch (e) {}
-    }, 10000); // 10 giây polling 1 lần cho lẹ
-    return () => clearInterval(interval);
+    
+    // Khởi tạo Pusher
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER,
+    });
+
+    const channel = pusher.subscribe(`user-${user.id}`);
+    channel.bind('new-notification', (data) => {
+      setLiveUnreadCount(prev => prev + 1);
+      setLiveNotifications(prev => [data, ...prev].slice(0, 10)); // Giữ 10 thông báo mới nhất
+    });
+
+    return () => {
+      pusher.unsubscribe(`user-${user.id}`);
+      pusher.disconnect();
+    };
   }, [user]);
 
   const handleMarkAllAsRead = async (e) => {
@@ -65,19 +71,19 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 {/* 🚀 Đổi Logo Ở Đây 🚀 */}
                 {/* Nếu anh có logo hình, hãy copy file logo.png vào thư mục public/ và bật thẻ img dưới này lên */}
                 {/* <img src="/logo.png" alt="Logo" className="h-8 object-contain" /> */}
-                <span className="bg-[var(--voz-surface)] text-[#185886] rounded-full p-1"><ShieldAlert size={20} /></span>
+                <span className="bg-[var(--voz-surface)] text-[var(--voz-text-strong)] rounded-full p-1"><ShieldAlert size={20} /></span>
                 <span className="font-extrabold text-[18px] text-white" style={{color: 'white'}}>DanOngThongMinh</span>
               </Link>
 
               {/* Desktop Nav */}
               <nav className="hidden md:flex ml-4 h-full items-end gap-1">
-                <Link href="/" className="bg-[var(--voz-accent)] text-[var(--voz-blue-dark)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-blue-dark)] hover:no-underline rounded-t-sm">
+                <Link href="/" className="bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm">
                   Diễn đàn
                 </Link>
-                <Link href="/whats-new" className="px-4 py-[14px] text-[15px] font-medium text-white/90 hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
+                <Link href="/whats-new" className="px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
                   Mới nhất
                 </Link>
-                <Link href="#" className="px-4 py-[14px] text-[15px] font-medium text-white/90 hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
+                <Link href="#" className="px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
                   Nội quy
                 </Link>
               </nav>
@@ -189,14 +195,14 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
         {/* Secondary Bar */}
         <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] min-h-[36px] items-center hidden md:flex text-[13px]">
            <div className="max-w-[1240px] px-4 mx-auto w-full">
-              <nav className="flex gap-4 text-[#185886] h-[36px]">
-                <Link href="/whats-new" className="hover:text-[#2574A9] flex items-center h-full border-b-[3px] border-transparent hover:border-[#2574A9]">Bài viết mới</Link>
+              <nav className="flex gap-4 text-[var(--voz-link)] h-[36px]">
+                <Link href="/whats-new" className="hover:text-[var(--voz-link-hover)] flex items-center h-full border-b-[3px] border-transparent hover:border-[var(--voz-link-hover)]">Bài viết mới</Link>
                 
                 <Dropdown
                   align="left"
                   width="200px"
                   trigger={(isOpen) => (
-                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Tìm chủ đề ▾</div>
+                    <div className="hover:text-[var(--voz-link-hover)] flex items-center h-full cursor-pointer">Tìm chủ đề ▾</div>
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
@@ -210,7 +216,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                   align="left"
                   width="200px"
                   trigger={(isOpen) => (
-                    <div className="hover:text-[#2574A9] flex items-center h-full cursor-pointer">Đang theo dõi ▾</div>
+                    <div className="hover:text-[var(--voz-link-hover)] flex items-center h-full cursor-pointer">Đang theo dõi ▾</div>
                   )}
                 >
                   <div className="flex flex-col text-[14px] text-[var(--voz-text)]">
@@ -219,7 +225,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                   </div>
                 </Dropdown>
 
-                <Link href="/search" className="hover:text-[#2574A9] flex items-center h-full">Tìm trong diễn đàn</Link>
+                <Link href="/search" className="hover:text-[var(--voz-link-hover)] flex items-center h-full">Tìm trong diễn đàn</Link>
                 <span className="text-gray-400 flex items-center h-full ml-auto cursor-not-allowed" title="Sắp ra mắt">Đánh dấu đã đọc</span>
               </nav>
            </div>

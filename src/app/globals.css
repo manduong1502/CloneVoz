@@ -17,7 +17,7 @@
   --voz-hover: #fafafa;
 }
 
-.dark {
+:root.dark {
   /* TỐI (Dark Mode) */
   --voz-blue-dark: #1a4260;
   --voz-blue-light: #3884b2;
@@ -25,11 +25,11 @@
   --voz-surface: #2d2d2d;
   --voz-border: #444;
   --voz-border-light: #3a3a3a;
-  --voz-text: #d0d0d0;
-  --voz-text-strong: #ffffff;
+  --voz-text: #b3b3b3;
+  --voz-text-strong: #e4e4e4;
   --voz-text-muted: #8c8c8c;
-  --voz-link: #66b2ff;
-  --voz-link-hover: #99ccff;
+  --voz-link: #e4e4e4;
+  --voz-link-hover: #ffffff;
   --voz-accent: #333333; 
   --voz-hover: #3a3a3a;
 }

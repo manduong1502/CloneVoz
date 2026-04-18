@@ -2,6 +2,8 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { pusherServer } from '@/lib/pusher.server';
+import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
 import { checkRateLimit } from '@/lib/antispam';
 
@@ -38,42 +40,54 @@ export async function createReply(threadId, formData) {
     }
   });
 
-  // PHÂN TÍCH VÀ GỬI THÔNG BÁO (Mentions / Quote)
+  // PHÂN TÍCH VÀ GỬI THÔNG BÁO (Mentions / Quote / Watched Thread / Thread Author)
   const mentionedUsernames = [...content.matchAll(/@([a-zA-Z0-9_]+)/g)].map(m => m[1]);
   const uniqueMentions = [...new Set(mentionedUsernames)].filter(name => name !== session.user.username);
   
+  const mentionedUserIds = [];
   if (uniqueMentions.length > 0) {
-    const usersToNotify = await prisma.user.findMany({
-      where: { username: { in: uniqueMentions } }
-    });
-    
-    if (usersToNotify.length > 0) {
-      await prisma.notification.createMany({
-        data: usersToNotify.map(u => ({
-          userId: u.id,
-          senderId: session.user.id,
-          type: "quote",
-          content: `${session.user.name} đã nhắc đến bạn trong một bài viết.`,
-          link: `/thread/${threadId}#post-${newPost.id}`
-        }))
-      });
-    }
+    const usersToNotify = await prisma.user.findMany({ where: { username: { in: uniqueMentions } } });
+    usersToNotify.forEach(u => mentionedUserIds.push(u.id));
   }
 
-  // Thông báo cho chủ Thread (nếu không phải là người đang reply)
-  // const threadAuthorCheck = ... (Đã lấy ở trên rồi, đó là biến thread)
-  if (thread && thread.authorId !== session.user.id) {
-    // Không thông báo double nếu đã bị mention
-    const isTargetMentioned = uniqueMentions.length > 0; // Đang lười check id, tạm skip logic double nghen
-    await prisma.notification.create({
-      data: {
-         userId: thread.authorId,
-         senderId: session.user.id,
-         type: "reply",
-         content: `${session.user.name} đã bình luận vào bài viết của bạn.`,
-         link: `/thread/${threadId}#post-${newPost.id}`
+  // Lấy người theo dõi chủ đề
+  const watchers = await prisma.bookmark.findMany({ where: { threadId } });
+  
+  const userIdsToNotify = new Set();
+  mentionedUserIds.forEach(id => userIdsToNotify.add(id));
+  if (thread.authorId) userIdsToNotify.add(thread.authorId);
+  watchers.forEach(w => userIdsToNotify.add(w.userId));
+  
+  // Xóa chính mình ra khỏi danh sách nhận
+  userIdsToNotify.delete(session.user.id);
+
+  // Bắn thông báo và Pusher
+  for (const uid of userIdsToNotify) {
+      let type = "reply";
+      let text = `${session.user.name} đã bình luận vào bài viết bạn đang theo dõi.`;
+      
+      if (uid === thread.authorId) {
+          text = `${session.user.name} đã bình luận vào bài viết của bạn.`;
       }
-    });
+      if (mentionedUserIds.includes(uid)) {
+          type = "quote";
+          text = `${session.user.name} đã nhắc đến bạn trong một bài viết.`;
+      }
+      
+      const notif = await prisma.notification.create({
+          data: {
+             userId: uid,
+             senderId: session.user.id,
+             type,
+             content: text,
+             link: `/thread/${threadId}#post-${newPost.id}`
+          },
+          include: { sender: { select: { username: true, avatar: true } } }
+      });
+      
+      if (pusherServer) {
+         pusherServer.trigger(`user-${uid}`, 'new-notification', notif).catch(e => console.error(e));
+      }
   }
 
   // Cập nhật số liệu Thread
@@ -87,6 +101,10 @@ export async function createReply(threadId, formData) {
     where: { id: session.user.id },
     data: { messageCount: { increment: 1 } }
   });
+
+  // Xóa rác Cache để Data mới nổi lên
+  await deleteCache('voz_homepage_data');
+  await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
 
   revalidatePath(`/thread/${threadId}`);
   revalidatePath(`/`);
