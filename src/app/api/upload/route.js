@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
+import { v2 as cloudinary } from 'cloudinary';
+
+// Cấu hình Cloudinary (Yêu cầu phải có 3 khóa trong file .env)
+cloudinary.config({ 
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET 
+});
 
 export async function POST(request) {
   try {
@@ -8,31 +14,28 @@ export async function POST(request) {
     const file = formData.get('file');
 
     if (!file) {
-      return NextResponse.json({ error: 'No file received.' }, { status: 400 });
+      return NextResponse.json({ error: 'Không nhận được file.' }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
     
-    // Đảm bảo tên file an toàn
-    const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
-    
-    // Thư mục lưu trữ: public/uploads
-    const uploadDir = join(process.cwd(), 'public', 'uploads');
-    
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e) {}
-
-    // Đường dẫn đầy đủ để ghi
-    const filepath = join(uploadDir, filename);
-    await writeFile(filepath, buffer);
-
-    // Đường dẫn trả về Front-end
-    const publicUrl = `/uploads/${filename}`;
+    // Gửi thẳng Buffer lên Cloudinary thông qua Stream
+    const publicUrl = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: "diendan_danong" }, // Tên thư mục chứa ảnh trên Cloudinary
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result.secure_url); // Lấy link ổ khóa xanh HTTPS của ảnh
+        }
+      );
+      
+      // Bơm dữ liệu thô vào ống hút để tải lên
+      uploadStream.end(buffer);
+    });
 
     return NextResponse.json({ url: publicUrl });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json({ error: 'Failed to upload.' }, { status: 500 });
+    return NextResponse.json({ error: 'Tải ảnh lên thư viện Đám mây thất bại.' }, { status: 500 });
   }
 }
