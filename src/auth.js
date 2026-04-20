@@ -8,11 +8,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: {
     ...PrismaAdapter(prisma),
     createUser: async (data) => {
-      let baseUsername = data.name || data.email.split('@')[0];
+      // Dùng email prefix làm username mặc định thay vì tên Google
+      // VD: manduong1502@gmail.com -> username: manduong1502
+      // Email đã là @unique, prefix của nó cũng gần như không thể trùng
+      let baseUsername = data.email.split('@')[0].toLowerCase().replace(/[^a-z0-9_]/g, '');
+      if (!baseUsername) baseUsername = 'user';
       let finalUsername = baseUsername;
       let counter = 1;
-      
-      // Kiểm tra xem Username đã có ai xí chưa. Nếu có thì thêm hậu tố số vào đuôi
+
       while (await prisma.user.findUnique({ where: { username: finalUsername } })) {
          finalUsername = `${baseUsername}${counter}`;
          counter++;
