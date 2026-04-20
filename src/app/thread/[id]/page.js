@@ -11,7 +11,7 @@ import ReportModal from '@/components/thread/ReportModal';
 import DeletePostButton from '@/components/thread/DeletePostButton';
 import LikeButton from '@/components/thread/LikeButton';
 import Pagination from '@/components/ui/Pagination';
-import DOMPurify from 'isomorphic-dompurify';
+
 import { formatRelativeTime } from '@/lib/formatTime';
 
 export async function generateMetadata({ params }) {
@@ -179,7 +179,7 @@ export default async function ThreadPage({ params, searchParams }) {
                  <div className="flex gap-3"><Link href={`#post-${post.id}`} className="hover:underline">#{post.position}</Link></div>
                </div>
                
-               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} />
+               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: post.content }} />
                
                {post.author.signature && (
                  <div className="mx-4 pb-2 text-[12px] text-[var(--voz-text-muted)] border-t border-[var(--voz-border-light)] pt-2 italic">

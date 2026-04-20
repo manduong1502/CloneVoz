@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import EditProfileModal from '@/components/profile/EditProfileModal';
-import DOMPurify from 'isomorphic-dompurify';
+
 import Pagination from '@/components/ui/Pagination';
 import { formatRelativeTime } from '@/lib/formatTime';
 
@@ -127,7 +127,7 @@ export default async function ProfilePage({ params, searchParams }) {
             <div className="voz-card overflow-hidden">
               <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Chữ ký</h3>
               <div className="bg-[var(--voz-surface)] p-3 text-[12px] text-[var(--voz-text-muted)] italic border-l-[3px] border-[#2574A9] bg-[var(--voz-accent)]">
-                 <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(targetUser.signature) }} />
+                 <div dangerouslySetInnerHTML={{ __html: targetUser.signature }} />
               </div>
             </div>
           )}

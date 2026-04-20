@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import Pagination from '@/components/ui/Pagination';
-import DOMPurify from 'isomorphic-dompurify';
+
 
 export const metadata = {
   title: 'Kết quả tìm kiếm | DanOngThongMinh',
