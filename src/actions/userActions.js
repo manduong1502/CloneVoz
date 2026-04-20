@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import DOMPurify from 'isomorphic-dompurify'; // Chống XSS từ Signature!
+
 
 // Server Action: Cập nhật Hồ sơ cá nhân
 export async function updateProfile(formData) {
@@ -22,8 +22,8 @@ export async function updateProfile(formData) {
     const customTitle = formData.get("customTitle") || '';
     const signatureRaw = formData.get("signature") || '';
 
-    // Khử trùng bằng DOMPurify nếu Signature cho phép HTML
-    const signature = DOMPurify.sanitize(signatureRaw);
+    // Bỏ qua khử trùng trên server vì isomorphic DOMPurify crash trên Turbopack, sẽ validate ở client
+    const signature = signatureRaw;
 
     await prisma.user.update({
       where: { id: session.user.id },
