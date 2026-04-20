@@ -1,34 +1,46 @@
-import Redis from 'ioredis';
+let redis = null;
 
-// Cấu hình Redis từ Biến Môi Trường (Mặc định local port 6379)
-const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+// Khởi tạo Redis lazily - tránh crash ngay khi module được import
+function getRedisClient() {
+  if (redis) return redis;
+  
+  try {
+    // Dùng require thay vì import để tránh xung đột ESM/CJS với ioredis
+    const { default: Redis } = require('ioredis');
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    
+    redis = new Redis(redisUrl, {
+      maxRetriesPerRequest: 1,
+      retryStrategy(times) {
+        if (times > 2) return null;
+        return 500;
+      },
+      lazyConnect: true,
+      enableOfflineQueue: false,
+    });
 
-// Khởi tạo có giới hạn retry để tránh treo dính chấu trên Local nếu ko bật Redis
-export const redis = new Redis(redisUrl, {
-  maxRetriesPerRequest: 1, // Kém ổn định thì bỏ qua luôn (fallback)
-  retryStrategy(times) {
-    // Chỉ thử kết nối lại 3 lần, mỗi lần cách nhau 1s. Sau đó ngắt
-    if (times > 3) return null;
-    return 1000;
-  },
-  showFriendlyErrorStack: true
-});
+    redis.on('error', () => {
+      // Tắt tiếng ồn - Redis lỗi thì hệ thống tự fall-back xuống DB
+    });
 
-// Chặn tiếng ồn ném lỗi ra Terminal nếu chạy ở môi trường không có Redis (như lúc DEV)
-redis.on('error', (err) => {
-  // Console log ra thì rườm rà. Lờ đi để hệ thống tự fall-back xuống CSDL.
-  // console.warn('Redis connection failed. Bypassing caching system...');
-});
+    return redis;
+  } catch (e) {
+    // Nếu ioredis không load được, trả null để hệ thống bypass
+    return null;
+  }
+}
 
 /**
- * Hàm lấy Cache An Toàn: Nếu Redis sập, trả về undefined để ứng dụng ép chạy xuống Database.
+ * Lấy Cache an toàn - nếu Redis không hoạt động thì trả null
  */
 export async function getCache(key) {
   try {
-    // Cài đặt Circuit Breaker: Ép Redis phải trả lời trong vòng 2 giây, nếu không tự động Cut-off!
+    const client = getRedisClient();
+    if (!client) return null;
+
     const data = await Promise.race([
-      redis.get(key),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis Timeout')), 2000))
+      client.get(key),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis Timeout')), 1500))
     ]);
     return data ? JSON.parse(data) : null;
   } catch (error) {
@@ -37,26 +49,30 @@ export async function getCache(key) {
 }
 
 /**
- * Hàm Set Cache An Toàn: Lỗi thì dẹp, khô xương máu. 
- * @param {string} key 
- * @param {any} data 
- * @param {number} ttl Thời gian sống (giây)
+ * Set Cache an toàn - lỗi thì bỏ qua
  */
 export async function setCache(key, data, ttlSeconds = 60) {
   try {
-    await redis.set(key, JSON.stringify(data), 'EX', ttlSeconds);
+    const client = getRedisClient();
+    if (!client) return;
+    await Promise.race([
+      client.set(key, JSON.stringify(data), 'EX', ttlSeconds),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis Timeout')), 1500))
+    ]);
   } catch (error) {
-    // Bỏ qua lỗi
+    // Bỏ qua
   }
 }
 
 /**
- * Xóa Cache thủ công khi có người Đăng bài
+ * Xóa Cache
  */
 export async function deleteCache(key) {
   try {
-    await redis.del(key);
+    const client = getRedisClient();
+    if (!client) return;
+    await client.del(key);
   } catch (error) {
-    // Bỏ qua lỗi
+    // Bỏ qua
   }
 }
