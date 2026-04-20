@@ -8,11 +8,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: {
     ...PrismaAdapter(prisma),
     createUser: async (data) => {
+      let baseUsername = data.name || data.email.split('@')[0];
+      let finalUsername = baseUsername;
+      let counter = 1;
+      
+      // Kiểm tra xem Username đã có ai xí chưa. Nếu có thì thêm hậu tố số vào đuôi
+      while (await prisma.user.findUnique({ where: { username: finalUsername } })) {
+         finalUsername = `${baseUsername}${counter}`;
+         counter++;
+      }
+
       return prisma.user.create({
         data: {
           email: data.email,
           emailVerified: data.emailVerified,
-          username: data.name || data.email.split('@')[0],
+          username: finalUsername,
           avatar: data.image || null,
         }
       });
