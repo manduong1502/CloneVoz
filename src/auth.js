@@ -20,6 +20,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   secret: process.env.AUTH_SECRET || "default_super_secret_dev_key",
   session: { strategy: "jwt" },
+  trustHost: true,
   providers: [
     Google(),
     CredentialsProvider({
