@@ -2,7 +2,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
-import GlobalChat from "@/components/chat/GlobalChat";
+import GlobalChatbox from "@/components/layout/GlobalChatbox";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
@@ -47,7 +47,7 @@ export default async function RootLayout({ children }) {
             {children}
           </main>
           <Footer />
-          <GlobalChat />
+          <GlobalChatbox session={session} />
         </ThemeProvider>
       </body>
     </html>

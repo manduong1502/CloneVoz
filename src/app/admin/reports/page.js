@@ -10,6 +10,9 @@ export default async function AdminReportsPage() {
       reporter: { select: { username: true } },
       post: {
         include: { author: { select: { id: true, username: true } }, thread: { select: { title: true } } }
+      },
+      shoutboxMessage: {
+        include: { author: { select: { id: true, username: true } } }
       }
     },
     orderBy: { createdAt: 'desc' }
@@ -17,11 +20,11 @@ export default async function AdminReportsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản lý Báo Cáo (Reports)</h1>
+      <h1 className="text-2xl font-bold mb-6 text-[var(--voz-text)]">Quản lý Báo Cáo (Reports)</h1>
 
       <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
         <table className="w-full text-left text-sm text-[var(--voz-text)]">
-          <thead className="bg-gray-50 border-b border-[var(--voz-border)]">
+          <thead className="bg-[var(--voz-hover)] border-b border-[var(--voz-border)]">
             <tr>
               <th className="px-4 py-3 font-medium">Bị báo cáo</th>
               <th className="px-4 py-3 font-medium">Người gửi</th>
@@ -37,17 +40,24 @@ export default async function AdminReportsPage() {
             )}
             
             {pendingReports.map(report => (
-              <tr key={report.id} className="border-b border-gray-100 last:border-0 hover:bg-[var(--voz-hover)]">
+              <tr key={report.id} className="border-b border-[var(--voz-border)] last:border-0 hover:bg-[var(--voz-hover)]">
                 <td className="px-4 py-3">
                   {report.post ? (
                     <div className="flex flex-col">
                       <span className="font-bold text-red-600">{report.post.author?.username || 'Unknown'}</span>
-                      <Link href={`/thread/${report.post.threadId}#post-${report.postId}`} target="_blank" className="text-blue-600 hover:underline text-xs">
-                         Xem nội dung vi phạm
+                      <Link href={`/thread/${report.post.threadId}#post-${report.postId}`} target="_blank" className="text-blue-600 hover:underline text-[12px]">
+                         Nội dung: Trả lời diễn đàn
                       </Link>
                     </div>
+                  ) : report.shoutboxMessage ? (
+                    <div className="flex flex-col">
+                      <span className="font-bold text-red-600">{report.shoutboxMessage.author?.username || 'Unknown'}</span>
+                      <span className="text-purple-600 text-[12px] break-all">
+                         Chatbox: "{report.shoutboxMessage.content}"
+                      </span>
+                    </div>
                   ) : (
-                    <span className="text-gray-400">Không tìm thấy bài</span>
+                    <span className="text-[var(--voz-text-muted)]">Không rõ</span>
                   )}
                 </td>
                 
@@ -56,7 +66,7 @@ export default async function AdminReportsPage() {
                 </td>
 
                 <td className="px-4 py-3 max-w-[300px]">
-                  <p className="line-clamp-2 text-gray-800" title={report.reason}>{report.reason}</p>
+                  <p className="line-clamp-2 text-[var(--voz-text)]" title={report.reason}>{report.reason}</p>
                 </td>
 
                 <td className="px-4 py-3 w-[200px]">
@@ -64,11 +74,12 @@ export default async function AdminReportsPage() {
                     {/* Hành động Phạt */}
                     <form action={async () => {
                        'use server';
+                       const targetUserId = report.post?.author?.id || report.shoutboxMessage?.author?.id;
                        await resolveReportAndWarn({ 
                          reportId: report.id, 
                          warningReason: report.reason, 
                          warningPoints: 1, 
-                         targetUserId: report.post?.author?.id 
+                         targetUserId: targetUserId 
                        });
                     }}>
                       <button className="bg-red-600 text-white px-3 py-1 rounded w-full text-xs font-bold hover:bg-red-700 transition">

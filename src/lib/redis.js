@@ -25,7 +25,11 @@ redis.on('error', (err) => {
  */
 export async function getCache(key) {
   try {
-    const data = await redis.get(key);
+    // Cài đặt Circuit Breaker: Ép Redis phải trả lời trong vòng 2 giây, nếu không tự động Cut-off!
+    const data = await Promise.race([
+      redis.get(key),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Redis Timeout')), 2000))
+    ]);
     return data ? JSON.parse(data) : null;
   } catch (error) {
     return null;

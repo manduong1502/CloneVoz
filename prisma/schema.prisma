@@ -51,6 +51,8 @@ model User {
   bookmarks         Bookmark[]
   conversations     Conversation[] @relation("ConversationParticipants")
   messages          ConversationMessage[]
+  shouts            ShoutboxMessage[] @relation("UserShouts")
+  shoutReactions    ShoutboxReaction[] @relation("UserShoutReactions")
 
   accounts          Account[]
   sessions          Session[]
@@ -249,6 +251,34 @@ model ConversationMessage {
   createdAt      DateTime     @default(now())
 }
 
+model ShoutboxMessage {
+  id        String   @id @default(cuid())
+  content   String
+  
+  authorId  String
+  author    User     @relation("UserShouts", fields: [authorId], references: [id])
+
+  reports   Report[] @relation("ReportedShouts")
+  reactions ShoutboxReaction[] @relation("ShoutReactions")
+
+  createdAt DateTime @default(now())
+}
+
+model ShoutboxReaction {
+  id                String          @id @default(cuid())
+  type              String          // "Like", "Haha", "Love", "Sad", "Angry"
+  
+  shoutboxMessageId String
+  shoutboxMessage   ShoutboxMessage @relation("ShoutReactions", fields: [shoutboxMessageId], references: [id], onDelete: Cascade)
+  
+  userId            String
+  user              User            @relation("UserShoutReactions", fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt         DateTime        @default(now())
+
+  @@unique([shoutboxMessageId, userId]) // 1 user = 1 reaction per shout
+}
+
 // ----------------------------------------------------------------------------
 // PHASE 3: REPORTS & WARNINGS
 // ----------------------------------------------------------------------------
@@ -261,11 +291,13 @@ model Report {
   reporterId  String
   reporter    User     @relation("UserReports", fields: [reporterId], references: [id])
   
-  // Đối tượng bị report (Thread or Post)
+  // Đối tượng bị report (Thread, Post, hoặc ShoutboxMessage)
   postId      String?
-  post        Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post        Post?            @relation(fields: [postId], references: [id], onDelete: Cascade)
   threadId    String?
-  thread      Thread?  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread      Thread?          @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  shoutboxMessageId String?
+  shoutboxMessage   ShoutboxMessage? @relation("ReportedShouts", fields: [shoutboxMessageId], references: [id], onDelete: Cascade)
 
   assignedToId String? // Admin/Mod nào đang xử lý
   assignedTo   User?   @relation("ModAssignedReports", fields: [assignedToId], references: [id])

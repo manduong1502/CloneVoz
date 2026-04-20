@@ -27,6 +27,44 @@ export async function loginWithCredentials(formData) {
   }
 }
 
+export async function registerWithCredentials(formData) {
+  const username = formData.get("username");
+  const email = formData.get("email");
+  // Bỏ qua password vì đang demo không mã hóa
+
+  if (!username || !email) return { error: "Nhập đủ Username và Email" };
+
+  const { prisma } = require('@/lib/prisma');
+  
+  const existUser = await prisma.user.findFirst({
+     where: { 
+       OR: [ { username: username }, { email: email } ]
+     }
+  });
+
+  if (existUser) return { error: "Username hoặc Email đã tồn tại!" };
+
+  await prisma.user.create({
+    data: {
+      username,
+      email,
+      name: username
+    }
+  });
+
+  // Tự Login luôn sau khi đăng ký
+  try {
+    await signIn("credentials", {
+      username,
+      password: "123",
+      redirect: false
+    });
+    return { success: true };
+  } catch (error) {
+    return { error: "Đăng ký thành công nhưng tự động đăng nhập lỗi." }
+  }
+}
+
 export async function handleLogOut() {
   await signOut({ redirectTo: "/" });
 }

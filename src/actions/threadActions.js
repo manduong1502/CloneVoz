@@ -65,20 +65,35 @@ export async function createThread(nodeId, formData) {
   
   const nodeName = await prisma.node.findUnique({ where: { id: nodeId }, select: { title: true }});
   
+  const notificationsData = [];
+  const pusherPromises = [];
+
   for (const uid of watcherIds) {
-      const notif = await prisma.notification.create({
-          data: {
-             userId: uid,
-             senderId: session.user.id,
-             type: "reply",
-             content: `${session.user.name} đã tạo một chủ đề mới trong chuyên mục ${nodeName?.title || 'bạn đang theo dõi'}.`,
-             link: `/thread/${newThread.id}`
-          },
-          include: { sender: { select: { username: true, avatar: true } } }
+      notificationsData.push({
+          userId: uid,
+          senderId: session.user.id,
+          type: "reply",
+          content: `${session.user.name} đã tạo một chủ đề mới trong chuyên mục ${nodeName?.title || 'bạn đang theo dõi'}.`,
+          link: `/thread/${newThread.id}`
       });
-      
+  }
+
+  if (notificationsData.length > 0) {
+      // Lưu toàn bộ notification vào DB trong 1 Query
+      await prisma.notification.createMany({
+          data: notificationsData
+      });
+
       if (pusherServer) {
-         pusherServer.trigger(`user-${uid}`, 'new-notification', notif).catch(e => console.error(e));
+         notificationsData.forEach(notif => {
+             const payload = {
+                 ...notif, 
+                 id: Math.random().toString(36).substr(2, 9), 
+                 sender: { username: session.user.username, avatar: session.user.avatar || null }
+             };
+             pusherPromises.push(pusherServer.trigger(`user-${notif.userId}`, 'new-notification', payload).catch(e => {}));
+         });
+         Promise.all(pusherPromises).catch(console.error);
       }
   }
 

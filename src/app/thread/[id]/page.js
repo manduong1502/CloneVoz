@@ -8,6 +8,8 @@ import ThreadReplyBox from '@/components/thread/ThreadReplyBox';
 import QuoteButton from '@/components/thread/QuoteButton';
 import WatchButton from '@/components/thread/WatchButton';
 import ReportModal from '@/components/thread/ReportModal';
+import DeletePostButton from '@/components/thread/DeletePostButton';
+import LikeButton from '@/components/thread/LikeButton';
 import Pagination from '@/components/ui/Pagination';
 import DOMPurify from 'isomorphic-dompurify';
 import { formatRelativeTime } from '@/lib/formatTime';
@@ -71,7 +73,7 @@ export default async function ThreadPage({ params, searchParams }) {
         orderBy: { position: 'asc' },
         skip: skip,
         take: postsPerPage,
-        include: { author: true }
+        include: { author: true, reactions: true }
       }
     }
   });
@@ -153,9 +155,13 @@ export default async function ThreadPage({ params, searchParams }) {
             
             {/* User Block (Left Side) */}
             <div className="bg-[var(--voz-accent)] md:w-[140px] lg:w-[150px] shrink-0 p-3 md:border-r border-[var(--voz-border)] flex flex-row md:flex-col items-center gap-4 md:gap-3">
-               <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`} className="w-[48px] h-[48px] md:w-full md:aspect-square md:h-auto rounded-sm shrink-0 border border-black/10 object-cover" />
+               <Link href={`/profile/${post.author.username}`} className="shrink-0 md:w-full md:aspect-square block">
+                 <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`} className="w-[48px] h-[48px] md:w-full md:h-full rounded-sm border border-black/10 object-cover" />
+               </Link>
                <div className="flex-1 text-left md:text-center w-full">
-                  <div className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words pb-1">{post.author.username}</div>
+                  <Link href={`/profile/${post.author.username}`} className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words block pb-1">
+                    {post.author.username}
+                  </Link>
                   <div className="text-[11px] text-[var(--voz-link)] md:mb-2">{post.author.customTitle || 'Member'}</div>
                   
                   <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
@@ -182,12 +188,15 @@ export default async function ThreadPage({ params, searchParams }) {
                )}
 
                <div className="bg-[var(--voz-accent)] px-4 py-2 border-t border-[var(--voz-border-light)] flex flex-col md:flex-row md:justify-between md:items-center gap-2">
-                 <div className="text-[12px] text-[var(--voz-link)] flex items-center gap-1 group cursor-pointer hover:underline">
-                    <div className="bg-[#2574A9] text-white rounded-full p-[2px]"><ThumbsUp size={12}/></div>
-                    <span>{0} người thích</span>
-                 </div>
+                 <LikeButton 
+                   postId={post.id} 
+                   initialLikeCount={post.reactions.filter(r => r.type === 'Like').length}
+                   initialDislikeCount={post.reactions.filter(r => r.type === 'Dislike').length}
+                   initialReaction={session?.user ? post.reactions.find(r => r.userId === session.user.id)?.type || null : null}
+                 />
                  
                  <div className="flex gap-3 text-[12px] text-[var(--voz-text-muted)]">
+                    {session?.user?.isAdmin && <DeletePostButton postId={post.id} threadId={id} isFirstPost={post.position === 1} />}
                     {session?.user && <ReportModal postId={post.id} threadId={id} />}
                     <QuoteButton username={post.author.username} content={post.content} />
                  </div>

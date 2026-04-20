@@ -8,6 +8,8 @@ import { Settings } from 'lucide-react';
 export default function EditProfileModal({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(user.avatar || '');
+  const [isUploading, setIsUploading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -22,6 +24,29 @@ export default function EditProfileModal({ user }) {
       alert(res?.error || "Có lỗi xảy ra");
     }
   }
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setIsUploading(true);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.url) {
+        setAvatarUrl(data.url); // Tự động điền link vào ô input
+      } else {
+        alert("Upload thất bại!");
+      }
+    } catch (err) {
+      alert("Lỗi kết nối máy chủ Cloudinary.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   return (
     <>
@@ -39,14 +64,21 @@ export default function EditProfileModal({ user }) {
             
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-[13px] text-[var(--voz-text)]">Link Ảnh Đại Diện (Avatar URL)</label>
-              <input 
-                name="avatarUrl" 
-                type="url" 
-                defaultValue={user.avatar || ''} 
-                placeholder="https://imgur.com/your-image.png" 
-                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
-              />
-              <span className="text-[11px] text-[var(--voz-text-muted)]">Chỉ nhận link hình ảnh trực tiếp (đuôi .jpg, .png...)</span>
+              <div className="flex gap-2 items-center">
+                 <input 
+                   name="avatarUrl" 
+                   type="url" 
+                   value={avatarUrl}
+                   onChange={(e) => setAvatarUrl(e.target.value)}
+                   placeholder="https://imgur.com/your-image.png" 
+                   className="flex-1 border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+                 />
+                 <label className="voz-button cursor-pointer py-2 px-3 flex-shrink-0 text-center opacity-90 hover:opacity-100 min-w-[120px]">
+                    {isUploading ? "Đang lên mây..." : "Tải ảnh lên"}
+                    <input type="file" accept="image/*" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
+                 </label>
+              </div>
+              <span className="text-[11px] text-[var(--voz-text-muted)]">Chỉ nhận link hình ảnh trực tiếp hoặc tải ảnh từ máy tính.</span>
             </div>
 
             <div className="flex flex-col gap-1">
@@ -56,7 +88,7 @@ export default function EditProfileModal({ user }) {
                 type="text" 
                 defaultValue={user.customTitle || ''} 
                 placeholder="Ví dụ: Đại gia chân đất, Dân chơi phố huyện..." 
-                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+                className="border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
               />
             </div>
 
@@ -67,7 +99,7 @@ export default function EditProfileModal({ user }) {
                 rows="3"
                 defaultValue={user.signature || ''} 
                 placeholder="Mọi nội dung dưới này sẽ hiển thị dưới mỗi bài cmt của bạn." 
-                className="border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+                className="border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
               />
                <span className="text-[11px] text-[var(--voz-text-muted)] italic">Hỗ trợ mã HTML cơ bản. Đã được bọc khử trùng XSS.</span>
             </div>

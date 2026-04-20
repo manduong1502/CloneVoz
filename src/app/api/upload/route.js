@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { v2 as cloudinary } from 'cloudinary';
+import { auth } from '@/auth';
 
 // Cấu hình Cloudinary (Yêu cầu phải có 3 khóa trong file .env)
 cloudinary.config({ 
@@ -10,6 +11,11 @@ cloudinary.config({
 
 export async function POST(request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+       return NextResponse.json({ error: 'Không có quyền truy cập.' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const file = formData.get('file');
 

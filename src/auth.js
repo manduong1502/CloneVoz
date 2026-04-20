@@ -53,15 +53,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (token?.sub) {
         session.user.id = token.sub;
         
-        // Fetch real username and avatar from database
+        // Fetch real username, avatar and userGroups from database
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
-          select: { username: true, avatar: true }
+          select: { 
+            username: true, 
+            avatar: true,
+            userGroups: {
+               select: { name: true }
+            }
+          }
         });
         
         if (dbUser) {
           session.user.name = dbUser.username;
           session.user.image = dbUser.avatar;
+          session.user.isAdmin = dbUser.userGroups.some(g => g.name === 'Admin');
         }
       }
       return session;

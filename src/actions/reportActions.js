@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 
-export async function submitReport({ reason, postId, threadId }) {
+export async function submitReport({ reason, postId, threadId, shoutboxMessageId }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Vui lòng đăng nhập để gửi báo cáo.");
   if (!reason || reason.trim() === "") throw new Error("Lý do không được để trống.");
-  if (!postId && !threadId) throw new Error("Lỗi: Không tìm thấy đối tượng báo cáo.");
+  if (!postId && !threadId && !shoutboxMessageId) throw new Error("Lỗi: Không tìm thấy đối tượng báo cáo.");
 
   // Check if already reported and pending
   const existingReport = await prisma.report.findFirst({
@@ -15,6 +15,7 @@ export async function submitReport({ reason, postId, threadId }) {
         reporterId: session.user.id,
         postId: postId || null,
         threadId: threadId || null,
+        shoutboxMessageId: shoutboxMessageId || null,
         status: "pending"
      }
   });
@@ -28,7 +29,8 @@ export async function submitReport({ reason, postId, threadId }) {
       reason,
       reporterId: session.user.id,
       postId: postId || null,
-      threadId: threadId || null
+      threadId: threadId || null,
+      shoutboxMessageId: shoutboxMessageId || null
     }
   });
 

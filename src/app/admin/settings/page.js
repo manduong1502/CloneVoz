@@ -27,11 +27,11 @@ export default async function AdminSettings() {
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-semibold text-gray-800">Options (Global Settings)</h1>
+        <h1 className="text-2xl font-semibold text-[var(--voz-text)]">Options (Global Settings)</h1>
         <p className="text-sm text-[var(--voz-text-muted)] mt-1">Configure global site variables from the database.</p>
       </div>
       
-      <form action={updateSettings} className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-gray-100 p-6 flex flex-col gap-6">
+      <form action={updateSettings} className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-6 flex flex-col gap-6">
          
          <div className="flex flex-col gap-2">
             <label className="font-semibold text-sm text-[var(--voz-text)]">Site Title</label>
@@ -40,7 +40,7 @@ export default async function AdminSettings() {
               type="text" 
               name="setting_site_title" 
               defaultValue={settingsMap['site_title'] || ''} 
-              className="border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="border border-[var(--voz-border)] bg-[var(--voz-bg)] text-[var(--voz-text)] rounded-md p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             />
          </div>
 
@@ -50,11 +50,11 @@ export default async function AdminSettings() {
             <textarea 
               name="setting_site_description" 
               defaultValue={settingsMap['site_description'] || ''} 
-              className="border border-gray-300 rounded-md p-2 h-24 resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+              className="border border-[var(--voz-border)] bg-[var(--voz-bg)] text-[var(--voz-text)] rounded-md p-2 h-24 resize-y focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
             ></textarea>
          </div>
 
-         <div className="border-t border-gray-100 pt-5 mt-2">
+         <div className="border-t border-[var(--voz-border)] pt-5 mt-2">
             <button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-6 rounded-md shadow-sm transition">
                Save changes
             </button>

@@ -17,7 +17,7 @@ export default function Dropdown({ trigger, children, align = 'left', width = 'a
   }, []);
 
   return (
-    <div className="relative inline-block text-left" ref={dropdownRef}>
+    <div className="relative inline-block text-left h-full" ref={dropdownRef}>
       <div 
         onClick={() => setIsOpen(!isOpen)} 
         className="cursor-pointer h-full flex items-center"

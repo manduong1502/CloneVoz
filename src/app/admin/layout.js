@@ -2,12 +2,19 @@ import Link from 'next/link';
 import { Home, LayoutList, Users, Settings, Activity, Flag } from 'lucide-react';
 import { Inter } from 'next/font/google';
 import '../globals.css';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
-export default function AdminLayout({ children }) {
+export default async function AdminLayout({ children }) {
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
+    redirect('/');
+  }
+
   return (
-    <div className="fixed inset-0 z-[9999] bg-gray-50 text-gray-800 flex overflow-hidden font-sans">
+    <div className="fixed inset-0 z-[9999] bg-[var(--voz-bg)] text-[var(--voz-text)] flex overflow-hidden font-sans">
       {/* Sidebar */}
       <aside className="w-64 bg-[#1e293b] text-slate-300 flex flex-col pt-4 shrink-0">
          <div className="px-6 mb-8">
@@ -41,7 +48,7 @@ export default function AdminLayout({ children }) {
         {/* Main Area */}
         <div className="flex-1 flex flex-col">
           <header className="h-[60px] bg-[var(--voz-surface)] border-b border-[var(--voz-border)] px-6 flex justify-between items-center shadow-sm">
-             <div className="font-semibold text-gray-600">Administrator Control Panel</div>
+             <div className="font-semibold text-[var(--voz-text)]">Administrator Control Panel</div>
              <div className="flex items-center gap-4 text-sm font-medium">
                 <Link href="/" className="text-blue-600 hover:underline">Exit to Forum</Link>
                 <div className="flex items-center gap-2">
