@@ -81,7 +81,7 @@ export default async function ConversationsPage() {
                     <div className="hidden sm:flex flex-col items-end w-[150px] shrink-0 min-w-0 text-[12px]">
                        {lastMsg ? (
                          <>
-                           <div className="text-[var(--voz-text-strong)] whitespace-nowrap">{lastMsg.createdAt.toLocaleString()}</div>
+                           <div className="text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(lastMsg.createdAt).toLocaleString('vi-VN')}</div>
                            <div className="text-[var(--voz-text-muted)] whitespace-nowrap">{lastMsg.author.username}</div>
                          </>
                        ) : (

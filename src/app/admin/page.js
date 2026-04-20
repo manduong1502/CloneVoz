@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
                        <tr key={u.id} className="hover:bg-[var(--voz-hover)]">
                           <td className="px-5 py-3 font-medium text-[var(--voz-text)]">{u.username}</td>
                           <td className="px-5 py-3">{u.customTitle || "Member"}</td>
-                          <td className="px-5 py-3">{u.createdAt.toLocaleDateString()}</td>
+                          <td className="px-5 py-3">{new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
                        </tr>
                      ))}
                   </tbody>

@@ -56,7 +56,7 @@ export default async function ConversationDetailPage({ params }) {
                   <div className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words pb-1">{message.author.username}</div>
                   <div className="text-[11px] text-[#2574A9] md:mb-2">{message.author.customTitle || 'Member'}</div>
                   <div className="hidden md:flex flex-col items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
-                     <div className="flex justify-between w-full"><span>Joined</span> <span className="font-medium text-[var(--voz-text-strong)]">{message.author.createdAt.toLocaleDateString()}</span></div>
+                     <div className="flex justify-between w-full"><span>Joined</span> <span className="font-medium text-[var(--voz-text-strong)]">{new Date(message.author.createdAt).toLocaleDateString('vi-VN')}</span></div>
                   </div>
                </div>
             </div>
@@ -64,7 +64,7 @@ export default async function ConversationDetailPage({ params }) {
             {/* Content Block */}
             <div className="flex-1 bg-[var(--voz-surface)] flex flex-col min-w-0">
                <div className="flex justify-between text-[11px] text-[var(--voz-text-muted)] px-4 py-2 border-b border-[var(--voz-border-light)]">
-                  <span>{message.createdAt.toLocaleString()}</span>
+                  <span>{new Date(message.createdAt).toLocaleString('vi-VN')}</span>
                </div>
                <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: message.content }} />
             </div>

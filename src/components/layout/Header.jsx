@@ -150,7 +150,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                                 <img src={noti.sender?.avatar || `https://ui-avatars.com/api/?name=${noti.sender?.username || 'U'}&background=random`} className="w-8 h-8 rounded-full" />
                                 <div className="flex-1 min-w-0">
                                   <div className="text-[13px] leading-tight mb-1" dangerouslySetInnerHTML={{ __html: noti.content }} />
-                                  <div className="text-[11px] text-[var(--voz-text-muted)]">{noti.createdAt.toLocaleString()}</div>
+                                  <div className="text-[11px] text-[var(--voz-text-muted)]">{new Date(noti.createdAt).toLocaleString('vi-VN')}</div>
                                 </div>
                               </Link>
                             ))

@@ -86,7 +86,7 @@ export default async function FindThreadsPage({ searchParams }) {
                 <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1 mt-1">
                   <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
                   <span>·</span>
-                  <span>{thread.createdAt.toLocaleDateString()}</span>
+                  <span>{new Date(thread.createdAt).toLocaleDateString('vi-VN')}</span>
                   <span>·</span>
                   <Link href={`/category/${thread.nodeId}`} className="hover:underline hover:text-[var(--voz-link)]">Box: {thread.node.title}</Link>
                 </div>

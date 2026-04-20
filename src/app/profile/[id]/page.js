@@ -77,7 +77,7 @@ export default async function ProfilePage({ params, searchParams }) {
               </h1>
               <div className="text-[14px] text-[#2574A9] mt-2 mb-1">{targetUser.customTitle || 'Thành viên mới'}</div>
               <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center justify-center md:justify-start gap-1">
-                <Clock size={12}/> Đã tham gia: {targetUser.createdAt.toLocaleDateString()}
+                <Clock size={12}/> Đã tham gia: {new Date(targetUser.createdAt).toLocaleDateString('vi-VN')}
               </div>
             </div>
           </div>
