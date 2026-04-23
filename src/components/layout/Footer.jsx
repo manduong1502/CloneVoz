@@ -12,10 +12,6 @@ const Footer = () => {
           <li><Link href="/terms" className="hover:text-white transition">Help</Link></li>
           <li><Link href="/" className="hover:text-white transition">Home</Link></li>
         </ul>
-        <div className="flex flex-col items-center md:items-end gap-1">
-          <p>© 2026 VOZ.vn Clone. Community platform by DanOngThongMinh<sup>®</sup></p>
-          <p className="text-white/50 text-[11px]">Học tập NextJS & React</p>
-        </div>
       </div>
     </footer>
   );

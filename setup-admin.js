@@ -10,7 +10,7 @@ async function run() {
   } 
 
   // Set the current user to be admin for convenience
-  const user = await prisma.user.findUnique({where: {email: "mandtdn@gmail.com"}});
+  const user = await prisma.user.findUnique({where: {email: "lamphatcommerce@gmail.com"}});
   if (user) {
      await prisma.user.update({
         where: { id: user.id },
@@ -20,7 +20,7 @@ async function run() {
            }
         }
      });
-     console.log("Admin role set for user: mandtdn@gmail.com");
+     console.log("Admin role set for user: lamphatcommerce@gmail.com");
   } else {
      console.log("User not found yet.");
   }
