@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
-import { pusherClient } from '@/lib/pusher.client';
+import { getPusherClient } from '@/lib/pusher.client';
 import { getRecentShouts, postShout, toggleShoutboxReaction } from '@/actions/shoutboxActions';
 import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
@@ -22,6 +22,53 @@ export default function GlobalChatbox({ session }) {
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
 
+  // Resize State
+  const [size, setSize] = useState({ w: 1000, h: 600 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Mặc định bự chà bá hệt như ảnh yêu cầu
+      setSize({
+        w: Math.min(1000, window.innerWidth * 0.95), // Cho phép vươn tối đa 1000px, hoặc 95% màn hình nếu màn hình nhỏ.
+        h: Math.min(650, window.innerHeight * 0.8)
+      });
+    }
+  }, []);
+
+  const handleResize = (e, direction) => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = size.w;
+    const startH = size.h;
+
+    const onMouseMove = (moveEvent) => {
+      let newW = startW;
+      let newH = startH;
+
+      if (direction.includes('left')) {
+        newW = startW + (startX - moveEvent.clientX);
+      }
+      if (direction.includes('top')) {
+        newH = startH + (startY - moveEvent.clientY);
+      }
+
+      // Constraints
+      newW = Math.max(320, Math.min(newW, window.innerWidth * 0.9));
+      newH = Math.max(350, Math.min(newH, window.innerHeight * 0.9));
+
+      setSize({ w: newW, h: newH });
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   // Unread count
   const [unreadCount, setUnreadCount] = useState(0);
 
@@ -34,49 +81,55 @@ export default function GlobalChatbox({ session }) {
       setLoading(false);
     });
 
-    const channel = pusherClient.subscribe('global-chat');
-    
-    const handleNewShout = (newShout) => {
-      setMessages(prev => {
-        // Chống lặp tin nhắn nếu Pusher bắn double event
-        if (prev.some(m => m.id === newShout.id)) return prev;
-        return [...prev, newShout];
-      });
-      if (!isOpen) { // Nếu đóng khung chat thì tăng số thông báo
-        setUnreadCount(prev => prev + 1);
-      } else {
-        // Nếu mở chat và người dùng MỚI là người được auto scroll (đang ở sát bottom)
-        if (messagesEndRef.current) {
-          const container = messagesEndRef.current.parentElement;
-          if (container) {
-            const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-            if (isNearBottom) {
-              setTimeout(() => {
-                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-              }, 100);
+    let channel;
+    getPusherClient().then(client => {
+      if (!client) return;
+      channel = client.subscribe('global-chat');
+
+      const handleNewShout = (newShout) => {
+        setMessages(prev => {
+          if (prev.some(m => m.id === newShout.id)) return prev;
+          return [...prev, newShout];
+        });
+        if (!isOpen) {
+          setUnreadCount(prev => prev + 1);
+        } else {
+          if (messagesEndRef.current) {
+            const container = messagesEndRef.current.parentElement;
+            if (container) {
+              const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+              if (isNearBottom) {
+                setTimeout(() => {
+                  messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+              }
             }
           }
         }
-      }
-    };
+      };
 
-    const handleReaction = (data) => {
-      setMessages(prev => prev.map(msg => {
-        if (msg.id === data.messageId) {
-          return { ...msg, reactions: data.reactions };
-        }
-        return msg;
-      }));
-    };
+      const handleReaction = (data) => {
+        setMessages(prev => prev.map(msg => {
+          if (msg.id === data.messageId) {
+            return { ...msg, reactions: data.reactions };
+          }
+          return msg;
+        }));
+      };
 
-    channel.bind('new-shout', handleNewShout);
-    channel.bind('shout-reaction', handleReaction);
+      channel.bind('new-shout', handleNewShout);
+      channel.bind('shout-reaction', handleReaction);
+
+      // Lưu lại tham chiếu để unbind khi unmount
+      window._globalChatChannel = channel;
+      window._globalChatHandlers = { handleNewShout, handleReaction };
+    });
 
     return () => {
-      channel.unbind('new-shout', handleNewShout);
-      channel.unbind('shout-reaction', handleReaction);
-      // Không gọi unsubscribe toàn cục ở đây vì GlobalChat tồn tại liên tục, 
-      // gọi sẽ gây lỗi WebSocket CLOSED nếu re-render nhanh (Fast Reload).
+      if (window._globalChatChannel && window._globalChatHandlers) {
+        window._globalChatChannel.unbind('new-shout', window._globalChatHandlers.handleNewShout);
+        window._globalChatChannel.unbind('shout-reaction', window._globalChatHandlers.handleReaction);
+      }
     };
   }, []);
 
@@ -216,11 +269,30 @@ export default function GlobalChatbox({ session }) {
 
       {/* Khung Chat */}
       {isOpen && (
-        <div className="bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg shadow-2xl mb-2 w-[calc(100vw-32px)] sm:w-[360px] md:w-[400px] flex flex-col overflow-hidden" style={{ height: '480px' }}>
+        <div
+          className="bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg shadow-2xl mb-2 flex flex-col relative"
+          style={{
+            width: `${size.w}px`,
+            height: `${size.h}px`,
+          }}
+        >
+          {/* Resize Handles (Custom) */}
+          <div
+            className="absolute top-0 left-0 right-0 h-[6px] cursor-ns-resize z-50 hover:bg-[#185886]/20 transition-colors"
+            onMouseDown={(e) => handleResize(e, 'top')}
+          />
+          <div
+            className="absolute top-0 left-0 bottom-0 w-[6px] cursor-ew-resize z-50 hover:bg-[#185886]/20 transition-colors"
+            onMouseDown={(e) => handleResize(e, 'left')}
+          />
+          <div
+            className="absolute top-0 left-0 w-[12px] h-[12px] cursor-nwse-resize z-[60]"
+            onMouseDown={(e) => handleResize(e, 'top-left')}
+          />
 
           {/* Header */}
-          <div className="bg-[#185886] text-white px-4 py-3 flex justify-between items-center text-[15px] font-bold">
-            <div className="flex items-center gap-2">
+          <div className="bg-[#185886] text-white px-4 py-3 flex justify-between items-center text-[15px] font-bold cursor-default rounded-t-lg shrink-0">
+            <div className="flex items-center gap-2 pointer-events-none">
               <MessageCircle size={18} /> Server Chat
             </div>
             <button onClick={() => setIsOpen(false)} className="hover:text-gray-300 transition-colors p-1">
@@ -364,7 +436,7 @@ export default function GlobalChatbox({ session }) {
           </div>
 
           {/* Input Area (Instagram Style) */}
-          <div className="p-3 bg-[var(--voz-surface)] border-t border-[var(--voz-border)] relative">
+          <div className="p-3 bg-[var(--voz-surface)] border-t border-[var(--voz-border)] relative" style={{ paddingRight: '22px' }}>
 
             {/* Bảng Emoji Full (emoji-picker-react) */}
             {showEmojiPicker && (

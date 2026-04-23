@@ -48,16 +48,21 @@ const GlobalChat = () => {
             exit={{ y: 50, opacity: 0 }}
             className="chat-box card"
             style={{
-              width: '350px', height: '500px',
+              width: '450px', height: '60vh', // Mặc định to hơn (khoảng nửa màn)
+              minWidth: '320px', minHeight: '400px', // Không cho kéo quá nhỏ
+              maxWidth: '90vw', maxHeight: '90vh', // Không cho tràn ra ngoài màn hình
               display: 'flex', flexDirection: 'column',
-              boxShadow: 'var(--shadow-lg)'
+              boxShadow: 'var(--shadow-lg)',
+              resize: 'both',       // Bật tính năng Kéo / Thu phóng tự do 
+              overflow: 'hidden',   // Bắt buộc phải có để resize hoạt động
+              backgroundColor: 'var(--bg-surface)'
             }}
           >
             {/* Header */}
             <div className="chat-header" style={{
               padding: '12px 16px', backgroundColor: 'var(--bg-header)', color: '#fff',
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              borderTopLeftRadius: 'var(--radius-md)', borderTopRightRadius: 'var(--radius-md)'
+              display: 'flex', justify-content: 'space-between', alignItems: 'center',
+              cursor: 'default' // Tránh con trỏ kéo tràn lên text
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '500' }}>
                 <Users size={18} /> Kênh Thế Giới (Online: 42)
@@ -79,7 +84,7 @@ const GlobalChat = () => {
               backgroundColor: 'var(--bg-surface-hover)'
             }}>
               {MOCK_MESSAGES.map(msg => (
-                <div key={msg.id} style={{ fontSize: '13px' }}>
+                <div key={msg.id} style={{ fontSize: '14px' }}>
                   {msg.isSystem ? (
                     <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '12px', fontStyle: 'italic' }}>
                       {msg.text}
@@ -98,7 +103,12 @@ const GlobalChat = () => {
             {/* Input form */}
             <form 
               className="chat-input" 
-              style={{ padding: '12px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: '8px', backgroundColor: 'var(--bg-surface)' }}
+              style={{ 
+                padding: '12px', 
+                paddingRight: '22px', // Để dành góc phải cho Icon Resize của CSS
+                borderTop: '1px solid var(--border-color)', 
+                display: 'flex', gap: '8px', backgroundColor: 'var(--bg-surface)' 
+              }}
               onSubmit={e => {
                 e.preventDefault();
                 setMessage('');
@@ -110,7 +120,7 @@ const GlobalChat = () => {
                 onChange={e => setMessage(e.target.value)}
                 placeholder="Nhắn tin..." 
                 className="input" 
-                style={{ flex: 1, borderRadius: '20px' }}
+                style={{ flex: 1, borderRadius: '20px', fontSize: '14px' }}
               />
               <button className="btn btn-primary cursor-pointer" type="submit" style={{ borderRadius: '50%', width: '38px', height: '38px', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Send size={16} />
