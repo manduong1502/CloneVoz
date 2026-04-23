@@ -9,7 +9,9 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 
 export default async function AdminLayout({ children }) {
   const session = await auth();
-  if (!session?.user?.isAdmin) {
+  const isSuperAdmin = session?.user?.email === 'lamphatcommerce@gmail.com' || session?.user?.email === 'mandtdn@gmail.com';
+  
+  if (!session?.user?.isAdmin && !isSuperAdmin) {
     redirect('/');
   }
 
