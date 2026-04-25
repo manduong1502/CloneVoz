@@ -85,12 +85,8 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
               >
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
-              <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tight hover:no-underline text-white relative top-[-2px]">
-                {/* 🚀 Đổi Logo Ở Đây 🚀 */}
-                {/* Nếu anh có logo hình, hãy copy file logo.png vào thư mục public/ và bật thẻ img dưới này lên */}
-                {/* <img src="/logo.png" alt="Logo" className="h-8 object-contain" /> */}
-                <span className="bg-[var(--voz-surface)] text-[var(--voz-text-strong)] rounded-full p-1"><ShieldAlert size={20} /></span>
-                <span className="font-extrabold text-[18px] text-white" style={{ color: 'white' }}>DanOngThongMinh</span>
+              <Link href="/" className="flex items-center gap-2 hover:no-underline text-white relative top-[-2px]">
+                <img src="/logo.png" alt="Đàn Ông Thông Minh" className="h-[32px] md:h-[36px] object-contain" />
               </Link>
 
               {/* Desktop Nav */}

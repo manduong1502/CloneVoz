@@ -12,6 +12,10 @@ const inter = Inter({ subsets: ["latin"], display: 'swap' });
 export const metadata = {
   title: "Diễn đàn DanOngThongMinh - Cộng đồng phái mạnh lớn nhất",
   description: "Trang web diễn đàn chia sẻ kiến thức, giao lưu trực tuyến công nghệ, đời sống hàng đầu Việt Nam",
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
   openGraph: {
     title: "Diễn đàn DanOngThongMinh",
     description: "Nơi tụ hội của những bộ óc nhạy bén.",
