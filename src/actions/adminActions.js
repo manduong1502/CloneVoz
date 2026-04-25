@@ -11,14 +11,16 @@ async function requireAdminOrMod() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
   
+  const isSuperAdmin = session.user.email === 'lamphatcommerce@gmail.com' || session.user.email === 'mandtdn@gmail.com';
+  
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { userGroups: true }
   });
   
-  const isAdmin = user?.userGroups.some(g => g.name === 'Admin');
+  const isAdmin = isSuperAdmin || user?.userGroups.some(g => g.name === 'Admin');
   const isMod = user?.userGroups.some(g => g.name === 'Moderator');
-  const canApprove = user?.userGroups.some(g => g.canApprove);
+  const canApprove = isAdmin || user?.userGroups.some(g => g.canApprove);
   
   if (!isAdmin && !isMod) throw new Error("Không có quyền truy cập");
   
@@ -27,11 +29,7 @@ async function requireAdminOrMod() {
 
 async function requireAdmin() {
   const { session, user, isAdmin } = await requireAdminOrMod();
-  
-  // Fallback cho super admin emails
-  const isSuperAdmin = session.user.email === 'lamphatcommerce@gmail.com' || session.user.email === 'mandtdn@gmail.com';
-  
-  if (!isAdmin && !isSuperAdmin) throw new Error("Chỉ Admin mới có quyền này");
+  if (!isAdmin) throw new Error("Chỉ Admin mới có quyền này");
   return { session, user };
 }
 
