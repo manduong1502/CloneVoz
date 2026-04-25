@@ -62,14 +62,14 @@ export default async function AdminNodesPage() {
                               <div className="flex items-center gap-3">
                                  <LayoutList className="text-[var(--voz-link)]" size={18} />
                                  <div>
-                                   <div className="font-semibold text-[14px]">{forum.title}</div>
+                                   <Link href={`/admin/nodes/${forum.id}`} className="font-semibold text-[14px] text-[var(--voz-link)] hover:underline">{forum.title}</Link>
                                    {forum.description && <div className="text-[12px] text-[var(--voz-text-muted)] mt-0.5">{forum.description}</div>}
                                  </div>
                               </div>
                               <div className="flex items-center gap-6">
-                                 <div className="text-right text-[12px] text-[var(--voz-text-muted)] w-[100px] hidden sm:block">
+                                 <Link href={`/admin/nodes/${forum.id}`} className="text-right text-[12px] text-[var(--voz-link)] hover:underline w-[100px] hidden sm:block">
                                    <div>{forum._count.threads} Threads</div>
-                                 </div>
+                                 </Link>
                                  <div className="flex gap-1">
                                     <MoveNodeButton 
                                       nodeId={forum.id} 

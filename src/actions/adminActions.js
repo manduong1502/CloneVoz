@@ -174,3 +174,61 @@ export async function banUser(userId) {
   revalidatePath('/admin/users');
   return { success: true, isBanned: !user.isBanned };
 }
+
+// =============================================
+// XÓA THREAD (từ Admin Panel)
+// =============================================
+export async function deleteThread(threadId) {
+  await requireAdminOrMod();
+  
+  const thread = await prisma.thread.findUnique({ 
+    where: { id: threadId },
+    select: { nodeId: true }
+  });
+  if (!thread) throw new Error("Thread không tồn tại");
+
+  const allPosts = await prisma.post.findMany({ where: { threadId }, select: { id: true } });
+  const postIds = allPosts.map(p => p.id);
+
+  await prisma.$transaction([
+    prisma.reaction.deleteMany({ where: { postId: { in: postIds } } }),
+    prisma.report.deleteMany({ where: { OR: [{ postId: { in: postIds } }, { threadId }] } }),
+    prisma.bookmark.deleteMany({ where: { threadId } }),
+    prisma.post.deleteMany({ where: { threadId } }),
+    prisma.thread.delete({ where: { id: threadId } })
+  ]);
+
+  await deleteCache('voz_homepage_data');
+  if (thread.nodeId) await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
+  
+  revalidatePath(`/admin/nodes/${thread.nodeId}`);
+  revalidatePath('/');
+  return { success: true };
+}
+
+// =============================================
+// XÓA COMMENT (từ Admin Panel)
+// =============================================
+export async function deleteComment(postId, threadId) {
+  await requireAdminOrMod();
+  
+  const post = await prisma.post.findUnique({ where: { id: postId } });
+  if (!post) throw new Error("Bình luận không tồn tại");
+  if (post.position === 1) throw new Error("Không thể xóa bài gốc. Hãy xóa cả thread thay vì comment.");
+
+  await prisma.$transaction([
+    prisma.reaction.deleteMany({ where: { postId } }),
+    prisma.report.deleteMany({ where: { postId } }),
+    prisma.post.delete({ where: { id: postId } })
+  ]);
+
+  // Cập nhật replyCount
+  await prisma.thread.update({
+    where: { id: threadId },
+    data: { replyCount: { decrement: 1 } }
+  });
+
+  revalidatePath(`/admin/nodes`);
+  revalidatePath(`/thread/${threadId}`);
+  return { success: true };
+}
