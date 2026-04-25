@@ -3,6 +3,7 @@ import { createNode, updateNode, deleteNode } from '@/actions/nodeActions';
 import { LayoutList, Trash2, Edit2, FolderPlus, Plus, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
+import MoveNodeButton from './MoveNodeButton';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -70,6 +71,12 @@ export default async function AdminNodesPage() {
                                    <div>{forum._count.threads} Threads</div>
                                  </div>
                                  <div className="flex gap-1">
+                                    <MoveNodeButton 
+                                      nodeId={forum.id} 
+                                      nodeTitle={forum.title} 
+                                      categories={categories.map(c => ({ id: c.id, title: c.title }))}
+                                      currentParentId={category.id}
+                                    />
                                     <form action={async () => {
                                        "use server";
                                        await deleteNode(forum.id);

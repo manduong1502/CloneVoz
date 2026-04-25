@@ -200,7 +200,7 @@ export default async function ThreadPage({ params, searchParams }) {
                   />
                  
                  <div className="flex gap-3 text-[12px] text-[var(--voz-text-muted)]">
-                    {session?.user?.isAdmin && <DeletePostButton postId={post.id} threadId={id} isFirstPost={post.position === 1} />}
+                    {(session?.user?.isAdmin || session?.user?.isMod) && <DeletePostButton postId={post.id} threadId={id} isFirstPost={post.position === 1} />}
                     {session?.user && <ReportModal postId={post.id} threadId={id} />}
                     <QuoteButton username={post.author.username} content={post.content} />
                  </div>

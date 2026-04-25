@@ -99,7 +99,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                   Diễn đàn
                 </Link>
                 <Link href="/whats-new" className={pathname.startsWith('/whats-new') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
-                  Mới nhất
+                  Cùng nhau kiếm tiền
                 </Link>
                 <Link href="/terms" className={pathname.startsWith('/terms') || pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Nội quy

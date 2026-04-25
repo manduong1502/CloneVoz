@@ -101,3 +101,16 @@ export async function deleteNode(id) {
   revalidatePath("/");
   revalidatePath("/admin/nodes");
 }
+
+// 4. Di chuyển Forum sang Category khác
+export async function moveNode(nodeId, newParentId) {
+  if (!nodeId || !newParentId) throw new Error("Thiếu thông tin");
+  
+  await prisma.node.update({
+    where: { id: nodeId },
+    data: { parentId: newParentId }
+  });
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+}

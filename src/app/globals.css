@@ -182,3 +182,35 @@ blockquote:not(.voz-quote) strong {
   margin-bottom: 4px;
 }
 
+/* Blockquote trong editor: bất khả xâm phạm - không cho chỉnh sửa nội dung quote */
+.ProseMirror blockquote {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.85;
+  cursor: default;
+  position: relative;
+}
+
+/* Cho phép click để xóa cả block (chọn cả khối) */
+.ProseMirror blockquote::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  cursor: default;
+}
+
+/* Line clamp utility */
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+
