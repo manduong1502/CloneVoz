@@ -16,8 +16,8 @@ export default function EarnTogetherPage() {
         </h1>
 
         {/* Description */}
-        <p className="text-[15px] text-[var(--voz-text-muted)] leading-relaxed mb-6">
-          Đây sẽ là nơi anh em được mua hàng với <strong className="text-[var(--voz-text)]">deal ngon</strong>, dropship kiếm thêm thu nhập lúc rảnh rỗi, giúp anh em <strong className="text-[var(--voz-text)]">tổng kho đẩy hàng tồn</strong> nhanh chóng.
+        <p className="text-[15px] text-[var(--voz-text)] leading-relaxed mb-6 font-medium">
+          Đây sẽ là nơi anh em được mua hàng với deal ngon, dropship kiếm thêm thu nhập lúc rảnh rỗi, giúp anh em tổng kho đẩy hàng tồn nhanh chóng.
         </p>
 
         {/* Badge */}
