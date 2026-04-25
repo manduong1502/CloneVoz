@@ -224,13 +224,13 @@ export async function handleReaction(postId, path, reactionType) {
         await prisma.notification.create({
            data: {
              userId: post.authorId,
-             type: "REACTION",
-             sourceId: session.user.name, 
-             content: `**${session.user.name}** đã thả Ưng bài viết của bạn trong chủ đề "${thread.thread.title}".`,
+             senderId: session.user.id,
+             type: "reaction",
+             content: `<strong>${session.user.name}</strong> đã thả Ưng bài viết của bạn.`,
              link: `/thread/${thread.thread.id}#post-${postId}`
            }
         });
-        pusherServer.trigger(`user-${post.authorId}`, 'new-notification', { type: 'REACTION' });
+        pusherServer.trigger(`user-${post.authorId}`, 'new-notification', { type: 'reaction' }).catch(() => {});
       } catch (err) {}
     }
   }

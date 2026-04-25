@@ -189,11 +189,12 @@ export default async function ThreadPage({ params, searchParams }) {
 
                <div className="bg-[var(--voz-accent)] px-4 py-2 border-t border-[var(--voz-border-light)] flex flex-col md:flex-row md:justify-between md:items-center gap-2">
                  <LikeButton 
-                   postId={post.id} 
-                   initialLikeCount={post.reactions.filter(r => r.type === 'Like').length}
-                   initialDislikeCount={post.reactions.filter(r => r.type === 'Dislike').length}
-                   initialReaction={session?.user ? post.reactions.find(r => r.userId === session.user.id)?.type || null : null}
-                 />
+                    postId={post.id} 
+                    initialLikeCount={post.reactions.filter(r => r.type === 'Like').length}
+                    initialDislikeCount={post.reactions.filter(r => r.type === 'Dislike').length}
+                    initialReaction={session?.user ? post.reactions.find(r => r.userId === session.user.id)?.type || null : null}
+                    isLoggedIn={!!session?.user}
+                  />
                  
                  <div className="flex gap-3 text-[12px] text-[var(--voz-text-muted)]">
                     {session?.user?.isAdmin && <DeletePostButton postId={post.id} threadId={id} isFirstPost={post.position === 1} />}

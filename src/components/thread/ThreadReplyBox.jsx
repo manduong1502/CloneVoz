@@ -74,8 +74,18 @@ export default function ThreadReplyBox({ session, threadId }) {
 
   if (!session) {
     return (
-      <div className="voz-card mt-4 p-4 text-center bg-[var(--voz-accent)]">
-         <span className="text-[var(--voz-text-muted)]">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> hoặc <span className="text-[#185886] font-bold cursor-pointer">đăng ký</span> để trả lời bài viết.</span>
+      <div className="voz-card mt-4 p-5 text-center bg-[var(--voz-accent)]">
+         <span className="text-[var(--voz-text-muted)] text-[14px]">Bạn phải </span>
+         <button 
+           onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { type: 'login' } }))}
+           className="text-[var(--voz-link)] font-bold cursor-pointer hover:underline bg-transparent border-0 p-0 text-[14px]"
+         >đăng nhập</button>
+         <span className="text-[var(--voz-text-muted)] text-[14px]"> hoặc </span>
+         <button 
+           onClick={() => window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { type: 'register' } }))}
+           className="text-[var(--voz-link)] font-bold cursor-pointer hover:underline bg-transparent border-0 p-0 text-[14px]"
+         >đăng ký</button>
+         <span className="text-[var(--voz-text-muted)] text-[14px]"> để trả lời bài viết.</span>
       </div>
     );
   }

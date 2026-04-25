@@ -5,7 +5,7 @@ import { ThumbsUp, ThumbsDown } from 'lucide-react';
 import { handleReaction } from '@/actions/postActions';
 import { usePathname } from 'next/navigation';
 
-export default function LikeButton({ postId, initialLikeCount, initialDislikeCount, initialReaction }) {
+export default function LikeButton({ postId, initialLikeCount, initialDislikeCount, initialReaction, isLoggedIn = true }) {
   const [isPending, startTransition] = useTransition();
   const [likeCount, setLikeCount] = useState(initialLikeCount || 0);
   const [dislikeCount, setDislikeCount] = useState(initialDislikeCount || 0);
@@ -13,6 +13,10 @@ export default function LikeButton({ postId, initialLikeCount, initialDislikeCou
   const pathname = usePathname();
 
   const toggleAction = (type) => {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new CustomEvent('open-auth-modal', { detail: { type: 'login' } }));
+      return;
+    }
     // Optimistic UI updates
     const prevReaction = myReaction;
     const prevLikes = likeCount;

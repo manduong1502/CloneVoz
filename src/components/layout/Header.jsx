@@ -21,6 +21,17 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
   const user = session?.user;
 
+  // Lắng nghe event open-auth-modal từ các component khác (ThreadReplyBox, GlobalChatbox, ...)
+  useEffect(() => {
+    const handleOpenAuthModal = (e) => {
+      const type = e.detail?.type || 'login';
+      setModalType(type);
+      setIsLoginModalOpen(true);
+    };
+    window.addEventListener('open-auth-modal', handleOpenAuthModal);
+    return () => window.removeEventListener('open-auth-modal', handleOpenAuthModal);
+  }, []);
+
   useEffect(() => {
     if (!user) return;
 
@@ -89,7 +100,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 <Link href="/whats-new" className={pathname.startsWith('/whats-new') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Mới nhất
                 </Link>
-                <Link href="/rules" className={pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/terms" className={pathname.startsWith('/terms') || pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Nội quy
                 </Link>
               </nav>
