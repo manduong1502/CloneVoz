@@ -48,6 +48,11 @@ export default async function AdminLayout({ children }) {
                  )}
               </Link>
 
+              {/* Reports - Admin + Mod đều thấy */}
+              <Link href="/admin/reports" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
+                 <Flag size={18}/> Báo cáo vi phạm
+              </Link>
+
               {isAdmin && (
                 <>
                   <Link href="/admin/nodes" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
@@ -55,9 +60,6 @@ export default async function AdminLayout({ children }) {
                   </Link>
                   <Link href="/admin/users" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
                      <Users size={18}/> Users & Groups
-                  </Link>
-                  <Link href="/admin/reports" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
-                     <Flag size={18}/> Reports & Warnings
                   </Link>
                   <Link href="/admin/settings" className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition">
                      <Settings size={18}/> Options
