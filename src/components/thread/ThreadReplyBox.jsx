@@ -3,11 +3,11 @@
 import { useRef, useState, useEffect, useTransition } from 'react';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { createReply } from '@/actions/postActions';
-import { Turnstile } from '@marsidev/react-turnstile';
 
 export default function ThreadReplyBox({ session, threadId }) {
   const [content, setContent] = useState('');
   const [turnstileToken, setTurnstileToken] = useState(null);
+  const [showTurnstile, setShowTurnstile] = useState(false);
   const [isPending, startTransition] = useTransition();
   const editorRef = useRef(null);
 
@@ -21,6 +21,7 @@ export default function ThreadReplyBox({ session, threadId }) {
       if (editor) {
         editor.commands.insertContent(quoteHtml);
         editor.commands.focus();
+        setShowTurnstile(true); // Kích hoạt Turnstile khi quote
         
         // Scroll mượt xuống box reply
         document.getElementById('reply-box')?.scrollIntoView({ behavior: 'smooth' });
@@ -69,7 +70,14 @@ export default function ThreadReplyBox({ session, threadId }) {
         editor.commands.setContent('');
         setContent('');
       }
+      setShowTurnstile(false);
+      setTurnstileToken(null);
     });
+  };
+
+  // Kích hoạt Turnstile khi user bắt đầu soạn thảo
+  const handleEditorFocus = () => {
+    if (!showTurnstile) setShowTurnstile(true);
   };
 
   if (!session) {
@@ -95,7 +103,7 @@ export default function ThreadReplyBox({ session, threadId }) {
       <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
          <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
       </div>
-      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full">
+      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full" onClick={handleEditorFocus}>
          <RichTextEditor 
             ref={editorRef}
             content={content}
@@ -103,11 +111,14 @@ export default function ThreadReplyBox({ session, threadId }) {
             onImageUpload={handleImageUpload}
          />
          <div className="flex flex-col sm:flex-row gap-3 items-center mt-3 w-full justify-between">
-           <Turnstile 
-              siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} 
-              onSuccess={(token) => setTurnstileToken(token)}
-              options={{ theme: 'auto', size: 'compact' }}
-           />
+           {showTurnstile ? (
+             <TurnstileLazy 
+                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                onSuccess={(token) => setTurnstileToken(token)}
+             />
+           ) : (
+             <div className="text-xs text-[var(--voz-text-muted)]">Bảo mật Cloudflare sẽ kích hoạt khi bạn soạn thảo</div>
+           )}
            <div className="flex gap-2 items-center">
              {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
              <button type="submit" disabled={isPending || !turnstileToken} className="voz-button px-6 py-[6px] disabled:opacity-50">
@@ -117,5 +128,17 @@ export default function ThreadReplyBox({ session, threadId }) {
          </div>
       </div>
     </form>
+  );
+}
+
+// Lazy-load Turnstile component
+function TurnstileLazy({ siteKey, onSuccess }) {
+  const { Turnstile } = require('@marsidev/react-turnstile');
+  return (
+    <Turnstile 
+      siteKey={siteKey}
+      onSuccess={onSuccess}
+      options={{ theme: 'auto', size: 'compact' }}
+    />
   );
 }
