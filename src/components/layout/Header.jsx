@@ -9,6 +9,7 @@ import Modal from '@/components/ui/Modal';
 import { loginWithProvider, loginWithCredentials, handleLogOut, registerWithCredentials } from '@/actions/authActions';
 import { markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/notificationActions';
 import ThemeToggle from '@/components/layout/ThemeToggle';
+import SearchDropdown from '@/components/layout/SearchDropdown';
 import Pusher from 'pusher-js';
 
 const Header = ({ session, notifications = [], unreadCount = 0 }) => {
@@ -195,16 +196,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                     </div>
                   )}
                 >
-                  <div className="p-3 text-[14px]">
-                    <input type="text" placeholder="Tìm kiếm..." className="w-full border border-[var(--voz-border)] p-2 rounded-[2px] mb-2 focus:border-[var(--voz-link)] outline-none" />
-                    <div className="flex flex-col gap-2 mb-3">
-                      <label className="flex items-center gap-2 cursor-pointer text-[13px]"><input type="checkbox" /> Chỉ tìm trong tiêu đề</label>
-                    </div>
-                    <div className="border-t border-[var(--voz-border)] pt-2 flex justify-between items-center text-[13px]">
-                      <Link href="/search" className="text-[var(--voz-link)] hover:underline">Tìm kiếm nâng cao...</Link>
-                      <button className="voz-button">Tìm</button>
-                    </div>
-                  </div>
+                  <SearchDropdown />
                 </Dropdown>
               </div>
             </div>
