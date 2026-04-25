@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PenSquare } from 'lucide-react';
+import { PenSquare, MessageCircle } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Pagination from '@/components/ui/Pagination';
 import { auth } from '@/auth';
@@ -42,12 +42,108 @@ export default async function CategoryPage({ params, searchParams }) {
   if (!node) {
       node = await prisma.node.findUnique({
         where: { id: id },
-        include: { parent: true }
+        include: { 
+          parent: true,
+          children: {
+            orderBy: { displayOrder: 'asc' },
+            include: {
+              threads: {
+                where: { isApproved: true },
+                orderBy: { createdAt: 'desc' },
+                take: 1,
+                include: { author: true }
+              }
+            }
+          }
+        }
       });
   }
 
   if (!node) {
     return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: The requested forum could not be found.</div>;
+  }
+
+  // ========== CATEGORY VIEW ==========
+  // Nếu node là Category (chứa forum con), hiển thị danh sách forum con
+  if (node.nodeType === 'Category') {
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
+        <div className="flex flex-col">
+          {/* Breadcrumb */}
+          <div className="text-[13px] mb-2 text-[var(--voz-text-muted)]">
+            <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
+            <span className="mx-1">›</span>
+          </div>
+
+          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)] mb-4">{node.title}</h1>
+
+          <div className="voz-card overflow-hidden">
+            {/* Header */}
+            <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
+              <h2 className="text-[16px] font-normal m-0">{node.title}</h2>
+            </div>
+            
+            {/* List of child forums */}
+            <div className="flex flex-col bg-[var(--voz-surface)]">
+              {(!node.children || node.children.length === 0) ? (
+                 <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
+              ) : node.children.map((child, i) => (
+                <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
+                  
+                  {/* Icon & Title */}
+                  <div className="flex-1 flex items-center min-w-0 pr-4">
+                    <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[#BFE3FF]">
+                      <MessageCircle strokeWidth={1.5} size={32} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/category/${child.id}`} className="text-[15px] font-normal hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
+                        {child.title}
+                      </Link>
+                      {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
+                     <div className="flex flex-col items-center">
+                        <div>Chủ đề</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
+                     </div>
+                     <div className="flex flex-col items-center">
+                        <div>Bài viết</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
+                     </div>
+                  </div>
+
+                  {/* Last Post */}
+                  <div className="hidden sm:flex items-center w-[260px] shrink-0 pl-4 min-w-0">
+                    {child.threads && child.threads.length > 0 ? (
+                      <>
+                        <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover bg-gray-100" />
+                        <div className="flex-1 min-w-0 text-[12px] ml-3 flex flex-col justify-center">
+                           <Link href={`/thread/${child.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
+                              {child.threads[0].title}
+                           </Link>
+                           <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
+                              {formatRelativeTime(child.threads[0].createdAt)} · <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{child.threads[0].author.username}</Link>
+                           </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex-1 text-[12px] text-[var(--voz-text-muted)] italic">Chưa có bài viết</div>
+                    )}
+                  </div>
+
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Sidebar placeholder for category view */}
+        <div className="hidden lg:block"></div>
+      </div>
+    );
   }
 
   // ==== KÍCH HOẠT RÀO CHẮN ======
