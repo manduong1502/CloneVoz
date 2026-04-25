@@ -59,3 +59,16 @@ export async function deleteCache(key) {
     // bỏ qua
   }
 }
+
+export async function deleteCachePattern(pattern) {
+  try {
+    const client = getRedisClient();
+    if (!client) return;
+    const keys = await client.keys(pattern);
+    if (keys.length > 0) {
+      await client.del(...keys);
+    }
+  } catch {
+    // bỏ qua
+  }
+}

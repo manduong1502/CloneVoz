@@ -106,6 +106,11 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
         heading: {
           levels: [1, 2, 3],
         },
+        blockquote: {
+          HTMLAttributes: {
+            contenteditable: 'false',
+          },
+        },
       }),
       Image.configure({
         inline: true,
@@ -121,6 +126,45 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       attributes: {
         class: 'prose prose-sm xl:prose-base focus:outline-none min-h-[120px] max-h-[400px] overflow-y-auto p-3 text-[14px] w-full',
       },
+      // Chặn gõ phím khi cursor nằm trong blockquote
+      handleKeyDown: (view, event) => {
+        const { $from } = view.state.selection;
+        // Kiểm tra xem cursor có nằm bên trong blockquote không
+        for (let d = $from.depth; d > 0; d--) {
+          if ($from.node(d).type.name === 'blockquote') {
+            // Cho phép Backspace/Delete để xóa cả blockquote
+            if (event.key === 'Backspace' || event.key === 'Delete') {
+              return false; // để TipTap xử lý bình thường
+            }
+            // Chặn mọi phím khác (gõ chữ, Enter, etc.)
+            // Di chuyển cursor ra sau blockquote
+            const endOfBlockquote = $from.end(d);
+            const resolvedPos = view.state.doc.resolve(endOfBlockquote + 1);
+            view.dispatch(view.state.tr.setSelection(
+              view.state.selection.constructor.near(resolvedPos)
+            ));
+            return false; // cho TipTap tiếp tục xử lý ở vị trí mới
+          }
+        }
+        return false;
+      },
+      // Khi click vào blockquote, chuyển cursor ra sau nó
+      handleClick: (view, pos, event) => {
+        const $pos = view.state.doc.resolve(pos);
+        for (let d = $pos.depth; d > 0; d--) {
+          if ($pos.node(d).type.name === 'blockquote') {
+            const endOfBlockquote = $pos.end(d);
+            try {
+              const resolvedPos = view.state.doc.resolve(Math.min(endOfBlockquote + 1, view.state.doc.content.size));
+              view.dispatch(view.state.tr.setSelection(
+                view.state.selection.constructor.near(resolvedPos)
+              ));
+            } catch {}
+            return true;
+          }
+        }
+        return false;
+      },
       handlePaste: (view, event, slice) => {
         const items = Array.from(event.clipboardData?.items || []);
         for (const item of items) {
@@ -130,7 +174,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
               onImageUpload(file).then(url => {
                 if (url) editor.chain().focus().setImage({ src: url }).run();
               });
-              return true; // Báo cho Tiptap biết mình đã xử lý Paste
+              return true;
             }
           }
         }
@@ -150,7 +194,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
                 }
               }
             });
-            return true; // Báo cho Tiptap biết mình đã xử lý Drop
+            return true;
           }
         }
         return false;

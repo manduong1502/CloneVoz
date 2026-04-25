@@ -2,7 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { deleteCache } from '@/lib/redis';
+import { deleteCache, deleteCachePattern } from '@/lib/redis';
 
 // =============================================
 // HELPER: Kiểm tra quyền Admin hoặc Mod
@@ -199,9 +199,11 @@ export async function deleteThread(threadId) {
   ]);
 
   await deleteCache('voz_homepage_data');
-  if (thread.nodeId) await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
+  // Xóa TẤT CẢ cache pages của node này (page 1, 2, 3... prefix...)
+  if (thread.nodeId) await deleteCachePattern(`voz_node_${thread.nodeId}_*`);
   
   revalidatePath(`/admin/nodes/${thread.nodeId}`);
+  revalidatePath(`/category/${thread.nodeId}`);
   revalidatePath('/');
   return { success: true };
 }
