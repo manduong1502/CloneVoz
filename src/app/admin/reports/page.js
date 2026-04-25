@@ -1,107 +1,114 @@
 import { prisma } from '@/lib/prisma';
-import { resolveReportAndWarn, rejectReport } from '@/actions/reportActions';
 import Link from 'next/link';
-import { revalidatePath } from 'next/cache';
+import ReportActions from './ReportActions';
 
 export default async function AdminReportsPage() {
   const pendingReports = await prisma.report.findMany({
     where: { status: 'pending' },
     include: {
-      reporter: { select: { username: true } },
+      reporter: { select: { username: true, avatar: true } },
       post: {
-        include: { author: { select: { id: true, username: true } }, thread: { select: { title: true } } }
+        include: { 
+          author: { select: { id: true, username: true, avatar: true, isBanned: true } }, 
+          thread: { select: { id: true, title: true } } 
+        }
       },
       shoutboxMessage: {
-        include: { author: { select: { id: true, username: true } } }
+        include: { author: { select: { id: true, username: true, avatar: true, isBanned: true } } }
       }
     },
     orderBy: { createdAt: 'desc' }
   });
 
+  // Đếm tổng số reports đã xử lý
+  const resolvedCount = await prisma.report.count({ where: { status: 'resolved' } });
+  const rejectedCount = await prisma.report.count({ where: { status: 'rejected' } });
+
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6 text-[var(--voz-text)]">Quản lý Báo Cáo (Reports)</h1>
+    <div className="flex flex-col gap-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-semibold text-[var(--voz-text)]">Quản lý Báo Cáo</h1>
+          <p className="text-sm text-[var(--voz-text-muted)] mt-1">
+            {pendingReports.length} đang chờ · {resolvedCount} đã xử lý · {rejectedCount} đã bỏ qua
+          </p>
+        </div>
+      </div>
 
       <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
-        <table className="w-full text-left text-sm text-[var(--voz-text)]">
-          <thead className="bg-[var(--voz-hover)] border-b border-[var(--voz-border)]">
-            <tr>
-              <th className="px-4 py-3 font-medium">Bị báo cáo</th>
-              <th className="px-4 py-3 font-medium">Người gửi</th>
-              <th className="px-4 py-3 font-medium">Lý do</th>
-              <th className="px-4 py-3 font-medium">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {pendingReports.length === 0 && (
-              <tr>
-                <td colSpan="4" className="text-center p-8 text-[var(--voz-text-muted)]">Tuyệt vời! Không có báo cáo vi phạm nào cần xử lý.</td>
-              </tr>
-            )}
-            
-            {pendingReports.map(report => (
-              <tr key={report.id} className="border-b border-[var(--voz-border)] last:border-0 hover:bg-[var(--voz-hover)]">
-                <td className="px-4 py-3">
-                  {report.post ? (
-                    <div className="flex flex-col">
-                      <span className="font-bold text-red-600">{report.post.author?.username || 'Unknown'}</span>
-                      <Link href={`/thread/${report.post.threadId}#post-${report.postId}`} target="_blank" className="text-blue-600 hover:underline text-[12px]">
-                         Nội dung: Trả lời diễn đàn
-                      </Link>
+        {pendingReports.length === 0 ? (
+          <div className="p-12 text-center">
+            <div className="text-4xl mb-3">🎉</div>
+            <h3 className="text-lg font-semibold text-[var(--voz-text)] mb-1">Sạch sẽ!</h3>
+            <p className="text-sm text-[var(--voz-text-muted)]">Không có báo cáo vi phạm nào cần xử lý.</p>
+          </div>
+        ) : (
+          <div className="flex flex-col">
+            {pendingReports.map(report => {
+              const targetUser = report.post?.author || report.shoutboxMessage?.author;
+              const contentPreview = report.post 
+                ? report.post.thread?.title 
+                : report.shoutboxMessage?.content;
+              const contentType = report.post ? 'Bình luận diễn đàn' : 'Tin nhắn Chatbox';
+              const contentLink = report.post 
+                ? `/thread/${report.post.thread?.id}#post-${report.postId}` 
+                : null;
+
+              return (
+                <div key={report.id} className="p-4 border-b border-[var(--voz-border)] last:border-0 hover:bg-[var(--voz-hover)] transition-colors">
+                  <div className="flex gap-4">
+                    {/* Reporter info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="bg-amber-500/20 text-amber-600 text-[11px] font-bold px-2 py-[2px] rounded">REPORT</span>
+                        <span className="text-xs text-[var(--voz-text-muted)]">
+                          Từ <strong>{report.reporter.username}</strong> · {new Date(report.createdAt).toLocaleString('vi-VN')}
+                        </span>
+                      </div>
+
+                      {/* Target user */}
+                      {targetUser && (
+                        <div className="flex items-center gap-2 mb-2">
+                          <img src={targetUser.avatar || `https://ui-avatars.com/api/?name=${targetUser.username}`} className="w-6 h-6 rounded-full" />
+                          <span className="font-bold text-red-500">{targetUser.username}</span>
+                          {targetUser.isBanned && <span className="text-[10px] bg-red-500 text-white px-1 rounded">BANNED</span>}
+                          <span className="text-xs text-[var(--voz-text-muted)]">— {contentType}</span>
+                        </div>
+                      )}
+                      
+                      {/* Content preview */}
+                      {contentLink ? (
+                        <Link href={contentLink} target="_blank" className="text-xs text-blue-500 hover:underline block mb-2">
+                          📎 Xem nội dung bài viết: "{contentPreview}"
+                        </Link>
+                      ) : contentPreview && (
+                        <div className="text-xs text-[var(--voz-text-muted)] bg-[var(--voz-accent)] p-2 rounded mb-2 max-w-[400px] truncate">
+                          💬 "{contentPreview}"
+                        </div>
+                      )}
+
+                      {/* Reason */}
+                      <div className="text-sm text-[var(--voz-text)] bg-red-500/5 border-l-2 border-red-500 px-3 py-2 rounded-r">
+                        <strong className="text-xs text-red-500 block mb-1">Lý do:</strong>
+                        {report.reason}
+                      </div>
                     </div>
-                  ) : report.shoutboxMessage ? (
-                    <div className="flex flex-col">
-                      <span className="font-bold text-red-600">{report.shoutboxMessage.author?.username || 'Unknown'}</span>
-                      <span className="text-purple-600 text-[12px] break-all">
-                         Chatbox: "{report.shoutboxMessage.content}"
-                      </span>
+
+                    {/* Actions */}
+                    <div className="shrink-0 flex flex-col gap-2 w-[150px]">
+                      <ReportActions 
+                        reportId={report.id} 
+                        targetUserId={targetUser?.id}
+                        targetUsername={targetUser?.username}
+                        reason={report.reason}
+                      />
                     </div>
-                  ) : (
-                    <span className="text-[var(--voz-text-muted)]">Không rõ</span>
-                  )}
-                </td>
-                
-                <td className="px-4 py-3 font-medium">
-                  {report.reporter.username}
-                </td>
-
-                <td className="px-4 py-3 max-w-[300px]">
-                  <p className="line-clamp-2 text-[var(--voz-text)]" title={report.reason}>{report.reason}</p>
-                </td>
-
-                <td className="px-4 py-3 w-[200px]">
-                  <div className="flex flex-col gap-2">
-                    {/* Hành động Phạt */}
-                    <form action={async () => {
-                       'use server';
-                       const targetUserId = report.post?.author?.id || report.shoutboxMessage?.author?.id;
-                       await resolveReportAndWarn({ 
-                         reportId: report.id, 
-                         warningReason: report.reason, 
-                         warningPoints: 1, 
-                         targetUserId: targetUserId 
-                       });
-                    }}>
-                      <button className="bg-red-600 text-white px-3 py-1 rounded w-full text-xs font-bold hover:bg-red-700 transition">
-                         Phạt 1 điểm Cảnh Cáo
-                      </button>
-                    </form>
-
-                    {/* Hành động Bỏ qua */}
-                    <form action={async () => {
-                       'use server';
-                       await rejectReport(report.id);
-                    }}>
-                      <button className="bg-[var(--voz-border)] text-[var(--voz-text)] px-3 py-1 rounded w-full text-xs hover:bg-[var(--voz-border-light)] font-medium transition">
-                         Bỏ qua (Báo cáo sai)
-                      </button>
-                    </form>
                   </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );
