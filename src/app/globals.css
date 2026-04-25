@@ -112,3 +112,73 @@ a:hover {
   font-weight: 600;
   text-transform: uppercase;
 }
+
+/* ======================== */
+/* BLOCKQUOTE / QUOTE STYLE */
+/* ======================== */
+
+/* Style cho cả blockquote cũ (không có class) và mới (có class voz-quote) */
+blockquote,
+.voz-quote {
+  margin: 8px 0 12px 0;
+  padding: 0;
+  border: 1px solid var(--voz-border);
+  border-left: 3px solid #e8a060;
+  border-radius: 4px;
+  background: var(--voz-accent);
+  overflow: hidden;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Header quote - tên người được trích dẫn */
+.voz-quote-header {
+  background: var(--voz-hover);
+  border-bottom: 1px solid var(--voz-border);
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #e8a060;
+}
+
+/* Body quote - nội dung trích dẫn */
+.voz-quote-body {
+  padding: 10px 12px;
+  color: var(--voz-text-muted);
+  font-style: italic;
+}
+
+/* Fallback cho quote cũ (format: <blockquote><strong>@user:</strong> text</blockquote>) */
+blockquote:not(.voz-quote) {
+  padding: 10px 12px;
+  color: var(--voz-text-muted);
+}
+
+blockquote:not(.voz-quote) strong {
+  color: #e8a060;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+/* Post content blockquote trong editor TipTap */
+.ProseMirror blockquote,
+.post-content blockquote {
+  margin: 8px 0 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--voz-border);
+  border-left: 3px solid #e8a060;
+  border-radius: 4px;
+  background: var(--voz-accent);
+  color: var(--voz-text-muted);
+  font-size: 14px;
+}
+
+.ProseMirror blockquote strong:first-child,
+.post-content blockquote strong:first-child {
+  color: #e8a060;
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+

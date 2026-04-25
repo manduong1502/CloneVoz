@@ -15,7 +15,7 @@ export default function ThreadReplyBox({ session, threadId }) {
   useEffect(() => {
     const handleQuote = (e) => {
       const { username, text } = e.detail;
-      const quoteHtml = `<blockquote><strong>@${username}:</strong> ${text}</blockquote><p></p>`;
+      const quoteHtml = `<blockquote class="voz-quote"><div class="voz-quote-header">${username} đã viết:</div><div class="voz-quote-body">${text}</div></blockquote><p></p>`;
       
       const editor = editorRef.current?.getEditor();
       if (editor) {
