@@ -1,74 +1,42 @@
 import Link from 'next/link';
-import { prisma } from '@/lib/prisma'; // 🚀 Nhúng Database
+import { Rocket, ArrowLeft } from 'lucide-react';
 
-export default async function WhatsNewPage() {
-  
-  // Lấy 30 Thread mới nhất trực tiếp từ PostgreSQL
-  const latestThreads = await prisma.thread.findMany({
-    where: { isApproved: true },
-    orderBy: { createdAt: 'desc' },
-    take: 30,
-    include: {
-      author: true,
-      node: true,
-      prefix: true
-    }
-  });
-
+export default function WhatsNewPage() {
   return (
-    <div className="w-full">
-      <div className="mb-4">
-        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Có gì mới</h1>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
-        <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Bài viết mới</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886]">Bài viết hồ sơ mới</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886]">Hoạt động mới nhất</Link>
-      </div>
-
-      <div className="voz-card overflow-hidden">
-        <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-[6px] flex justify-end items-center text-[12px] text-[var(--voz-text-muted)]">
-           <button className="hover:text-[var(--voz-text)]">Bộ lọc ▾</button>
-        </div>
-        
-        <div className="bg-[var(--voz-surface)]">
-          {latestThreads.map(thread => (
-            <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors">
-              <div className="shrink-0 mr-3 mt-1">
-                 <img src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username.charAt(0)}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
-              </div>
-              <div className="flex-1 flex flex-col min-w-0 pr-4">
-                <div className="text-[15px] mb-[2px] leading-tight">
-                  <Link href={`/thread/${thread.id}`} className="font-semibold hover:underline text-[var(--voz-link)]">
-                    {thread.title}
-                  </Link>
-                </div>
-                <div className="text-[12px] text-[var(--voz-text-muted)] flex flex-wrap items-center gap-1 mt-1">
-                  Mới nhất: <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
-                  <span>·</span>
-                  <span>{thread.createdAt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                  <span>·</span>
-                  <Link href={`/category/${thread.nodeId}`} className="hover:underline hover:text-[var(--voz-text)] text-[var(--voz-text-muted)]">{thread.node.title}</Link>
-                </div>
-              </div>
-
-              <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[140px]">
-                <div className="flex flex-col items-end w-full">
-                    <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
-                    <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
-                </div>
-              </div>
-            </div>
-          ))}
-          {latestThreads.length === 0 && (
-            <div className="p-4 text-center text-[var(--voz-text-muted)] text-sm">Chưa có bài viết mới nào.</div>
-          )}
+    <div className="w-full flex items-center justify-center" style={{ minHeight: 'calc(100vh - 200px)' }}>
+      <div className="text-center max-w-[520px] px-6">
+        {/* Icon */}
+        <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <Rocket size={36} className="text-white" />
         </div>
 
-        <div className="bg-[var(--voz-accent)] border-t border-[var(--voz-border)] px-3 py-[6px] text-center text-[12px]">
-           <Link href="#" className="text-[var(--voz-link)] hover:underline">Xem thêm...</Link>
+        {/* Title */}
+        <h1 className="text-[28px] md:text-[34px] font-bold text-[var(--voz-text)] mb-3 leading-tight">
+          Cùng Nhau Kiếm Tiền
+        </h1>
+
+        {/* Description */}
+        <p className="text-[15px] text-[var(--voz-text-muted)] leading-relaxed mb-6">
+          Tính năng <strong className="text-[var(--voz-text)]">Cùng Nhau Kiếm Tiền</strong> đang được phát triển và sẽ sớm ra mắt trong thời gian tới.
+          <br className="hidden md:block" />
+          Đây sẽ là nơi anh em chia sẻ cơ hội, kinh nghiệm kiếm tiền và hợp tác cùng nhau phát triển.
+        </p>
+
+        {/* Badge */}
+        <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 px-4 py-2 rounded-full text-[13px] font-semibold mb-8">
+          <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+          Đang phát triển — Sắp ra mắt
+        </div>
+
+        {/* CTA */}
+        <div>
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-[var(--voz-link)] hover:underline text-[14px] font-medium"
+          >
+            <ArrowLeft size={16} />
+            Quay lại Diễn đàn
+          </Link>
         </div>
       </div>
     </div>
