@@ -27,6 +27,13 @@ export async function createThread(nodeId, formData) {
   const tsCheck = await verifyTurnstile(turnstileToken);
   if (!tsCheck.success) throw new Error(tsCheck.error);
 
+  // Kiểm tra xem user có quyền auto-approve không (Admin/Mod)
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { userGroups: true }
+  });
+  const autoApprove = currentUser?.userGroups.some(g => g.name === 'Admin' || g.name === 'Moderator' || g.canApprove) || false;
+
   const newThread = await prisma.thread.create({
     data: {
       title,
@@ -34,6 +41,7 @@ export async function createThread(nodeId, formData) {
       authorId: session.user.id,
       viewCount: 0,
       replyCount: 0,
+      isApproved: autoApprove,
     }
   });
 

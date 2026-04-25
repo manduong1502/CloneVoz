@@ -74,6 +74,7 @@ model UserGroup {
   canBan      Boolean @default(false)
   canDelete   Boolean @default(false)
   canEditAny  Boolean @default(false)
+  canApprove  Boolean @default(false) // Quyền duyệt bài viết mới
 
   // Relationships
   users       User[]  @relation("UserToGroup")
@@ -126,6 +127,7 @@ model Thread {
   title       String
   isLocked    Boolean   @default(false)
   isPinned    Boolean   @default(false)
+  isApproved  Boolean   @default(false) // Duyệt bài: false = chờ duyệt
   
   viewCount   Int       @default(0)
   replyCount  Int       @default(0)

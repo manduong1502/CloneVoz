@@ -123,8 +123,8 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                     >
                       <div className="flex flex-col text-[14px] text-[var(--voz-text)] p-2">
                         <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[var(--voz-accent)] border-b border-[var(--voz-border-light)]">Trang hồ sơ của bạn</Link>
-                        {(user.isAdmin || user.email === 'lamphatcommerce@gmail.com' || user.email === 'mandtdn@gmail.com') && (
-                          <Link href="/admin" className="px-3 py-2 hover:bg-[var(--voz-accent)] text-red-600 font-bold">Vào trang Quản Trị (Admin)</Link>
+                        {(user.isAdmin || user.isMod || user.email === 'lamphatcommerce@gmail.com' || user.email === 'mandtdn@gmail.com') && (
+                          <Link href="/admin/pending" className="px-3 py-2 hover:bg-[var(--voz-accent)] text-red-600 font-bold">Vào trang Quản Trị (Admin)</Link>
                         )}
                         <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[var(--voz-accent)]">Chi tiết tài khoản (Profile)</Link>
                         <form action={handleLogOut}>

@@ -74,7 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             username: true, 
             avatar: true,
             userGroups: {
-               select: { name: true }
+               select: { name: true, canApprove: true, canBan: true, canDelete: true, canEditAny: true }
             }
           }
         });
@@ -83,6 +83,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           session.user.name = dbUser.username;
           session.user.image = dbUser.avatar;
           session.user.isAdmin = dbUser.userGroups.some(g => g.name === 'Admin');
+          session.user.isMod = dbUser.userGroups.some(g => g.name === 'Moderator');
+          session.user.canApprove = dbUser.userGroups.some(g => g.canApprove);
+          session.user.canDelete = dbUser.userGroups.some(g => g.canDelete);
         }
       }
       return session;

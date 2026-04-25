@@ -5,6 +5,7 @@ export default async function WhatsNewPage() {
   
   // Lấy 30 Thread mới nhất trực tiếp từ PostgreSQL
   const latestThreads = await prisma.thread.findMany({
+    where: { isApproved: true },
     orderBy: { createdAt: 'desc' },
     take: 30,
     include: {

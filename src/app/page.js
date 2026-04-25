@@ -18,7 +18,8 @@ export default async function Home() {
            orderBy: { displayOrder: 'asc' },
            include: {
               threads: {
-                orderBy: { createdAt: 'desc' },
+                 where: { isApproved: true },
+                 orderBy: { createdAt: 'desc' },
                 take: 1,
                 include: { author: true }
               }
@@ -29,14 +30,16 @@ export default async function Home() {
 
      // 2. Kéo Trending Content (Nhiều Reply nhất)
      const trendingThreads = await prisma.thread.findMany({
-       orderBy: { replyCount: 'desc' },
+        where: { isApproved: true },
+        orderBy: { replyCount: 'desc' },
        take: 5,
        include: { author: true }
      });
 
      // 3. Kéo Featured Content (Nhiều View nhất)
      const featuredThreads = await prisma.thread.findMany({
-       orderBy: { viewCount: 'desc' },
+        where: { isApproved: true },
+        orderBy: { viewCount: 'desc' },
        take: 2,
        include: { author: true }
      });

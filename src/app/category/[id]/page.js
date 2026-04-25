@@ -69,7 +69,7 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   const prefixId = sp.prefix || null;
-  const whereCondition = { nodeId: id };
+  const whereCondition = { nodeId: id, isApproved: true };
   if (prefixId) whereCondition.prefixId = prefixId;
 
   // Lấy tổng số Thread để tính số trang
@@ -117,6 +117,7 @@ export default async function CategoryPage({ params, searchParams }) {
   let trendingThreads = cachedData?.trendingThreads;
   if (!trendingThreads) {
       trendingThreads = await prisma.thread.findMany({
+        where: { isApproved: true },
         orderBy: { replyCount: 'desc' },
         take: 5,
         include: { author: true }

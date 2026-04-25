@@ -17,7 +17,7 @@ export default async function FindThreadsPage({ searchParams }) {
 
   const session = await auth();
 
-  let whereCondition = {};
+  let whereCondition = { isApproved: true };
   let pageTitle = "Kết quả tìm kiếm";
 
   if (type === 'unanswered') {
