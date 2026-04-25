@@ -1,10 +1,9 @@
 import { prisma } from '@/lib/prisma';
 import { createNode, updateNode, deleteNode } from '@/actions/nodeActions';
-import { LayoutList, Trash2, Edit2, FolderPlus, Plus, AlertTriangle } from 'lucide-react';
+import { Trash2, FolderPlus, Plus, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
-import MoveNodeButton from './MoveNodeButton';
-import ReorderButton from './ReorderButton';
+import DraggableForumList from './DraggableForumList';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -52,51 +51,17 @@ export default async function AdminNodesPage() {
                        </div>
                     </div>
 
-                    <div className="divide-y divide-[var(--voz-border)]">
-                       {childrenNodes.length === 0 ? (
-                         <div className="px-4 py-6 text-center text-sm text-[var(--voz-text-muted)] italic bg-[var(--voz-bg)]">
-                           Trống. Chưa có phòng nào!
-                         </div>
-                       ) : (
-                         childrenNodes.map(forum => (
-                           <div key={forum.id} className="px-4 py-3 flex justify-between items-center hover:bg-[var(--voz-hover)] transition">
-                              <div className="flex items-center gap-3">
-                                 <LayoutList className="text-[var(--voz-link)]" size={18} />
-                                 <div>
-                                   <Link href={`/admin/nodes/${forum.id}`} className="font-semibold text-[14px] text-[var(--voz-link)] hover:underline">{forum.title}</Link>
-                                   {forum.description && <div className="text-[12px] text-[var(--voz-text-muted)] mt-0.5">{forum.description}</div>}
-                                 </div>
-                              </div>
-                              <div className="flex items-center gap-6">
-                                 <Link href={`/admin/nodes/${forum.id}`} className="text-right text-[12px] text-[var(--voz-link)] hover:underline w-[100px] hidden sm:block">
-                                   <div>{forum._count.threads} Threads</div>
-                                 </Link>
-                                 <div className="flex gap-1 items-center">
-                                     <ReorderButton
-                                       nodeId={forum.id}
-                                       nodeTitle={forum.title}
-                                       currentOrder={forum.displayOrder}
-                                     />
-                                     <MoveNodeButton 
-                                       nodeId={forum.id} 
-                                       nodeTitle={forum.title} 
-                                       categories={categories.map(c => ({ id: c.id, title: c.title }))}
-                                       currentParentId={category.id}
-                                     />
-                                    <form action={async () => {
-                                       "use server";
-                                       await deleteNode(forum.id);
-                                    }}>
-                                       <button className="p-1.5 text-[var(--voz-text-muted)] hover:text-red-500 bg-transparent rounded border border-transparent hover:border-[var(--voz-border)] transition" title="Delete Forum">
-                                          <Trash2 size={15} />
-                                       </button>
-                                    </form>
-                                 </div>
-                              </div>
-                           </div>
-                         ))
-                       )}
-                    </div>
+                    <DraggableForumList 
+                      forums={childrenNodes.map(f => ({
+                        id: f.id,
+                        title: f.title,
+                        description: f.description,
+                        displayOrder: f.displayOrder,
+                        _count: f._count
+                      }))}
+                      categories={categories.map(c => ({ id: c.id, title: c.title }))}
+                      categoryId={category.id}
+                    />
                  </div>
               );
            })}
