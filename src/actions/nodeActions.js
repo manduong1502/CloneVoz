@@ -114,3 +114,20 @@ export async function moveNode(nodeId, newParentId) {
   revalidatePath("/");
   revalidatePath("/admin/nodes");
 }
+
+// 5. Cập nhật thứ tự hiển thị của Forum
+export async function updateNodeOrder(nodeId, newOrder) {
+  if (!nodeId) throw new Error("Thiếu thông tin");
+  
+  await prisma.node.update({
+    where: { id: nodeId },
+    data: { displayOrder: parseInt(newOrder) }
+  });
+
+  // Xóa cache homepage
+  const { deleteCache } = await import('@/lib/redis');
+  await deleteCache('voz_homepage_data');
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+}

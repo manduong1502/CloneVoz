@@ -87,8 +87,8 @@ export default async function Home() {
             <div className="flex flex-col bg-[var(--voz-surface)]">
               {category.children.length === 0 ? (
                  <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
-              ) : category.children.map((node, i) => (
-                <div key={node.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== category.children.length -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
+              ) : category.children.slice(0, 4).map((node, i) => (
+                <div key={node.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== Math.min(category.children.length, 4) -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
                   
                   {/* Icon & Title */}
                   <div className="flex-1 flex items-center min-w-0 pr-4">

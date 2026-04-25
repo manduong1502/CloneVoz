@@ -110,9 +110,11 @@ export default function UserTable({ users }) {
                     </span>
                  </td>
                  <td className="px-5 py-4">
-                    <div className="text-xs">
-                       <div>Bài viết: {u.messageCount}</div>
-                       <div>Điểm: {u.reactionScore}</div>
+                    <div className="text-xs space-y-[2px]">
+                       <div>Chủ đề: <span className="font-medium text-[var(--voz-text)]">{u._count?.threads ?? u.messageCount ?? 0}</span></div>
+                       <div>Bài viết: <span className="font-medium text-[var(--voz-text)]">{u._count?.posts ?? 0}</span></div>
+                       <div>Reactions: <span className="font-medium text-[var(--voz-text)]">{u._count?.reactions ?? u.reactionScore ?? 0}</span></div>
+                       <div className="text-[var(--voz-text-muted)]">Tham gia: {new Date(u.createdAt).toLocaleDateString('vi-VN')}</div>
                     </div>
                  </td>
                  <td className="px-5 py-4">

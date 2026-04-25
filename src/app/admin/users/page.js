@@ -3,7 +3,10 @@ import UserTable from './UserTable';
 
 export default async function AdminUsers() {
   const users = await prisma.user.findMany({
-    include: { userGroups: true },
+    include: { 
+      userGroups: true,
+      _count: { select: { threads: true, posts: true, reactions: true } }
+    },
     orderBy: { createdAt: 'desc' }
   });
 

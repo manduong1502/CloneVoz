@@ -4,6 +4,7 @@ import { LayoutList, Trash2, Edit2, FolderPlus, Plus, AlertTriangle } from 'luci
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import MoveNodeButton from './MoveNodeButton';
+import ReorderButton from './ReorderButton';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -70,13 +71,18 @@ export default async function AdminNodesPage() {
                                  <Link href={`/admin/nodes/${forum.id}`} className="text-right text-[12px] text-[var(--voz-link)] hover:underline w-[100px] hidden sm:block">
                                    <div>{forum._count.threads} Threads</div>
                                  </Link>
-                                 <div className="flex gap-1">
-                                    <MoveNodeButton 
-                                      nodeId={forum.id} 
-                                      nodeTitle={forum.title} 
-                                      categories={categories.map(c => ({ id: c.id, title: c.title }))}
-                                      currentParentId={category.id}
-                                    />
+                                 <div className="flex gap-1 items-center">
+                                     <ReorderButton
+                                       nodeId={forum.id}
+                                       nodeTitle={forum.title}
+                                       currentOrder={forum.displayOrder}
+                                     />
+                                     <MoveNodeButton 
+                                       nodeId={forum.id} 
+                                       nodeTitle={forum.title} 
+                                       categories={categories.map(c => ({ id: c.id, title: c.title }))}
+                                       currentParentId={category.id}
+                                     />
                                     <form action={async () => {
                                        "use server";
                                        await deleteNode(forum.id);

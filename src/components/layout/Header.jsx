@@ -94,7 +94,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 <Link href="/" className={pathname === '/' || pathname.startsWith('/category') || pathname.startsWith('/thread') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Diễn đàn
                 </Link>
-                <Link href="/whats-new" className={pathname.startsWith('/whats-new') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/earn" className={pathname.startsWith('/earn') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Cùng nhau kiếm tiền
                 </Link>
                 <Link href="/terms" className={pathname.startsWith('/terms') || pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
@@ -241,7 +241,8 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
         {isMobileMenuOpen && (
           <div className="md:hidden absolute top-[50px] left-0 w-full bg-[var(--voz-blue-dark)] border-t border-white/10 z-40 text-white flex flex-col shadow-lg transition-all duration-300 transform origin-top">
             <Link href="/" className="px-4 py-3 border-b border-white/10 font-bold hover:bg-[var(--voz-surface)]/10 block">Diễn đàn</Link>
-            <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Mới nhất</Link>
+            <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Bài viết mới</Link>
+            <Link href="/earn" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Cùng nhau kiếm tiền</Link>
             <div className="px-4 py-3 border-b border-white/10 font-bold flex justify-between items-center bg-black/20">
               <input type="text" placeholder="Tìm kiếm..." className="bg-[var(--voz-surface)]/10 border border-white/20 px-2 py-1 outline-none rounded-sm w-full placeholder-white/50 text-sm" />
               <Search size={18} className="ml-2" />
