@@ -4,11 +4,14 @@ import { MessageSquareQuote } from 'lucide-react';
 
 export default function QuoteButton({ username, content }) {
   const handleQuote = () => {
-    // Chỉ lấy text thô nếu không muốn lồng quá sâu, hoặc lấy HTML.
-    // Ở đây ta xoá HTML tag để lấy text gốc cho đơn giản.
     const tempDiv = document.createElement("div");
     tempDiv.innerHTML = content;
-    const textContent = tempDiv.innerText || tempDiv.textContent;
+    
+    // Xóa tất cả blockquote cũ (quote lồng) để chỉ lấy nội dung gốc của người viết
+    tempDiv.querySelectorAll('blockquote').forEach(bq => bq.remove());
+    
+    const textContent = (tempDiv.innerText || tempDiv.textContent).trim();
+    if (!textContent) return; // Không quote nếu không còn nội dung
 
     window.dispatchEvent(new CustomEvent('insert-quote', {
       detail: {
