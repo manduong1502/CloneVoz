@@ -86,7 +86,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
               </button>
               <Link href="/" className="flex items-center gap-2 hover:no-underline text-white relative top-[-2px]">
-                <img src="/logo.png" alt="Đàn Ông Thông Minh" className="h-[32px] md:h-[36px] object-contain" />
+                <img src="/logo.png" alt="Đàn Ông Thông Minh" className="h-[40px] md:h-[48px] object-contain" />
               </Link>
 
               {/* Desktop Nav */}

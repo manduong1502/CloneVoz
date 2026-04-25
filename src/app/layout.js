@@ -44,6 +44,10 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="vi" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="apple-touch-icon" href="/favicon.png" />
+      </head>
       <body className={`${inter.className} min-h-screen flex flex-col pt-0 bg-[var(--voz-bg)] text-[var(--voz-text)]`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} />
