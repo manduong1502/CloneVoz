@@ -10,6 +10,7 @@ import WatchButton from '@/components/thread/WatchButton';
 import ReportModal from '@/components/thread/ReportModal';
 import DeletePostButton from '@/components/thread/DeletePostButton';
 import LikeButton from '@/components/thread/LikeButton';
+import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
 
 import { formatRelativeTime } from '@/lib/formatTime';
@@ -179,7 +180,9 @@ export default async function ThreadPage({ params, searchParams }) {
                  <div className="flex gap-3"><Link href={`#post-${post.id}`} className="hover:underline">#{post.position}</Link></div>
                </div>
                
-               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: post.content }} />
+               <div className="p-4 text-[15px] leading-relaxed flex-1">
+                  <PostContentWithPreview html={post.content} />
+               </div>
                
                {post.author.signature && (
                  <div className="mx-4 pb-2 text-[12px] text-[var(--voz-text-muted)] border-t border-[var(--voz-border-light)] pt-2 italic">
