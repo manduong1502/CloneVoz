@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import RankBadge from '@/components/ui/RankBadge';
+import { getRankInfo } from '@/lib/rank';
 
 import Pagination from '@/components/ui/Pagination';
 import { formatRelativeTime } from '@/lib/formatTime';
