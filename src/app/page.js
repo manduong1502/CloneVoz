@@ -191,7 +191,7 @@ export default async function Home() {
         </div>
 
         {/* Leaderboard Box */}
-        <LeaderboardBox topUsersTotal={topUsersTotal} topUsersMonth={topUsersMonth} />
+        <LeaderboardBox topUsersTotal={topUsersTotal || []} topUsersMonth={topUsersMonth || []} />
 
         {/* Forum statistics */}
         <div className="voz-card overflow-hidden">
