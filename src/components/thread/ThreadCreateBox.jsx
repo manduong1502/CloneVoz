@@ -44,6 +44,8 @@ export default function ThreadCreateBox({ session, nodeId }) {
       try {
         await createThread(nodeId, formData);
       } catch (error) {
+        // NEXT_REDIRECT là redirect của Next.js — phải re-throw
+        if (error?.digest?.startsWith('NEXT_REDIRECT')) throw error;
         alert(error.message);
       }
     });
