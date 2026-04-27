@@ -72,13 +72,31 @@ export default async function ProfilePage({ params, searchParams }) {
             </div>
             
             <div className="flex flex-col md:mb-2">
-              <h1 className="text-[28px] font-semibold text-[var(--voz-text)] flex items-center justify-center md:justify-start gap-2 leading-none">
+              <h1 className="text-[28px] font-semibold text-[var(--voz-text)] flex flex-wrap items-center justify-center md:justify-start gap-3 leading-none mb-2">
                 {targetUser.username}
                 {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
+                <RankBadge points={targetUser.points} size="lg" />
               </h1>
-              <div className="mt-2 mb-1">
-                <RankBadge points={targetUser.points} size="lg" showProgress />
-              </div>
+              
+              {/* Progress Bar */}
+              {(() => {
+                const rank = getRankInfo(targetUser.points);
+                if (rank.isMax) return null;
+                return (
+                  <div className="w-full max-w-[200px] flex flex-col items-center md:items-start mb-2 mx-auto md:mx-0">
+                    <div className="w-full h-[3px] bg-[var(--voz-border)] rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-500"
+                        style={{ width: `${rank.progress}%`, backgroundColor: rank.color }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-[var(--voz-text-muted)] mt-1">
+                      {rank.currentPoints}/{rank.nextMin} → {rank.nextTitle}
+                    </span>
+                  </div>
+                );
+              })()}
+
               <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center justify-center md:justify-start gap-1">
                 <Clock size={12}/> Đã tham gia: {new Date(targetUser.createdAt).toLocaleDateString('vi-VN')}
               </div>
