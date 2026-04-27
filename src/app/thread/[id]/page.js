@@ -167,7 +167,7 @@ export default async function ThreadPage({ params, searchParams }) {
                   
                   <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px] mt-2">
                      <div className="flex justify-between w-full"><span>Tham gia:</span> <span className="font-medium text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(post.author.createdAt).toLocaleDateString('vi-VN')}</span></div>
-                     <div className="flex justify-between w-full"><span>Bài viết</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.messageCount}</span></div>
+                     <div className="flex justify-between w-full"><span>Bình luận</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.messageCount}</span></div>
                      <div className="flex justify-between w-full"><span>Công đức</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.points}</span></div>
                   </div>
                </div>

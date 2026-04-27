@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }) {
                         <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
                      </div>
                      <div className="flex flex-col items-center">
-                        <div>Bài viết</div>
+                        <div>Bình luận</div>
                         <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
                      </div>
                   </div>

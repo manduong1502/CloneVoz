@@ -50,7 +50,7 @@ export default async function LeaderboardPage() {
         <div className="text-center">#</div>
         <div>Thành viên</div>
         <div className="text-center">{type === 'total' ? 'Công đức' : 'Tháng này'}</div>
-        <div className="text-center">Bài viết</div>
+        <div className="text-center">Bình luận</div>
         <div className="text-center hidden md:block">Tham gia</div>
       </div>
       

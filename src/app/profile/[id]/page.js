@@ -111,7 +111,7 @@ export default async function ProfilePage({ params, searchParams }) {
             <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Thống kê</h3>
             <div className="bg-[var(--voz-surface)] p-3 text-[13px] text-[var(--voz-text-strong)] flex flex-col gap-3">
               <div className="flex justify-between items-center border-b border-[var(--voz-border-light)] pb-2">
-                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><MessageSquare size={16}/> Bài viết:</span> 
+                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><MessageSquare size={16}/> Bình luận:</span> 
                 <span className="font-semibold">{postsCount}</span>
               </div>
               <div className="flex justify-between items-center border-b border-[var(--voz-border-light)] pb-2">

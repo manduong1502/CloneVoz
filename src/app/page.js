@@ -131,7 +131,7 @@ export default async function Home() {
                         <div className="text-[var(--voz-text-strong)] text-[13px]">{formatNumber(node.threadsCount)}</div>
                      </div>
                      <div className="flex flex-col items-center">
-                        <div>Bài viết</div>
+                        <div>Bình luận</div>
                         <div className="text-[var(--voz-text-strong)] text-[13px]">{formatNumber(node.postsCount)}</div>
                      </div>
                   </div>
@@ -200,7 +200,7 @@ export default async function Home() {
            </div>
            <div className="bg-[var(--voz-accent)] p-3 text-[12px] text-[var(--voz-text-strong)] flex flex-col gap-1">
                <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Chủ đề:</span> <span>{totalForumThreads.toLocaleString()}</span></div>
-               <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Bài viết:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
+               <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Bình luận:</span> <span>{totalForumPosts.toLocaleString()}</span></div>
                <div className="flex justify-between border-b border-[var(--voz-border-light)] pb-1"><span>Thành viên:</span> <span>{totalForumUsers.toLocaleString()}</span></div>
                <div className="flex justify-between"><span>Mới nhất:</span> <Link href={latestUser ? `/profile/${latestUser.username}` : '#'} className="text-[var(--voz-link)] font-medium hover:underline truncate max-w-[120px] text-right">{latestUser?.username || 'Chưa rõ'}</Link></div>
            </div>

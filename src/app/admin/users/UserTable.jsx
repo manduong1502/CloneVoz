@@ -92,7 +92,7 @@ export default function UserTable({ users }) {
               <th className="text-left px-3 py-2.5 hidden md:table-cell">Email</th>
               <th className="text-center px-3 py-2.5">Tham gia</th>
               <th className="text-center px-3 py-2.5">Chủ đề</th>
-              <th className="text-center px-3 py-2.5">Bài viết</th>
+              <th className="text-center px-3 py-2.5">Bình luận</th>
               <th className="text-center px-3 py-2.5">Công đức</th>
               <th className="text-center px-3 py-2.5">Reactions</th>
               <th className="text-center px-3 py-2.5">Trạng thái</th>
