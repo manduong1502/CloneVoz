@@ -101,6 +101,17 @@ export async function rejectThread(threadId) {
     prisma.thread.delete({ where: { id: threadId } })
   ]);
 
+  // Cập nhật counter trên Node
+  if (thread) {
+    await prisma.node.update({
+      where: { id: thread.nodeId },
+      data: {
+        threadsCount: { decrement: 1 },
+        postsCount: { decrement: postIds.length }
+      }
+    });
+  }
+
   await deleteCache('voz_homepage_data');
   
   revalidatePath('/admin/pending');
@@ -226,6 +237,17 @@ export async function deleteThread(threadId) {
     prisma.post.deleteMany({ where: { threadId } }),
     prisma.thread.delete({ where: { id: threadId } })
   ]);
+
+  // Cập nhật counter trên Node
+  if (thread.nodeId) {
+    await prisma.node.update({
+      where: { id: thread.nodeId },
+      data: {
+        threadsCount: { decrement: 1 },
+        postsCount: { decrement: postIds.length }
+      }
+    });
+  }
 
   await deleteCache('voz_homepage_data');
   // Xóa TẤT CẢ cache pages của node này (page 1, 2, 3... prefix...)
