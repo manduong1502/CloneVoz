@@ -6,6 +6,7 @@ import GlobalChatbox from "@/components/layout/GlobalChatbox";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import BannedOverlay from "@/components/ui/BannedOverlay";
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -27,15 +28,33 @@ export default async function RootLayout({ children }) {
 
   let notifications = [];
   let unreadNotificationsCount = 0;
+  let bannedUser = null;
 
   if (session?.user?.id) {
-    notifications = await prisma.notification.findMany({
-      where: { userId: session.user.id },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      include: { sender: { select: { username: true, avatar: true } } }
+    const currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isBanned: true, banReason: true, banExpiresAt: true, bannedAt: true }
     });
-    unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+
+    // Check nếu ban đã hết hạn thì tự động gỡ ban
+    if (currentUser?.isBanned && currentUser.banExpiresAt && new Date(currentUser.banExpiresAt) < new Date()) {
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { isBanned: false, banReason: null, banExpiresAt: null, bannedAt: null }
+      });
+    } else if (currentUser?.isBanned) {
+      bannedUser = currentUser;
+    }
+
+    if (!bannedUser) {
+      notifications = await prisma.notification.findMany({
+        where: { userId: session.user.id },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        include: { sender: { select: { username: true, avatar: true } } }
+      });
+      unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+    }
   }
 
   return (
@@ -47,14 +66,25 @@ export default async function RootLayout({ children }) {
       </head>
       <body className={`${inter.className} min-h-screen flex flex-col pt-0 bg-[var(--voz-bg)] text-[var(--voz-text)]`} suppressHydrationWarning>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} />
-          <main className="max-w-[1240px] px-2 md:px-4 mx-auto w-full flex-1 py-4 md:py-6">
-            {children}
-          </main>
-          <Footer />
-          <GlobalChatbox session={session} />
+          {bannedUser ? (
+            <BannedOverlay 
+              banReason={bannedUser.banReason}
+              banExpiresAt={bannedUser.banExpiresAt?.toISOString()}
+              bannedAt={bannedUser.bannedAt?.toISOString()}
+            />
+          ) : (
+            <>
+              <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} />
+              <main className="max-w-[1240px] px-2 md:px-4 mx-auto w-full flex-1 py-4 md:py-6">
+                {children}
+              </main>
+              <Footer />
+              <GlobalChatbox session={session} />
+            </>
+          )}
         </ThemeProvider>
       </body>
     </html>
   );
 }
+

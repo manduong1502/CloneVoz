@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useRef, useTransition } from 'react';
-import { GripVertical, ArrowRightLeft, Trash2, LayoutList } from 'lucide-react';
+import { GripVertical, ArrowRightLeft, Trash2, LayoutList, Pencil } from 'lucide-react';
 import Link from 'next/link';
 import { updateNodeOrder } from '@/actions/nodeActions';
-import { moveNode } from '@/actions/nodeActions';
+import { moveNode, renameNode } from '@/actions/nodeActions';
 
 export default function DraggableForumList({ forums, categories, categoryId }) {
   const [items, setItems] = useState(forums);
@@ -12,6 +12,8 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
   const [dragOverIdx, setDragOverIdx] = useState(null);
   const [isPending, startTransition] = useTransition();
   const [moveForumId, setMoveForumId] = useState(null);
+  const [renameForumId, setRenameForumId] = useState(null);
+  const [renameValue, setRenameValue] = useState('');
 
   const handleDragStart = (e, idx) => {
     setDraggedIdx(idx);
@@ -122,9 +124,30 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
             </div>
             <LayoutList className="text-[var(--voz-link)]" size={18} />
             <div>
-              <Link href={`/admin/nodes/${forum.id}`} className="font-semibold text-[14px] text-[var(--voz-link)] hover:underline">
-                {forum.title}
-              </Link>
+              {renameForumId === forum.id ? (
+                <input
+                  autoFocus
+                  value={renameValue}
+                  onChange={(e) => setRenameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      startTransition(async () => {
+                        await renameNode(forum.id, renameValue);
+                        const newItems = items.map(it => it.id === forum.id ? { ...it, title: renameValue } : it);
+                        setItems(newItems);
+                        setRenameForumId(null);
+                      });
+                    }
+                    if (e.key === 'Escape') setRenameForumId(null);
+                  }}
+                  onBlur={() => setRenameForumId(null)}
+                  className="px-2 py-0.5 text-sm border border-blue-400 rounded bg-[var(--voz-bg)] text-[var(--voz-text)] outline-none w-[180px]"
+                />
+              ) : (
+                <Link href={`/admin/nodes/${forum.id}`} className="font-semibold text-[14px] text-[var(--voz-link)] hover:underline">
+                  {forum.title}
+                </Link>
+              )}
               {forum.description && (
                 <div className="text-[12px] text-[var(--voz-text-muted)] mt-0.5">{forum.description}</div>
               )}
@@ -137,6 +160,14 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
             </Link>
 
             <div className="flex gap-1 items-center">
+              {/* Rename Button */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setRenameForumId(forum.id); setRenameValue(forum.title); }}
+                className="p-1.5 text-[var(--voz-text-muted)] hover:text-blue-500 bg-transparent rounded border border-transparent hover:border-[var(--voz-border)] transition"
+                title="Đổi tên"
+              >
+                <Pencil size={14} />
+              </button>
               {/* Move Button */}
               {moveForumId === forum.id ? (
                 <select

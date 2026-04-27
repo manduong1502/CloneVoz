@@ -160,19 +160,48 @@ export async function setUserRole(userId, roleName) {
   return { success: true, message: `Đã đặt ${user.username} thành ${roleName}` };
 }
 
-export async function banUser(userId) {
+export async function banUser(userId, duration, reason) {
   await requireAdmin();
   
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User không tồn tại");
   
+  // Nếu đang bị ban → Gỡ ban
+  if (user.isBanned) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { 
+        isBanned: false, 
+        banReason: null, 
+        banExpiresAt: null, 
+        bannedAt: null 
+      }
+    });
+    revalidatePath('/admin/users');
+    return { success: true, isBanned: false };
+  }
+  
+  // Ban mới
+  let banExpiresAt = null;
+  if (duration === '7days') {
+    banExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  } else if (duration === '30days') {
+    banExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  }
+  // duration === 'permanent' → banExpiresAt = null (vĩnh viễn)
+  
   await prisma.user.update({
     where: { id: userId },
-    data: { isBanned: !user.isBanned }
+    data: { 
+      isBanned: true,
+      banReason: reason || 'Vi phạm nội quy diễn đàn',
+      banExpiresAt,
+      bannedAt: new Date()
+    }
   });
 
   revalidatePath('/admin/users');
-  return { success: true, isBanned: !user.isBanned };
+  return { success: true, isBanned: true };
 }
 
 // =============================================

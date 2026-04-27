@@ -4,6 +4,7 @@ import { Trash2, FolderPlus, Plus, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import DraggableForumList from './DraggableForumList';
+import RenameButton from './RenameButton';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -39,7 +40,8 @@ export default async function AdminNodesPage() {
                     <div className="bg-[var(--voz-accent)] px-4 py-3 border-b border-[var(--voz-border)] flex justify-between items-center">
                        <h3 className="font-bold text-[15px]">{category.title} <span className="text-xs font-normal text-[var(--voz-text-muted)] ml-2">(Group)</span></h3>
                        
-                       <div className="flex gap-2">
+                       <div className="flex gap-2 items-center">
+                          <RenameButton nodeId={category.id} currentTitle={category.title} />
                           <form action={async () => {
                              "use server";
                              await deleteNode(category.id);

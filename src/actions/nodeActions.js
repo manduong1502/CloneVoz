@@ -131,3 +131,19 @@ export async function updateNodeOrder(nodeId, newOrder) {
   revalidatePath("/");
   revalidatePath("/admin/nodes");
 }
+
+// 6. Đổi tên Node (Category hoặc Forum)
+export async function renameNode(nodeId, newTitle) {
+  if (!nodeId || !newTitle?.trim()) throw new Error("Thiếu thông tin");
+  
+  await prisma.node.update({
+    where: { id: nodeId },
+    data: { title: newTitle.trim() }
+  });
+
+  const { deleteCache } = await import('@/lib/redis');
+  await deleteCache('voz_homepage_data');
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+}

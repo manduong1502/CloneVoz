@@ -15,6 +15,8 @@ export default async function AdminUsers() {
     ...u,
     createdAt: u.createdAt.toISOString(),
     updatedAt: u.updatedAt?.toISOString() || null,
+    bannedAt: u.bannedAt?.toISOString() || null,
+    banExpiresAt: u.banExpiresAt?.toISOString() || null,
   }));
 
   return (
