@@ -85,7 +85,7 @@ export default function UserRoleActions({ userId, username, currentRole, isBanne
         <button
           onClick={handleBan}
           disabled={isPending}
-          className={`flex items-center gap-1 px-3 py-[6px] text-xs border rounded-md transition ${
+          className={`flex items-center justify-center gap-1 w-[72px] py-[6px] text-xs border rounded-md transition ${
             banned 
               ? 'border-emerald-500 text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/20' 
               : 'border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20'
