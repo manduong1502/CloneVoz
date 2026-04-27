@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Search, MessageSquare, FileText, Heart, Calendar, Mail, Ban } from 'lucide-react';
+import { Search, Ban } from 'lucide-react';
 import UserRoleActions from './UserRoleActions';
 
 export default function UserTable({ users }) {
@@ -24,124 +24,141 @@ export default function UserTable({ users }) {
   return (
     <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
       {/* Toolbar */}
-      <div className="p-4 border-b border-[var(--voz-border)] flex flex-col sm:flex-row justify-between gap-3 bg-[var(--voz-hover)]">
+      <div className="p-3 border-b border-[var(--voz-border)] flex flex-col sm:flex-row justify-between gap-3 bg-[var(--voz-accent)]">
          <div className="relative">
             <input 
               type="text" 
               placeholder="Tìm kiếm theo tên hoặc email..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-md text-sm w-full sm:w-[300px] outline-none focus:border-blue-500" 
+              className="pl-8 pr-3 py-[6px] border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded text-[13px] w-full sm:w-[260px] outline-none focus:border-blue-500" 
             />
-            <Search className="absolute left-3 top-[10px] text-[var(--voz-text-muted)]" size={16} />
+            <Search className="absolute left-2.5 top-[8px] text-[var(--voz-text-muted)]" size={14} />
          </div>
-         <div className="flex gap-2 items-center text-xs flex-wrap">
-           <button 
-             onClick={() => setFilterRole('all')}
-             className={`px-3 py-1 rounded-full border transition ${filterRole === 'all' ? 'bg-blue-600 text-white border-blue-600' : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-surface)]'}`}
-           >Tất cả ({users.length})</button>
-           <button 
-             onClick={() => setFilterRole('Admin')}
-             className={`px-3 py-1 rounded-full border transition ${filterRole === 'Admin' ? 'bg-red-500 text-white border-red-500' : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-surface)]'}`}
-           >Admin</button>
-           <button 
-             onClick={() => setFilterRole('Moderator')}
-             className={`px-3 py-1 rounded-full border transition ${filterRole === 'Moderator' ? 'bg-blue-500 text-white border-blue-500' : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-surface)]'}`}
-           >Moderator</button>
-           <button 
-             onClick={() => setFilterRole('Member')}
-             className={`px-3 py-1 rounded-full border transition ${filterRole === 'Member' ? 'bg-gray-500 text-white border-gray-500' : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-surface)]'}`}
-           >Member</button>
+         <div className="flex gap-1.5 items-center text-[11px]">
+           {[
+             { key: 'all', label: `Tất cả (${users.length})`, bg: 'bg-blue-600' },
+             { key: 'Admin', label: 'Admin', bg: 'bg-red-500' },
+             { key: 'Moderator', label: 'Moderator', bg: 'bg-blue-500' },
+             { key: 'Member', label: 'Member', bg: 'bg-gray-500' },
+           ].map(f => (
+             <button 
+               key={f.key}
+               onClick={() => setFilterRole(f.key)}
+               className={`px-2.5 py-1 rounded border transition font-medium ${filterRole === f.key ? `${f.bg} text-white border-transparent` : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-hover)]'}`}
+             >{f.label}</button>
+           ))}
          </div>
       </div>
-      
-      {searchQuery && (
-        <div className="px-4 py-2 text-xs text-[var(--voz-text-muted)] bg-[var(--voz-accent)] border-b border-[var(--voz-border)]">
-          Tìm thấy <strong>{filteredUsers.length}</strong> kết quả cho "{searchQuery}"
+
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13px]">
+          <thead>
+            <tr className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[11px] uppercase text-[var(--voz-text-muted)] font-semibold">
+              <th className="text-left px-4 py-2.5">Thành viên</th>
+              <th className="text-left px-3 py-2.5 hidden md:table-cell">Email</th>
+              <th className="text-center px-3 py-2.5 w-[80px]">Tham gia</th>
+              <th className="text-center px-3 py-2.5 w-[60px]">Chủ đề</th>
+              <th className="text-center px-3 py-2.5 w-[60px]">Bài viết</th>
+              <th className="text-center px-3 py-2.5 w-[70px]">Reactions</th>
+              <th className="text-center px-3 py-2.5 w-[80px]">Trạng thái</th>
+              <th className="text-right px-4 py-2.5 w-[190px]">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-[var(--voz-border-light)]">
+            {filteredUsers.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-[var(--voz-text-muted)]">
+                  Không tìm thấy user nào.
+                </td>
+              </tr>
+            )}
+            {filteredUsers.map(u => {
+              const isAdmin = u.userGroups.some(g => g.name === 'Admin');
+              const isMod = u.userGroups.some(g => g.name === 'Moderator');
+              const roleName = isAdmin ? 'Admin' : isMod ? 'Moderator' : 'Member';
+              const roleColor = isAdmin ? 'text-red-500' : isMod ? 'text-blue-500' : 'text-[var(--voz-text-muted)]';
+              const joinDate = new Date(u.createdAt).toLocaleDateString('vi-VN');
+
+              return (
+                <tr key={u.id} className={`hover:bg-[var(--voz-hover)] transition-colors ${u.isBanned ? 'bg-red-500/5' : ''}`}>
+                  {/* User info */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <img 
+                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&size=80`} 
+                        className="w-9 h-9 rounded-full shrink-0 object-cover" 
+                      />
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-[var(--voz-text)] truncate">{u.username}</span>
+                          <span className={`text-[10px] font-bold ${roleColor}`}>{roleName}</span>
+                        </div>
+                        <div className="text-[11px] text-[var(--voz-text-muted)] truncate">{u.customTitle || 'Member'}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Email */}
+                  <td className="px-3 py-3 hidden md:table-cell">
+                    <span className="text-[12px] text-[var(--voz-text-muted)] truncate block max-w-[180px]">{u.email}</span>
+                  </td>
+
+                  {/* Join Date */}
+                  <td className="px-3 py-3 text-center text-[12px] text-[var(--voz-text-muted)]">{joinDate}</td>
+
+                  {/* Threads */}
+                  <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u._count?.threads ?? 0}</td>
+
+                  {/* Posts */}
+                  <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u._count?.posts ?? 0}</td>
+
+                  {/* Reactions */}
+                  <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u._count?.reactions ?? 0}</td>
+
+                  {/* Status */}
+                  <td className="px-3 py-3 text-center">
+                    {u.isBanned ? (
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="inline-flex items-center gap-1 bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
+                          <Ban size={10} /> BAN
+                        </span>
+                        <span className="text-[10px] text-red-400 leading-tight">
+                          {u.banExpiresAt ? new Date(u.banExpiresAt).toLocaleDateString('vi-VN') : 'Vĩnh viễn'}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-emerald-500 text-[11px] font-medium">Hoạt động</span>
+                    )}
+                  </td>
+
+                  {/* Actions */}
+                  <td className="px-4 py-3">
+                    <UserRoleActions userId={u.id} username={u.username} currentRole={roleName} isBanned={u.isBanned} />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Ban reason tooltip row - hiển thị dưới bảng nếu có user bị ban */}
+      {filteredUsers.some(u => u.isBanned && u.banReason) && (
+        <div className="border-t border-[var(--voz-border)] bg-red-500/5 px-4 py-2.5">
+          <div className="text-[11px] text-red-400 font-semibold mb-1">Chi tiết ban:</div>
+          {filteredUsers.filter(u => u.isBanned).map(u => (
+            <div key={u.id} className="text-[12px] text-[var(--voz-text-muted)] flex gap-2 py-0.5">
+              <span className="font-semibold text-[var(--voz-text)]">{u.username}:</span>
+              <span>{u.banReason || '—'}</span>
+              <span className="text-red-400">
+                ({u.banExpiresAt ? `đến ${new Date(u.banExpiresAt).toLocaleDateString('vi-VN')}` : 'Vĩnh viễn'})
+              </span>
+            </div>
+          ))}
         </div>
       )}
-
-      {/* User Cards */}
-      <div className="divide-y divide-[var(--voz-border)]">
-        {filteredUsers.length === 0 && (
-          <div className="px-5 py-8 text-center text-[var(--voz-text-muted)]">
-            Không tìm thấy user nào phù hợp.
-          </div>
-        )}
-        {filteredUsers.map(u => {
-          const isAdmin = u.userGroups.some(g => g.name === 'Admin');
-          const isMod = u.userGroups.some(g => g.name === 'Moderator');
-          const roleName = isAdmin ? 'Admin' : isMod ? 'Moderator' : 'Member';
-          const roleColor = isAdmin ? 'bg-red-500' : isMod ? 'bg-blue-500' : 'bg-gray-400';
-          const joinDate = new Date(u.createdAt).toLocaleDateString('vi-VN');
-          
-          const banExpiry = u.banExpiresAt 
-            ? new Date(u.banExpiresAt).toLocaleDateString('vi-VN') 
-            : 'Vĩnh viễn';
-
-          return (
-            <div key={u.id} className={`p-4 hover:bg-[var(--voz-hover)] transition-colors ${u.isBanned ? 'bg-red-50/50 dark:bg-red-950/10' : ''}`}>
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Avatar + Info */}
-                <div className="flex items-start gap-3 flex-1 min-w-0">
-                  <img src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random`} className="w-12 h-12 rounded-full shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-bold text-[var(--voz-text)] text-[15px]">{u.username}</span>
-                      <span className={`${roleColor} text-white px-2 py-0.5 rounded text-[10px] font-bold`}>
-                        {roleName}
-                      </span>
-                      {u.isBanned && (
-                        <span className="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
-                          <Ban size={10} /> BANNED
-                        </span>
-                      )}
-                    </div>
-                    <div className="text-[12px] text-[var(--voz-text-muted)] mt-0.5">{u.customTitle || 'Member'}</div>
-                    
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-1 mt-2 text-[12px]">
-                      <div className="flex items-center gap-1.5 text-[var(--voz-text-muted)]">
-                        <Mail size={12} />
-                        <span className="truncate">{u.email}</span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[var(--voz-text-muted)]">
-                        <Calendar size={12} />
-                        <span>Tham gia: <strong className="text-[var(--voz-text)]">{joinDate}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[var(--voz-text-muted)]">
-                        <FileText size={12} />
-                        <span>Chủ đề: <strong className="text-[var(--voz-text)]">{u._count?.threads ?? 0}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[var(--voz-text-muted)]">
-                        <MessageSquare size={12} />
-                        <span>Bài viết: <strong className="text-[var(--voz-text)]">{u._count?.posts ?? 0}</strong></span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[var(--voz-text-muted)]">
-                        <Heart size={12} />
-                        <span>Reactions: <strong className="text-[var(--voz-text)]">{u._count?.reactions ?? 0}</strong></span>
-                      </div>
-                      {u.isBanned && (
-                        <>
-                          <div className="flex items-center gap-1.5 text-red-500 col-span-2 sm:col-span-3">
-                            <Ban size={12} />
-                            <span>Lý do: <strong>{u.banReason || '—'}</strong> · Hết hạn: <strong>{banExpiry}</strong></span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="shrink-0 flex items-start">
-                  <UserRoleActions userId={u.id} username={u.username} currentRole={roleName} isBanned={u.isBanned} />
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
