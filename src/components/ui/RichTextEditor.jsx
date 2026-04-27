@@ -19,9 +19,13 @@ const MenuBar = ({ editor, onImageUpload }) => {
     input.onchange = async (e) => {
       const file = e.target.files[0];
       if (file && onImageUpload) {
-        const url = await onImageUpload(file);
-        if (url) {
-          editor.chain().focus().setImage({ src: url }).run();
+        try {
+          const url = await onImageUpload(file);
+          if (url) {
+            editor.chain().focus().setImage({ src: url }).run();
+          }
+        } catch (err) {
+          console.error('Image insert error:', err);
         }
       }
     };
@@ -113,8 +117,11 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
         },
       }),
       Image.configure({
-        inline: true,
+        inline: false,
         allowBase64: false, // TUYỆT ĐỐI CẤM BASE64 ĐỂ BẢO VỆ DATABASE!
+        HTMLAttributes: {
+          class: 'post-image',
+        },
       }),
       Placeholder.configure({
         placeholder,
@@ -172,7 +179,13 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
             const file = item.getAsFile();
             if (file && onImageUpload) {
               onImageUpload(file).then(url => {
-                if (url) editor.chain().focus().setImage({ src: url }).run();
+                if (url) {
+                  try {
+                    editor.chain().focus().setImage({ src: url }).run();
+                  } catch (err) {
+                    console.error('Paste image error:', err);
+                  }
+                }
               });
               return true;
             }
@@ -186,10 +199,15 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
           if (file.type.indexOf('image') === 0 && onImageUpload) {
             onImageUpload(file).then(url => {
               if (url) {
-                const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
-                if (coordinates) {
-                  editor.chain().focus().insertContentAt(coordinates.pos, { type: 'image', attrs: { src: url } }).run();
-                } else {
+                try {
+                  const coordinates = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                  if (coordinates) {
+                    editor.chain().focus().insertContentAt(coordinates.pos, { type: 'image', attrs: { src: url } }).run();
+                  } else {
+                    editor.chain().focus().setImage({ src: url }).run();
+                  }
+                } catch (err) {
+                  console.error('Drop image error:', err);
                   editor.chain().focus().setImage({ src: url }).run();
                 }
               }

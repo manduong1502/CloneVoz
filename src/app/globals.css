@@ -213,4 +213,20 @@ blockquote:not(.voz-quote) strong {
   overflow: hidden;
 }
 
+/* Giới hạn kích thước ảnh trong bài viết trên desktop */
+.post-content img,
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
 
+@media (min-width: 768px) {
+  .post-content img,
+  .ProseMirror img {
+    max-height: 500px;
+    width: auto;
+    max-width: 100%;
+    object-fit: contain;
+  }
+}
