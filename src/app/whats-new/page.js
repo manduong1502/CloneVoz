@@ -23,8 +23,6 @@ export default async function WhatsNewPage() {
       {/* Tabs */}
       <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
         <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Bài viết mới</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886]">Bài viết hồ sơ mới</Link>
-        <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886]">Hoạt động mới nhất</Link>
       </div>
 
       <div className="voz-card overflow-hidden">

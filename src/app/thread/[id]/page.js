@@ -121,7 +121,7 @@ export default async function ThreadPage({ params, searchParams }) {
     <div className="w-full">
       {/* Breadcrumb */}
       <div className="text-[13px] mb-2 text-[var(--voz-text-muted)]">
-        <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
+        <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Diễn đàn</Link>
         <span className="mx-1">›</span>
         {thread.node.parent && (
           <>

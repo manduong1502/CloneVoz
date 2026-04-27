@@ -71,7 +71,7 @@ export default async function CategoryPage({ params, searchParams }) {
         <div className="flex flex-col">
           {/* Breadcrumb */}
           <div className="text-[13px] mb-2 text-[var(--voz-text-muted)]">
-            <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
+            <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Diễn đàn</Link>
             <span className="mx-1">›</span>
           </div>
 
@@ -230,7 +230,7 @@ export default async function CategoryPage({ params, searchParams }) {
       <div className="flex flex-col">
         {/* Breadcrumb */}
         <div className="text-[13px] mb-2 text-[var(--voz-text-muted)]">
-          <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Forums</Link>
+          <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Diễn đàn</Link>
           <span className="mx-1">›</span>
           {node.parent && (
             <>
@@ -245,7 +245,7 @@ export default async function CategoryPage({ params, searchParams }) {
           
           <div className="flex gap-4 items-center">
             <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded px-4 py-2 font-medium text-sm flex items-center gap-2 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[3px] transition-all">
-              <PenSquare size={16}/> Post thread
+              <PenSquare size={16}/> Đăng bài
             </Link>
           </div>
         </div>
@@ -263,7 +263,7 @@ export default async function CategoryPage({ params, searchParams }) {
           <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[12px] text-[var(--voz-text-muted)]">
              <div>{prefixId && <Link href={`/category/${id}`} className="hover:underline text-[var(--voz-link)] flex items-center gap-1 font-medium bg-[#e3e3e3] px-2 py-1 rounded">✖ Bỏ lọc Prefix</Link>}</div>
              <div className="group relative">
-               <button className="hover:text-[var(--voz-text)] pb-1">Filters ▾</button>
+               <button className="hover:text-[var(--voz-text)] pb-1">Bộ lọc ▾</button>
                <div className="hidden group-hover:flex absolute right-0 top-full mt-[-4px] bg-[var(--voz-surface)] border border-[#ccc] shadow-[0_4px_8px_rgba(0,0,0,0.1)] z-10 flex-col w-[200px] text-left">
                   <div className="px-3 py-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border-light)] font-bold text-[13px] text-[var(--voz-text-strong)]">Lọc theo Tiền tố</div>
                   <Link href={`/category/${id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574a9] hover:text-white transition">(Tất cả)</Link>
@@ -274,12 +274,12 @@ export default async function CategoryPage({ params, searchParams }) {
              </div>
           </div>
           
-          {/* Table Header mimicking "Thread title" fake input */}
+          {/* Table Header mimicking "Tiêu đề bài viết" fake input */}
           <div className="p-3 border-b border-[var(--voz-border-light)] bg-[var(--voz-surface)] flex gap-3 items-center text-[13px]">
              <img src="https://ui-avatars.com/api/?name=YOU&background=random" className="w-[36px] h-[36px] rounded-full opacity-50 object-cover" />
              <div className="flex-1 flex gap-2">
-                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[var(--voz-text-muted)] bg-[var(--voz-accent)] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(No prefix)'} ▾</span>
-                <input type="text" placeholder="Thread title" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[var(--voz-text-muted)] cursor-not-allowed" readOnly/>
+                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[var(--voz-text-muted)] bg-[var(--voz-accent)] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(Không có)'} ▾</span>
+                <input type="text" placeholder="Tiêu đề bài viết" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[var(--voz-text-muted)] cursor-not-allowed" readOnly/>
              </div>
           </div>
 
@@ -318,8 +318,8 @@ export default async function CategoryPage({ params, searchParams }) {
                 {/* Stats */}
                 <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[140px] border-r border-transparent">
                   <div className="flex flex-col items-end w-full">
-                     <div className="flex gap-2"><span>Replies:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
-                     <div className="flex gap-2"><span>Views:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
+                     <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
+                     <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
                   </div>
                 </div>
 
@@ -353,7 +353,7 @@ export default async function CategoryPage({ params, searchParams }) {
                     {t.title}
                   </Link>
                   <div className="text-[11px] text-[var(--voz-text-muted)]">
-                    {t.author.username} · {formatRelativeTime(t.createdAt)}<br/>Replies: {t.replyCount}
+                    {t.author.username} · {formatRelativeTime(t.createdAt)}<br/>Trả lời: {t.replyCount}
                   </div>
                 </div>
               </div>
