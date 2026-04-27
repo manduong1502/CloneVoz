@@ -53,17 +53,27 @@ export default function UserTable({ users }) {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-[13px]">
+        <table className="w-full text-[13px] table-fixed">
+          <colgroup>
+            <col style={{ width: '200px' }} />
+            <col className="hidden md:table-column" style={{ width: '180px' }} />
+            <col style={{ width: '90px' }} />
+            <col style={{ width: '70px' }} />
+            <col style={{ width: '70px' }} />
+            <col style={{ width: '80px' }} />
+            <col style={{ width: '90px' }} />
+            <col style={{ width: '180px' }} />
+          </colgroup>
           <thead>
             <tr className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[11px] uppercase text-[var(--voz-text-muted)] font-semibold">
               <th className="text-left px-4 py-2.5">Thành viên</th>
               <th className="text-left px-3 py-2.5 hidden md:table-cell">Email</th>
-              <th className="text-center px-3 py-2.5 w-[80px]">Tham gia</th>
-              <th className="text-center px-3 py-2.5 w-[60px]">Chủ đề</th>
-              <th className="text-center px-3 py-2.5 w-[60px]">Bài viết</th>
-              <th className="text-center px-3 py-2.5 w-[70px]">Reactions</th>
-              <th className="text-center px-3 py-2.5 w-[80px]">Trạng thái</th>
-              <th className="text-right px-4 py-2.5 w-[190px]">Thao tác</th>
+              <th className="text-center px-3 py-2.5">Tham gia</th>
+              <th className="text-center px-3 py-2.5">Chủ đề</th>
+              <th className="text-center px-3 py-2.5">Bài viết</th>
+              <th className="text-center px-3 py-2.5">Reactions</th>
+              <th className="text-center px-3 py-2.5">Trạng thái</th>
+              <th className="text-right px-4 py-2.5">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--voz-border-light)]">
