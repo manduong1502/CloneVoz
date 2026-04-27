@@ -14,31 +14,56 @@ export async function updateProfile(formData) {
     // Chỉ chủ nhân profile mới được phép đổi
     const targetUserId = formData.get('userId');
     if (session.user.id !== targetUserId) {
-       // Thêm ngoại lệ cho Admin sau này nếu cần
        throw new Error("Không có thẩm quyền");
     }
 
+    const newUsername = formData.get("username")?.trim() || '';
     const rawAvatarUrl = formData.get("avatarUrl") || '';
     const customTitle = formData.get("customTitle") || '';
     const signatureRaw = formData.get("signature") || '';
-
-    // Bỏ qua khử trùng trên server vì isomorphic DOMPurify crash trên Turbopack, sẽ validate ở client
     const signature = signatureRaw;
+
+    // Validate username
+    if (newUsername.length < 3 || newUsername.length > 30) {
+      throw new Error("Tên hiển thị phải từ 3 đến 30 ký tự.");
+    }
+
+    // Kiểm tra username trùng (nếu đổi)
+    const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+    const oldUsername = currentUser.username;
+    
+    if (newUsername !== oldUsername) {
+      const existingUser = await prisma.user.findUnique({ where: { username: newUsername } });
+      if (existingUser) {
+        throw new Error("Tên hiển thị này đã được sử dụng. Vui lòng chọn tên khác.");
+      }
+    }
 
     await prisma.user.update({
       where: { id: session.user.id },
       data: {
+         username: newUsername,
          avatar: rawAvatarUrl,
          customTitle: customTitle,
          signature: signature
       }
     });
 
-    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-    revalidatePath(`/profile/${user.username}`);
-    return { success: true, message: "Profile đã được bọc vàng!" };
+    revalidatePath(`/profile/${oldUsername}`);
+    revalidatePath(`/profile/${newUsername}`);
+    revalidatePath('/');
+    
+    // Nếu đổi username, redirect về profile mới
+    if (newUsername !== oldUsername) {
+      const { redirect } = require('next/navigation');
+      redirect(`/profile/${newUsername}`);
+    }
+
+    return { success: true, message: "Hồ sơ đã được cập nhật!" };
 
   } catch (error) {
+    // Re-throw NEXT_REDIRECT
+    if (error?.digest?.startsWith('NEXT_REDIRECT')) throw error;
     return { success: false, error: error.message || "Lỗi cục bộ" };
   }
 }

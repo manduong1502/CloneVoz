@@ -9,6 +9,7 @@ export default function EditProfileModal({ user }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(user.avatar || '');
+  const [username, setUsername] = useState(user.username || '');
   const [isUploading, setIsUploading] = useState(false);
 
   async function handleSubmit(e) {
@@ -62,6 +63,22 @@ export default function EditProfileModal({ user }) {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <input type="hidden" name="userId" value={user.id} />
             
+            <div className="flex flex-col gap-1">
+              <label className="font-semibold text-[13px] text-[var(--voz-text)]">Tên hiển thị (Username)</label>
+              <input 
+                name="username" 
+                type="text" 
+                value={username}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9._\u00C0-\u024F\u1E00-\u1EFF]/g, ''))}
+                placeholder="Ví dụ: NguyenVanA, coolboy99..." 
+                className="border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
+                minLength={3}
+                maxLength={30}
+                required
+              />
+              <span className="text-[11px] text-[var(--voz-text-muted)]">3-30 ký tự. Chữ cái, số, dấu chấm và gạch dưới. Thay đổi sẽ cập nhật trên toàn bộ diễn đàn.</span>
+            </div>
+
             <div className="flex flex-col gap-1">
               <label className="font-semibold text-[13px] text-[var(--voz-text)]">Link Ảnh Đại Diện (Avatar URL)</label>
               <div className="flex gap-2 items-center">
