@@ -149,34 +149,6 @@ export default async function LeaderboardPage() {
         {renderTable(topUsersMonth, 'month')}
       </div>
 
-      {/* Công thức tính */}
-      <div className="voz-card overflow-hidden mb-6">
-        <div className="bg-[var(--voz-accent)] px-4 py-2.5 border-b border-[var(--voz-border)] text-[15px] font-semibold text-[var(--voz-text)]">
-          📜 Công thức tính công đức
-        </div>
-        <div className="bg-[var(--voz-surface)] p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="text-center p-3 rounded bg-[var(--voz-accent)] border border-[var(--voz-border)]">
-            <div className="text-[24px] mb-1">📝</div>
-            <div className="text-[13px] font-bold text-[var(--voz-text)]">Tạo chủ đề</div>
-            <div className="text-[18px] font-bold text-[#22C55E]">+3</div>
-          </div>
-          <div className="text-center p-3 rounded bg-[var(--voz-accent)] border border-[var(--voz-border)]">
-            <div className="text-[24px] mb-1">💬</div>
-            <div className="text-[13px] font-bold text-[var(--voz-text)]">Bình luận</div>
-            <div className="text-[18px] font-bold text-[#3B82F6]">+2</div>
-          </div>
-          <div className="text-center p-3 rounded bg-[var(--voz-accent)] border border-[var(--voz-border)]">
-            <div className="text-[24px] mb-1">👍</div>
-            <div className="text-[13px] font-bold text-[var(--voz-text)]">Nhận Like</div>
-            <div className="text-[18px] font-bold text-[#F59E0B]">+1</div>
-          </div>
-          <div className="text-center p-3 rounded bg-[var(--voz-accent)] border border-[var(--voz-border)]">
-            <div className="text-[24px] mb-1">👎</div>
-            <div className="text-[13px] font-bold text-[var(--voz-text)]">Bị Dislike</div>
-            <div className="text-[18px] font-bold text-[#EF4444]">-1</div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
