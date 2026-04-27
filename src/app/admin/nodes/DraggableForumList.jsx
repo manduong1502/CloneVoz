@@ -156,7 +156,7 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
 
           <div className="flex items-center gap-4">
             <Link href={`/admin/nodes/${forum.id}`} className="text-right text-[12px] text-[var(--voz-link)] hover:underline w-[80px] hidden sm:block">
-              {forum._count?.threads ?? 0} Threads
+              {forum._count?.threads ?? 0} Chủ đề
             </Link>
 
             <div className="flex gap-1 items-center">

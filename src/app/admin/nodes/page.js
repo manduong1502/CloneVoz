@@ -25,7 +25,7 @@ export default async function AdminNodesPage() {
     <div className="flex flex-col gap-6 text-[var(--voz-text)]">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold">Forums & Nodes</h1>
+          <h1 className="text-2xl font-semibold">Quản lý chuyên mục</h1>
           <p className="text-sm text-[var(--voz-text-muted)] mt-1">Cấu trúc cây danh mục chuyên mục diễn đàn.</p>
         </div>
       </div>
@@ -46,7 +46,7 @@ export default async function AdminNodesPage() {
                              "use server";
                              await deleteNode(category.id);
                           }}>
-                             <button type="submit" className="p-1.5 text-[var(--voz-text-muted)] hover:text-red-500 hover:bg-[var(--voz-hover)] rounded transition" title="Delete Category">
+                             <button type="submit" className="p-1.5 text-[var(--voz-text-muted)] hover:text-red-500 hover:bg-[var(--voz-hover)] rounded transition" title="Xóa danh mục">
                                 <Trash2 size={16} />
                              </button>
                           </form>

@@ -343,7 +343,7 @@ export default async function CategoryPage({ params, searchParams }) {
       <div className="hidden lg:flex flex-col gap-4 pt-[36px]">
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Trending content</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
             {trendingThreads.map(t => (
               <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">

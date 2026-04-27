@@ -116,7 +116,7 @@ export default async function ProfilePage({ params, searchParams }) {
                 <span className="font-semibold">{targetUser.reactionScore}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Medal size={16}/> Threads:</span> 
+                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Medal size={16}/> Chủ đề:</span> 
                 <span className="font-semibold">{threadsCount}</span>
               </div>
             </div>

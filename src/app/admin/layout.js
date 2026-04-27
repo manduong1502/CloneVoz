@@ -23,13 +23,13 @@ export default async function AdminLayout({ children }) {
   const pendingCount = await prisma.thread.count({ where: { isApproved: false } });
 
   const navItems = [
-    ...(isAdmin ? [{ href: '/admin', icon: 'Home', label: 'Dashboard' }] : []),
+    ...(isAdmin ? [{ href: '/admin', icon: 'Home', label: 'Bảng điều khiển' }] : []),
     { href: '/admin/pending', icon: 'CheckCircle', label: 'Duyệt bài', badge: pendingCount },
     { href: '/admin/reports', icon: 'Flag', label: 'Báo cáo vi phạm' },
     ...(isAdmin ? [
-      { href: '/admin/nodes', icon: 'LayoutList', label: 'Forums & Nodes' },
-      { href: '/admin/users', icon: 'Users', label: 'Users & Groups' },
-      { href: '/admin/settings', icon: 'Settings', label: 'Options' },
+      { href: '/admin/nodes', icon: 'LayoutList', label: 'Quản lý chuyên mục' },
+      { href: '/admin/users', icon: 'Users', label: 'Quản lý thành viên' },
+      { href: '/admin/settings', icon: 'Settings', label: 'Cài đặt' },
     ] : []),
   ];
 

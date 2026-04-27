@@ -23,7 +23,7 @@ export default async function AdminUsers() {
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-semibold text-[var(--voz-text)]">Users & Groups</h1>
+          <h1 className="text-2xl font-semibold text-[var(--voz-text)]">Quản lý thành viên</h1>
           <p className="text-sm text-[var(--voz-text-muted)] mt-1">Quản lý thành viên và phân quyền. Tổng: {users.length} users</p>
         </div>
       </div>

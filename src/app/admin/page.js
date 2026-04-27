@@ -20,7 +20,7 @@ export default async function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Users</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Tổng thành viên</p>
                <h3 className="text-2xl font-bold text-[var(--voz-text)]">{usersCount}</h3>
             </div>
             <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
          </div>
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Threads</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Tổng chủ đề</p>
                <h3 className="text-2xl font-bold text-[var(--voz-text)]">{threadsCount}</h3>
             </div>
             <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
          </div>
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Total Posts</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Tổng bài viết</p>
                <h3 className="text-2xl font-bold text-[var(--voz-text)]">{postsCount}</h3>
             </div>
             <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center">
@@ -47,7 +47,7 @@ export default async function AdminDashboard() {
          </div>
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Nodes (Rooms)</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Chuyên mục</p>
                <h3 className="text-2xl font-bold text-[var(--voz-text)]">{nodesCount}</h3>
             </div>
             <div className="w-12 h-12 bg-purple-50 text-purple-600 rounded-full flex items-center justify-center">

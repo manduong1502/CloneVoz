@@ -12,19 +12,19 @@ export default function MembersPage() {
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
       <div className="flex flex-col">
         <div className="mb-4">
-          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Notable members</h1>
+          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Thành viên nổi bật</h1>
         </div>
 
         {/* Tabs */}
         <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
-          <Link href="/members" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Most messages</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Highest reaction score</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Most points</Link>
+          <Link href="/members" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Nhiều bài viết nhất</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Nhiều lượt thích nhất</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Nhiều điểm nhất</Link>
         </div>
 
         <div className="voz-card overflow-hidden">
           <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-[8px] text-[13px] text-[#185886] font-medium">
-             Most messages
+             Nhiều bài viết nhất
           </div>
           
           <div className="bg-[var(--voz-surface)]">
@@ -46,17 +46,17 @@ export default function MembersPage() {
                   <div className="text-[12px] text-[var(--voz-text-muted)] flex flex-wrap items-center gap-4">
                     <div className="flex flex-col">
                        <span className="text-[var(--voz-text-strong)] font-medium">{member.messages}</span>
-                       <span className="text-[10px] uppercase">Messages</span>
+                       <span className="text-[10px] uppercase">Bài viết</span>
                     </div>
                     <div className="flex flex-col scale-y-[-1] border-l border-[var(--voz-border-light)] h-[24px]"></div>
                     <div className="flex flex-col">
                        <span className="text-[var(--voz-text-strong)] font-medium">{member.reactionScore}</span>
-                       <span className="text-[10px] uppercase">Reaction score</span>
+                       <span className="text-[10px] uppercase">Lượt thích</span>
                     </div>
                     <div className="flex flex-col scale-y-[-1] border-l border-[var(--voz-border-light)] h-[24px]"></div>
                     <div className="flex flex-col">
                        <span className="text-[var(--voz-text-strong)] font-medium">{member.points}</span>
-                       <span className="text-[10px] uppercase">Points</span>
+                       <span className="text-[10px] uppercase">Điểm</span>
                     </div>
                   </div>
                 </div>
@@ -70,16 +70,16 @@ export default function MembersPage() {
       <div className="hidden lg:flex flex-col gap-4 pt-[46px]">
         {/* Find Member */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Find member</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Tìm thành viên</h3>
           <div className="bg-[var(--voz-surface)] px-3 py-3">
              <input type="text" placeholder="Name..." className="w-full border border-[var(--voz-border)] rounded-[2px] px-2 py-[6px] text-[13px] focus:outline-none focus:border-[var(--voz-link)] mb-2" />
-             <button className="bg-[#185886] hover:bg-[#2574A9] text-white w-full rounded-[2px] py-[6px] text-[13px] font-medium transition-colors">Search</button>
+             <button className="bg-[#185886] hover:bg-[#2574A9] text-white w-full rounded-[2px] py-[6px] text-[13px] font-medium transition-colors">Tìm kiếm</button>
           </div>
         </div>
 
         {/* Member Online */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Members online</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Thành viên trực tuyến</h3>
           <div className="bg-[var(--voz-surface)] px-3 py-3 text-[12px] text-[var(--voz-text-muted)]">
              <div className="flex flex-wrap gap-1 mb-2">
                <Link href="#" className="hover:underline text-[var(--voz-link)] font-medium">Bimbim2002</Link>, 
@@ -87,7 +87,7 @@ export default function MembersPage() {
                <Link href="#" className="hover:underline text-[#c84448] font-bold">thuyvan</Link>
              </div>
              <div className="border-t border-[var(--voz-border-light)] pt-2 mt-2">
-                Total: 24,012 (members: 1,400, guests: 22,612)
+                Total: 24.012 (thành viên: 1.400, khách: 22.612)
              </div>
           </div>
         </div>
