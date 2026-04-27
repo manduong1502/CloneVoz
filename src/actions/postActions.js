@@ -153,10 +153,15 @@ export async function createReply(threadId, formData) {
     data: { replyCount: { increment: 1 }, updatedAt: new Date() }
   });
 
-  // Cập nhật số liệu User
+  // Cập nhật số liệu User: +1 messageCount, +2 công đức
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { messageCount: { increment: 1 } }
+    data: { messageCount: { increment: 1 }, points: { increment: 2 } }
+  });
+
+  // Ghi lịch sử công đức
+  await prisma.pointLog.create({
+    data: { userId: session.user.id, points: 2, action: 'reply' }
   });
 
   // Xóa rác Cache để Data mới nổi lên
@@ -212,10 +217,37 @@ export async function handleReaction(postId, path, reactionType) {
 
   // Cập nhật điểm (chỉ cộng/trừ nếu không phải tự vote bài mình)
   if (post && !isOwnPost && scoreDelta !== 0) {
+    // Tính công đức delta cho chủ bài viết
+    let pointsDelta = 0;
+    if (!existingReaction) {
+      // Reaction mới: Like +1, Dislike -1
+      pointsDelta = reactionType === "Like" ? 1 : -1;
+    } else if (reactionType === null) {
+      // Hủy reaction: ngược lại
+      pointsDelta = existingReaction.type === "Like" ? -1 : 1;
+    } else {
+      // Đổi reaction: Like→Dislike = -2, Dislike→Like = +2
+      pointsDelta = reactionType === "Like" ? 2 : -2;
+    }
+
     await prisma.user.update({
       where: { id: post.authorId },
-      data: { reactionScore: { increment: scoreDelta } }
+      data: { 
+        reactionScore: { increment: scoreDelta },
+        points: { increment: pointsDelta }
+      }
     });
+
+    // Ghi lịch sử công đức
+    if (pointsDelta !== 0) {
+      await prisma.pointLog.create({
+        data: { 
+          userId: post.authorId, 
+          points: pointsDelta, 
+          action: pointsDelta > 0 ? 'like' : 'dislike' 
+        }
+      });
+    }
 
     // Thông báo nếu có Like mới
     if (reactionType === "Like" && !existingReaction) {

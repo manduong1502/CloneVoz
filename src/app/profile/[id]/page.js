@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import RankBadge from '@/components/ui/RankBadge';
 
 import Pagination from '@/components/ui/Pagination';
 import { formatRelativeTime } from '@/lib/formatTime';
@@ -75,7 +76,9 @@ export default async function ProfilePage({ params, searchParams }) {
                 {targetUser.username}
                 {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
               </h1>
-              <div className="text-[14px] text-[#2574A9] mt-2 mb-1">{targetUser.customTitle || 'Thành viên mới'}</div>
+              <div className="mt-2 mb-1">
+                <RankBadge points={targetUser.points} size="lg" showProgress />
+              </div>
               <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center justify-center md:justify-start gap-1">
                 <Clock size={12}/> Đã tham gia: {new Date(targetUser.createdAt).toLocaleDateString('vi-VN')}
               </div>
@@ -115,9 +118,13 @@ export default async function ProfilePage({ params, searchParams }) {
                 <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Activity size={16}/> Lượt thích:</span> 
                 <span className="font-semibold">{targetUser.reactionScore}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center border-b border-[var(--voz-border-light)] pb-2">
                 <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Medal size={16}/> Chủ đề:</span> 
                 <span className="font-semibold">{threadsCount}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><ThumbsUp size={16}/> Công đức:</span> 
+                <span className="font-semibold">{targetUser.points}</span>
               </div>
             </div>
           </div>

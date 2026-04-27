@@ -230,3 +230,26 @@ blockquote:not(.voz-quote) strong {
     object-fit: contain;
   }
 }
+
+/* Rank Badge - Sử thi shimmer effect */
+@keyframes rank-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+.rank-epic {
+  background: linear-gradient(90deg, rgba(239,68,68,0.15) 0%, rgba(245,158,11,0.25) 50%, rgba(239,68,68,0.15) 100%) !important;
+  background-size: 200% 100%;
+  animation: rank-shimmer 3s ease-in-out infinite;
+  border-color: rgba(239,68,68,0.4) !important;
+  text-shadow: 0 0 8px rgba(239,68,68,0.3);
+}
+
+/* Leaderboard crown bounce */
+@keyframes crown-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+.crown-animate {
+  animation: crown-bounce 2s ease-in-out infinite;
+}

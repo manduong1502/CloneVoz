@@ -12,7 +12,7 @@ import DeletePostButton from '@/components/thread/DeletePostButton';
 import LikeButton from '@/components/thread/LikeButton';
 import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
-
+import RankBadge from '@/components/ui/RankBadge';
 import { formatRelativeTime } from '@/lib/formatTime';
 
 export async function generateMetadata({ params }) {
@@ -163,12 +163,12 @@ export default async function ThreadPage({ params, searchParams }) {
                   <Link href={`/profile/${post.author.username}`} className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words block pb-1">
                     {post.author.username}
                   </Link>
-                  <div className="text-[11px] text-[var(--voz-link)] md:mb-2">{post.author.customTitle || 'Member'}</div>
+                  <RankBadge points={post.author.points} />
                   
-                  <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
+                  <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px] mt-2">
                      <div className="flex justify-between w-full"><span>Tham gia:</span> <span className="font-medium text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(post.author.createdAt).toLocaleDateString('vi-VN')}</span></div>
                      <div className="flex justify-between w-full"><span>Bài viết</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.messageCount}</span></div>
-                     <div className="flex justify-between w-full"><span>Điểm reaction</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.reactionScore}</span></div>
+                     <div className="flex justify-between w-full"><span>Công đức</span> <span className="font-medium text-[var(--voz-text-strong)]">{post.author.points}</span></div>
                   </div>
                </div>
             </div>

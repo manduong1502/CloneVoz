@@ -359,3 +359,17 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// ----------------------------------------------------------------------------
+// POINT LOG (Lịch sử Công đức)
+// ----------------------------------------------------------------------------
+model PointLog {
+  id        String   @id @default(cuid())
+  points    Int      // +3, +2, +1, -1
+  action    String   // "thread", "reply", "like", "dislike"
+  
+  userId    String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
