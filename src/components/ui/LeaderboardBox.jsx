@@ -37,9 +37,9 @@ export default function LeaderboardBox({ topUsersTotal, topUsersMonth }) {
       </div>
       
       {/* Leaderboard List */}
-      <div className="flex flex-col bg-[var(--voz-accent)]">
+      <div className="flex flex-col bg-[var(--voz-accent)] min-h-[260px]">
         {users.length === 0 && (
-          <div className="p-4 text-center text-[12px] text-[var(--voz-text-muted)]">
+          <div className="p-4 text-center text-[12px] text-[var(--voz-text-muted)] flex-1 flex items-center justify-center">
             Chưa có dữ liệu xếp hạng
           </div>
         )}
