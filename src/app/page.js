@@ -50,7 +50,7 @@ export default async function Home() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthlyRaw = await prisma.pointLog.groupBy({
         by: ['userId'],
-        where: { createdAt: { gte: startOfMonth }, points: { gt: 0 } },
+        where: { createdAt: { gte: startOfMonth }, action: { in: ['like', 'dislike'] } },
         _sum: { points: true },
         orderBy: { _sum: { points: 'desc' } },
         take: 5

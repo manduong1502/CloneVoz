@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { Users, FileText, MessageSquare, Layout } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function AdminDashboard() {
   const usersCount = await prisma.user.count();
@@ -60,21 +61,21 @@ export default async function AdminDashboard() {
          {/* Recent Users Table */}
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
             <div className="bg-[var(--voz-hover)] border-b border-[var(--voz-border)] px-5 py-3">
-               <h3 className="font-semibold text-[var(--voz-text)]">Latest Registered Users</h3>
+               <h3 className="font-semibold text-[var(--voz-text)]">Thành viên mới nhất</h3>
             </div>
             <div className="p-0">
                <table className="w-full text-sm text-left">
                   <thead className="bg-[var(--voz-surface)] text-[var(--voz-text-muted)] font-medium border-b border-[var(--voz-border)]">
                      <tr>
-                        <th className="px-5 py-3">USERNAME</th>
-                        <th className="px-5 py-3">GROUP</th>
-                        <th className="px-5 py-3">JOINED</th>
+                        <th className="px-5 py-3">THÀNH VIÊN</th>
+                        <th className="px-5 py-3">NHÓM</th>
+                        <th className="px-5 py-3">NGÀY THAM GIA</th>
                      </tr>
                   </thead>
                   <tbody className="divide-y divide-[var(--voz-border)] text-[var(--voz-text)]">
                      {recentUsers.map(u => (
                        <tr key={u.id} className="hover:bg-[var(--voz-hover)]">
-                          <td className="px-5 py-3 font-medium text-[var(--voz-text)]">{u.username}</td>
+                          <td className="px-5 py-3 font-medium"><Link href={`/profile/${u.username}`} className="text-[var(--voz-link)] hover:underline">{u.username}</Link></td>
                           <td className="px-5 py-3">{u.customTitle || "Member"}</td>
                           <td className="px-5 py-3">{new Date(u.createdAt).toLocaleDateString('vi-VN')}</td>
                        </tr>

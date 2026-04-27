@@ -1,12 +1,16 @@
 "use client";
 
 import { useState } from 'react';
-import { Search, Ban } from 'lucide-react';
+import { Search, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import UserRoleActions from './UserRoleActions';
+
+const ITEMS_PER_PAGE = 20;
 
 export default function UserTable({ users }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredUsers = users.filter(u => {
     const isAdmin = u.userGroups.some(g => g.name === 'Admin');
@@ -21,6 +25,21 @@ export default function UserTable({ users }) {
     return matchesSearch && matchesRole;
   });
 
+  // Pagination
+  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Reset page when filter/search changes
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setCurrentPage(1);
+  };
+  const handleFilterChange = (key) => {
+    setFilterRole(key);
+    setCurrentPage(1);
+  };
+
   return (
     <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
       {/* Toolbar */}
@@ -30,7 +49,7 @@ export default function UserTable({ users }) {
               type="text" 
               placeholder="Tìm kiếm theo tên hoặc email..." 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               className="pl-8 pr-3 py-[6px] border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded text-[13px] w-full sm:w-[260px] outline-none focus:border-blue-500" 
             />
             <Search className="absolute left-2.5 top-[8px] text-[var(--voz-text-muted)]" size={14} />
@@ -44,7 +63,7 @@ export default function UserTable({ users }) {
            ].map(f => (
              <button 
                key={f.key}
-               onClick={() => setFilterRole(f.key)}
+               onClick={() => handleFilterChange(f.key)}
                className={`px-2.5 py-1 rounded border transition font-medium ${filterRole === f.key ? `${f.bg} text-white border-transparent` : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-hover)]'}`}
              >{f.label}</button>
            ))}
@@ -55,54 +74,66 @@ export default function UserTable({ users }) {
       <div className="overflow-x-auto">
         <table className="w-full text-[13px] table-fixed">
           <colgroup>
+            <col style={{ width: '45px' }} />
             <col style={{ width: '200px' }} />
             <col className="hidden md:table-column" style={{ width: '180px' }} />
             <col style={{ width: '90px' }} />
             <col style={{ width: '70px' }} />
             <col style={{ width: '70px' }} />
             <col style={{ width: '80px' }} />
+            <col style={{ width: '80px' }} />
             <col style={{ width: '90px' }} />
             <col style={{ width: '180px' }} />
           </colgroup>
           <thead>
             <tr className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[11px] uppercase text-[var(--voz-text-muted)] font-semibold">
+              <th className="text-center px-2 py-2.5">#</th>
               <th className="text-left px-4 py-2.5">Thành viên</th>
               <th className="text-left px-3 py-2.5 hidden md:table-cell">Email</th>
               <th className="text-center px-3 py-2.5">Tham gia</th>
               <th className="text-center px-3 py-2.5">Chủ đề</th>
               <th className="text-center px-3 py-2.5">Bài viết</th>
+              <th className="text-center px-3 py-2.5">Công đức</th>
               <th className="text-center px-3 py-2.5">Reactions</th>
               <th className="text-center px-3 py-2.5">Trạng thái</th>
               <th className="text-right px-4 py-2.5">Thao tác</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--voz-border-light)]">
-            {filteredUsers.length === 0 && (
+            {paginatedUsers.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-[var(--voz-text-muted)]">
+                <td colSpan={10} className="px-4 py-8 text-center text-[var(--voz-text-muted)]">
                   Không tìm thấy user nào.
                 </td>
               </tr>
             )}
-            {filteredUsers.map(u => {
+            {paginatedUsers.map((u, index) => {
               const isAdmin = u.userGroups.some(g => g.name === 'Admin');
               const isMod = u.userGroups.some(g => g.name === 'Moderator');
               const roleName = isAdmin ? 'Admin' : isMod ? 'Moderator' : 'Member';
               const roleColor = isAdmin ? 'text-red-500' : isMod ? 'text-blue-500' : 'text-[var(--voz-text-muted)]';
               const joinDate = new Date(u.createdAt).toLocaleDateString('vi-VN');
+              const rowNumber = startIndex + index + 1;
 
               return (
                 <tr key={u.id} className={`hover:bg-[var(--voz-hover)] transition-colors ${u.isBanned ? 'bg-red-500/5' : ''}`}>
+                  {/* Row number */}
+                  <td className="px-2 py-3 text-center text-[12px] text-[var(--voz-text-muted)] font-medium">{rowNumber}</td>
+
                   {/* User info */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5">
-                      <img 
-                        src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&size=80`} 
-                        className="w-9 h-9 rounded-full shrink-0 object-cover" 
-                      />
+                      <Link href={`/profile/${u.username}`}>
+                        <img 
+                          src={u.avatar || `https://ui-avatars.com/api/?name=${u.username}&background=random&size=80`} 
+                          className="w-9 h-9 rounded-full shrink-0 object-cover hover:ring-2 hover:ring-blue-500 transition" 
+                        />
+                      </Link>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-bold text-[var(--voz-text)] truncate">{u.username}</span>
+                          <Link href={`/profile/${u.username}`} className="font-bold text-[var(--voz-link)] hover:underline truncate">
+                            {u.username}
+                          </Link>
                           <span className={`text-[10px] font-bold ${roleColor}`}>{roleName}</span>
                         </div>
                         <div className="text-[11px] text-[var(--voz-text-muted)] truncate">{u.customTitle || 'Member'}</div>
@@ -123,6 +154,9 @@ export default function UserTable({ users }) {
 
                   {/* Posts */}
                   <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u._count?.posts ?? 0}</td>
+
+                  {/* Công đức */}
+                  <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u.points ?? 0}</td>
 
                   {/* Reactions */}
                   <td className="px-3 py-3 text-center font-semibold text-[var(--voz-text)]">{u._count?.reactions ?? 0}</td>
@@ -154,13 +188,47 @@ export default function UserTable({ users }) {
         </table>
       </div>
 
-      {/* Ban reason tooltip row - hiển thị dưới bảng nếu có user bị ban */}
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="border-t border-[var(--voz-border)] bg-[var(--voz-accent)] px-4 py-2.5 flex justify-between items-center">
+          <span className="text-[12px] text-[var(--voz-text-muted)]">
+            Hiển thị {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} / {filteredUsers.length} thành viên
+          </span>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded border border-[var(--voz-border)] hover:bg-[var(--voz-surface)] disabled:opacity-30 transition"
+            >
+              <ChevronLeft size={14} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-2.5 py-1 rounded text-[12px] font-medium transition ${currentPage === page ? 'bg-blue-600 text-white' : 'border border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-surface)]'}`}
+              >
+                {page}
+              </button>
+            ))}
+            <button 
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded border border-[var(--voz-border)] hover:bg-[var(--voz-surface)] disabled:opacity-30 transition"
+            >
+              <ChevronRight size={14} />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ban reason tooltip row */}
       {filteredUsers.some(u => u.isBanned && u.banReason) && (
         <div className="border-t border-[var(--voz-border)] bg-red-500/5 px-4 py-2.5">
           <div className="text-[11px] text-red-400 font-semibold mb-1">Chi tiết ban:</div>
           {filteredUsers.filter(u => u.isBanned).map(u => (
             <div key={u.id} className="text-[12px] text-[var(--voz-text-muted)] flex gap-2 py-0.5">
-              <span className="font-semibold text-[var(--voz-text)]">{u.username}:</span>
+              <Link href={`/profile/${u.username}`} className="font-semibold text-[var(--voz-link)] hover:underline">{u.username}:</Link>
               <span>{u.banReason || '—'}</span>
               <span className="text-red-400">
                 ({u.banExpiresAt ? `đến ${new Date(u.banExpiresAt).toLocaleDateString('vi-VN')}` : 'Vĩnh viễn'})

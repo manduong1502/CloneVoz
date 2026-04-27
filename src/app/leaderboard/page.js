@@ -24,7 +24,7 @@ export default async function LeaderboardPage() {
   
   const monthlyRaw = await prisma.pointLog.groupBy({
     by: ['userId'],
-    where: { createdAt: { gte: startOfMonth }, points: { gt: 0 } },
+    where: { createdAt: { gte: startOfMonth }, action: { in: ['like', 'dislike'] } },
     _sum: { points: true },
     orderBy: { _sum: { points: 'desc' } },
     take: 20
@@ -144,7 +144,7 @@ export default async function LeaderboardPage() {
           <h2 className="text-[18px] font-semibold text-[var(--voz-text)]">Xếp hạng tháng — {monthName}</h2>
         </div>
         <p className="text-[13px] text-[var(--voz-text-muted)] mb-3">
-          Điểm công đức kiếm được trong tháng hiện tại. Bảng xếp hạng sẽ tự động reset vào đầu mỗi tháng mới.
+          Điểm công đức tháng chỉ tính trên 2 tiêu chí: nhận Like (+1) và bị Dislike (-1). Bảng xếp hạng tự động reset vào đầu mỗi tháng mới.
         </p>
         {renderTable(topUsersMonth, 'month')}
       </div>
