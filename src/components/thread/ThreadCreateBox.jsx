@@ -96,7 +96,7 @@ export default function ThreadCreateBox({ session, nodeId }) {
 
          {isPending && <span className="text-[13px] text-[var(--voz-text-muted)]">Đang chèn dữ liệu...</span>}
          <button type="submit" disabled={isPending || !turnstileToken} className="voz-button w-[200px] justify-center py-[10px] text-[15px] disabled:opacity-50">
-            Post thread
+            Đăng bài
          </button>
       </div>
     </form>

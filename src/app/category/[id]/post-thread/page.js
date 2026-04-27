@@ -46,7 +46,7 @@ export default async function PostThreadPage({ params }) {
       </div>
 
       <div className="mb-4">
-        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Post thread</h1>
+        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">Đăng bài mới</h1>
       </div>
 
       <ThreadCreateBox session={session} nodeId={id} />

@@ -4,10 +4,10 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Italic, Strikethrough, List, ListOrdered, Quote, Image as ImageIcon } from 'lucide-react';
-import { forwardRef, useImperativeHandle } from 'react';
+import { Bold, Italic, Strikethrough, List, ListOrdered, Quote, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
 
-const MenuBar = ({ editor, onImageUpload }) => {
+const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
   if (!editor) {
     return null;
   }
@@ -18,15 +18,8 @@ const MenuBar = ({ editor, onImageUpload }) => {
     input.accept = 'image/*';
     input.onchange = async (e) => {
       const file = e.target.files[0];
-      if (file && onImageUpload) {
-        try {
-          const url = await onImageUpload(file);
-          if (url) {
-            editor.chain().focus().setImage({ src: url }).run();
-          }
-        } catch (err) {
-          console.error('Image insert error:', err);
-        }
+      if (file) {
+        await onUploadWithLoading(file);
       }
     };
     input.click();
@@ -94,16 +87,47 @@ const MenuBar = ({ editor, onImageUpload }) => {
       <button
         type="button"
         onClick={handleImageClick}
-        className="p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors"
-        title="Upload Image"
+        disabled={isUploading}
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+        title="Tải ảnh lên"
       >
-        <ImageIcon size={16} />
+        {isUploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
       </button>
     </div>
   );
 };
 
 export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, placeholder = 'Viết bình luận...' }, ref) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadCount, setUploadCount] = useState(0);
+
+  // Wrapper function that handles loading state
+  const uploadWithLoading = useCallback(async (file) => {
+    if (!onImageUpload) return null;
+    setIsUploading(true);
+    setUploadCount(c => c + 1);
+    try {
+      const url = await onImageUpload(file);
+      if (url && editor) {
+        try {
+          editor.chain().focus().setImage({ src: url }).run();
+        } catch (err) {
+          console.error('Image insert error:', err);
+        }
+      }
+      return url;
+    } catch (err) {
+      console.error('Upload error:', err);
+      return null;
+    } finally {
+      setUploadCount(c => {
+        const newCount = c - 1;
+        if (newCount <= 0) setIsUploading(false);
+        return newCount;
+      });
+    }
+  }, [onImageUpload]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -178,6 +202,8 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
           if (item.type.indexOf('image') === 0) {
             const file = item.getAsFile();
             if (file && onImageUpload) {
+              setIsUploading(true);
+              setUploadCount(c => c + 1);
               onImageUpload(file).then(url => {
                 if (url) {
                   try {
@@ -186,6 +212,12 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
                     console.error('Paste image error:', err);
                   }
                 }
+              }).finally(() => {
+                setUploadCount(c => {
+                  const newCount = c - 1;
+                  if (newCount <= 0) setIsUploading(false);
+                  return newCount;
+                });
               });
               return true;
             }
@@ -197,6 +229,8 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
         if (!moved && event.dataTransfer?.files?.length > 0) {
           const file = event.dataTransfer.files[0];
           if (file.type.indexOf('image') === 0 && onImageUpload) {
+            setIsUploading(true);
+            setUploadCount(c => c + 1);
             onImageUpload(file).then(url => {
               if (url) {
                 try {
@@ -211,6 +245,12 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
                   editor.chain().focus().setImage({ src: url }).run();
                 }
               }
+            }).finally(() => {
+              setUploadCount(c => {
+                const newCount = c - 1;
+                if (newCount <= 0) setIsUploading(false);
+                return newCount;
+              });
             });
             return true;
           }
@@ -230,10 +270,20 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
   }));
 
   return (
-    <div className="border border-[var(--voz-border)] rounded-[2px] bg-[var(--voz-surface)] flex flex-col focus-within:border-[var(--voz-link)] transition-colors w-full">
-      <MenuBar editor={editor} onImageUpload={onImageUpload} />
-      <div className="flex-1 cursor-text bg-[var(--voz-surface)]" onClick={() => editor?.commands.focus()}>
+    <div className="border border-[var(--voz-border)] rounded-[2px] bg-[var(--voz-surface)] flex flex-col focus-within:border-[var(--voz-link)] transition-colors w-full relative">
+      <MenuBar editor={editor} onUploadWithLoading={uploadWithLoading} isUploading={isUploading} />
+      <div className="flex-1 cursor-text bg-[var(--voz-surface)] relative" onClick={() => editor?.commands.focus()}>
         <EditorContent editor={editor} />
+        
+        {/* Upload Overlay */}
+        {isUploading && (
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-b-[2px]">
+            <div className="flex items-center gap-2 bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg px-4 py-2.5 shadow-lg">
+              <Loader2 size={18} className="animate-spin text-[#f2930d]" />
+              <span className="text-[13px] font-medium text-[var(--voz-text)]">Đang tải ảnh lên...</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
