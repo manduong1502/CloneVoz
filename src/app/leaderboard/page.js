@@ -159,13 +159,6 @@ export default async function LeaderboardPage(props) {
 
       {/* Xếp hạng tổng */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 mb-2">
-          <Crown size={20} className="text-[#F59E0B] crown-animate" />
-          <h2 className="text-[18px] font-semibold text-[var(--voz-text)]">Xếp hạng tổng công đức</h2>
-        </div>
-        <p className="text-[13px] text-[var(--voz-text-muted)] mb-3">
-          Tổng điểm công đức tích lũy từ khi tham gia diễn đàn. Tạo chủ đề +3, bình luận +2, nhận like +1, bị dislike -1.
-        </p>
         {renderTable(topUsersTotal, 'total', pageTotal, totalPagesTotal, 'pageTotal')}
       </div>
 
