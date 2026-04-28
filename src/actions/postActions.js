@@ -7,13 +7,15 @@ import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
 import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
 
+import { countWords } from '@/lib/wordCount';
+
 export async function deletePost(postId, threadId, isFirstPost) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    select: { authorId: true }
+    select: { authorId: true, content: true, createdAt: true }
   });
   if (!post) throw new Error("Không tìm thấy bài viết");
 
@@ -24,9 +26,18 @@ export async function deletePost(postId, threadId, isFirstPost) {
     throw new Error("Bạn không có quyền xoá bài viết này");
   }
 
+  // Calculate penalty if post is old (already gave points)
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+  let penaltyPoints = 0;
+  if (post.createdAt < startOfToday) {
+     const words = countWords(post.content);
+     if (isFirstPost && words >= 200) penaltyPoints = 5;
+     else if (!isFirstPost && words >= 20) penaltyPoints = 2;
+  }
+
   if (isFirstPost) {
     // Nếu là bài đăng đầu tiên, tức là xoá Cả Thread
-    // Tự dọn rác Cascade Deletion thủ công nhé (do giới hạn Prisma SQLite)
     const allPosts = await prisma.post.findMany({ where: { threadId }, select: { id: true } });
     const postIds = allPosts.map(p => p.id);
     
@@ -37,7 +48,6 @@ export async function deletePost(postId, threadId, isFirstPost) {
       prisma.post.deleteMany({ where: { threadId } }),
       prisma.thread.delete({ where: { id: threadId } })
     ]);
-    
     revalidatePath(`/`);
   } else {
     // Nếu chỉ là bình luận xoá lẻ
@@ -45,9 +55,15 @@ export async function deletePost(postId, threadId, isFirstPost) {
        prisma.reaction.deleteMany({ where: { postId } }),
        prisma.report.deleteMany({ where: { postId } }),
        prisma.post.delete({ where: { id: postId } }),
-       // Trừ bộ đếm bình luận của Thread
        prisma.thread.update({ where: { id: threadId }, data: { replyCount: { decrement: 1 } } })
     ]);
+  }
+
+  if (penaltyPoints > 0) {
+    await prisma.user.update({
+      where: { id: post.authorId },
+      data: { points: { decrement: penaltyPoints } }
+    });
   }
   
   // Xóa cache màn hình
@@ -166,15 +182,10 @@ export async function createReply(threadId, formData) {
     data: { replyCount: { increment: 1 }, updatedAt: new Date() }
   });
 
-  // Cập nhật số liệu User: +1 messageCount, +2 công đức
+  // Cập nhật số liệu User: +1 messageCount
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { messageCount: { increment: 1 }, points: { increment: 2 } }
-  });
-
-  // Ghi lịch sử công đức
-  await prisma.pointLog.create({
-    data: { userId: session.user.id, points: 2, action: 'reply' }
+    data: { messageCount: { increment: 1 } }
   });
 
   // Xóa rác Cache để Data mới nổi lên
@@ -230,37 +241,24 @@ export async function handleReaction(postId, path, reactionType) {
 
   // Cập nhật điểm (chỉ cộng/trừ nếu không phải tự vote bài mình)
   if (post && !isOwnPost && scoreDelta !== 0) {
-    // Tính công đức delta cho chủ bài viết
-    let pointsDelta = 0;
-    if (!existingReaction) {
-      // Reaction mới: Like +1, Dislike -1
-      pointsDelta = reactionType === "Like" ? 1 : -1;
-    } else if (reactionType === null) {
-      // Hủy reaction: ngược lại
-      pointsDelta = existingReaction.type === "Like" ? -1 : 1;
-    } else {
-      // Đổi reaction: Like→Dislike = -2, Dislike→Like = +2
-      pointsDelta = reactionType === "Like" ? 2 : -2;
+    // Calculate penalty if removing an old like
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    let penaltyPoints = 0;
+    
+    if (existingReaction && existingReaction.createdAt < startOfToday) {
+       if (existingReaction.type === 'Like' && reactionType !== 'Like') {
+          penaltyPoints = 1; // Removed an old like, penalize 1 point
+       }
     }
 
     await prisma.user.update({
       where: { id: post.authorId },
       data: { 
         reactionScore: { increment: scoreDelta },
-        points: { increment: pointsDelta }
+        ...(penaltyPoints > 0 ? { points: { decrement: penaltyPoints } } : {})
       }
     });
-
-    // Ghi lịch sử công đức
-    if (pointsDelta !== 0) {
-      await prisma.pointLog.create({
-        data: { 
-          userId: post.authorId, 
-          points: pointsDelta, 
-          action: pointsDelta > 0 ? 'like' : 'dislike' 
-        }
-      });
-    }
 
     // Thông báo nếu có Like mới
     if (reactionType === "Like" && !existingReaction) {

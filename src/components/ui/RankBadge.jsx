@@ -21,19 +21,6 @@ export default function RankBadge({ points, showProgress = false, size = 'sm' })
         {rank.title}
       </span>
       
-      {showProgress && !rank.isMax && (
-        <div className="w-full max-w-[120px] flex flex-col items-center">
-          <div className="w-full h-[3px] bg-[var(--voz-border)] rounded-full overflow-hidden">
-            <div 
-              className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${rank.progress}%`, backgroundColor: rank.color }}
-            />
-          </div>
-          <span className="text-[9px] text-[var(--voz-text-muted)] mt-[1px]">
-            {rank.currentPoints}/{rank.nextMin} → {rank.nextTitle}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

@@ -60,15 +60,10 @@ export async function createThread(nodeId, formData) {
      data: { threadsCount: { increment: 1 }, postsCount: { increment: 1 } }
   });
 
-  // Cập nhật User: +1 messageCount, +3 công đức
+  // Cập nhật User: +1 messageCount
   await prisma.user.update({
     where: { id: session.user.id },
-    data: { messageCount: { increment: 1 }, points: { increment: 3 } }
-  });
-
-  // Ghi lịch sử công đức
-  await prisma.pointLog.create({
-    data: { userId: session.user.id, points: 3, action: 'thread' }
+    data: { messageCount: { increment: 1 } }
   });
 
   // Thông báo cho những người đang theo dõi Node

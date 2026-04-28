@@ -1,12 +1,12 @@
 // Hệ thống Công đức & Xếp hạng Thành viên
 
 export const RANKS = [
-  { min: 0,    max: 50,   title: 'Sơ sinh',              color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', icon: '🌱' },
-  { min: 51,   max: 200,  title: 'Thành viên nòng cốt',  color: '#22C55E', bg: 'rgba(34,197,94,0.15)',   icon: '⭐' },
-  { min: 201,  max: 500,  title: 'Thành viên uy tín',    color: '#3B82F6', bg: 'rgba(59,130,246,0.15)',  icon: '💎' },
-  { min: 501,  max: 1000, title: 'Cao thủ',              color: '#A855F7', bg: 'rgba(168,85,247,0.15)',  icon: '🔥' },
-  { min: 1001, max: 2000, title: 'Huyền thoại',          color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  icon: '👑' },
-  { min: 2001, max: Infinity, title: 'Sử thi',           color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   icon: '⚔️' },
+  { min: 0,    max: 99,   title: 'Tân binh',   color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', icon: '🌱' },
+  { min: 100,  max: 299,  title: 'Tay chơi',   color: '#22C55E', bg: 'rgba(34,197,94,0.15)',   icon: '⭐' },
+  { min: 300,  max: 799,  title: 'Bản lĩnh',   color: '#3B82F6', bg: 'rgba(59,130,246,0.15)',  icon: '💎' },
+  { min: 800,  max: 1999, title: 'Trụ cột',    color: '#A855F7', bg: 'rgba(168,85,247,0.15)',  icon: '🔥' },
+  { min: 2000, max: 4999, title: 'Đẳng cấp',   color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  icon: '👑' },
+  { min: 5000, max: Infinity, title: 'Quý ông',color: '#EF4444', bg: 'rgba(239,68,68,0.15)',   icon: '⚔️' },
 ];
 
 export function getRankInfo(points) {

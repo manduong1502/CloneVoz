@@ -31,35 +31,18 @@ export default async function LeaderboardPage(props) {
 
   // --- Xếp hạng tháng ---
   const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthName = now.toLocaleDateString('vi-VN', { month: 'long', year: 'numeric' });
 
-  // Lấy tổng số user có điểm trong tháng để tính page
-  const monthlyCountRaw = await prisma.pointLog.groupBy({
-    by: ['userId'],
-    where: { createdAt: { gte: startOfMonth }, action: { in: ['like', 'dislike'] } }
-  });
-  const totalMonthUsersCount = monthlyCountRaw.length;
+  const totalMonthUsersCount = await prisma.user.count({ where: { monthlyPoints: { not: 0 } } });
   const totalPagesMonth = Math.max(1, Math.ceil(totalMonthUsersCount / take));
 
-  const monthlyRaw = await prisma.pointLog.groupBy({
-    by: ['userId'],
-    where: { createdAt: { gte: startOfMonth }, action: { in: ['like', 'dislike'] } },
-    _sum: { points: true },
-    orderBy: { _sum: { points: 'desc' } },
+  const topUsersMonth = await prisma.user.findMany({
+    where: { monthlyPoints: { not: 0 } },
+    orderBy: { monthlyPoints: 'desc' },
     take,
-    skip: (pageMonth - 1) * take
+    skip: (pageMonth - 1) * take,
+    select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, createdAt: true }
   });
-
-  const monthlyUserIds = monthlyRaw.map(r => r.userId);
-  const monthlyUsers = monthlyUserIds.length > 0
-    ? await prisma.user.findMany({ where: { id: { in: monthlyUserIds } }, select: { id: true, username: true, avatar: true, points: true, createdAt: true } })
-    : [];
-
-  const topUsersMonth = monthlyRaw.map(r => {
-    const u = monthlyUsers.find(u => u.id === r.userId);
-    return u ? { ...u, monthPoints: r._sum.points } : null;
-  }).filter(Boolean);
 
   const POSITION_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
   const POSITION_ICONS = ['🥇', '🥈', '🥉'];
@@ -79,7 +62,7 @@ export default async function LeaderboardPage(props) {
         {/* Rows */}
         {users.map((user, index) => {
           const rank = getRankInfo(user.points);
-          const displayPoints = type === 'month' ? user.monthPoints : user.points;
+          const displayPoints = type === 'month' ? user.monthlyPoints : user.points;
           const globalIndex = skipOffset + index;
 
           return (
@@ -169,7 +152,7 @@ export default async function LeaderboardPage(props) {
           <h2 className="text-[18px] font-semibold text-[var(--voz-text)]">Xếp hạng tháng — {monthName}</h2>
         </div>
         <p className="text-[13px] text-[var(--voz-text-muted)] mb-3">
-          Điểm công đức tháng chỉ tính trên 2 tiêu chí: nhận Like (+1) và bị Dislike (-1). Bảng xếp hạng tự động reset vào đầu mỗi tháng mới.
+          Điểm công đức tháng được tính dựa trên số lượng bình luận/bài viết và các lượt react trong tháng. Bảng xếp hạng tự động cập nhật vào mỗi đêm và reset vào mùng 1 đầu tháng.
         </p>
         {renderTable(topUsersMonth, 'month', pageMonth, totalPagesMonth, 'pageMonth')}
       </div>
