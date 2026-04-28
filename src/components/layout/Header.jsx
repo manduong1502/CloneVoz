@@ -22,6 +22,12 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
   const user = session?.user;
 
+  // Sync state with props when user changes (e.g. login/logout)
+  useEffect(() => {
+    setLiveNotifications(notifications);
+    setLiveUnreadCount(unreadCount);
+  }, [notifications, unreadCount, user?.id]);
+
   // Lắng nghe event open-auth-modal từ các component khác (ThreadReplyBox, GlobalChatbox, ...)
   useEffect(() => {
     const handleOpenAuthModal = (e) => {
