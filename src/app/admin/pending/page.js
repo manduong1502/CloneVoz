@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma';
 import { CheckCircle, XCircle, Clock, User, Calendar } from 'lucide-react';
 import ApproveRejectButtons from './ApproveRejectButtons';
+import Link from 'next/link';
 
 export default async function AdminPendingPage() {
   const pendingThreads = await prisma.thread.findMany({
@@ -60,12 +61,14 @@ export default async function AdminPendingPage() {
                 
                 {/* Author info */}
                 <div className="flex items-center gap-3 mb-4 pb-3 border-b border-[var(--voz-border)]">
-                  <img 
-                    src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username}&background=random`} 
-                    className="w-10 h-10 rounded-full" 
-                  />
+                  <Link href={`/profile/${thread.author.username}`}>
+                    <img 
+                      src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username}&background=random`} 
+                      className="w-10 h-10 rounded-full" 
+                    />
+                  </Link>
                   <div className="text-sm">
-                    <div className="font-medium text-[var(--voz-text)]">{thread.author.username}</div>
+                    <Link href={`/profile/${thread.author.username}`} className="font-medium text-[var(--voz-link)] hover:underline">{thread.author.username}</Link>
                     <div className="text-xs text-[var(--voz-text-muted)] flex gap-3">
                       <span>{thread.author.email}</span>
                       <span>•</span>

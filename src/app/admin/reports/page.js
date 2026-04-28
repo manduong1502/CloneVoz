@@ -62,15 +62,17 @@ export default async function AdminReportsPage() {
                       <div className="flex items-center gap-2 mb-2">
                         <span className="bg-amber-500/20 text-amber-600 text-[11px] font-bold px-2 py-[2px] rounded">REPORT</span>
                         <span className="text-xs text-[var(--voz-text-muted)]">
-                          Từ <strong>{report.reporter.username}</strong> · {new Date(report.createdAt).toLocaleString('vi-VN')}
+                          Từ <strong><Link href={`/profile/${report.reporter.username}`} className="text-[var(--voz-link)] hover:underline">{report.reporter.username}</Link></strong> · {new Date(report.createdAt).toLocaleString('vi-VN')}
                         </span>
                       </div>
 
                       {/* Target user */}
                       {targetUser && (
                         <div className="flex items-center gap-2 mb-2">
-                          <img src={targetUser.avatar || `https://ui-avatars.com/api/?name=${targetUser.username}`} className="w-6 h-6 rounded-full" />
-                          <span className="font-bold text-red-500">{targetUser.username}</span>
+                          <Link href={`/profile/${targetUser.username}`}>
+                            <img src={targetUser.avatar || `https://ui-avatars.com/api/?name=${targetUser.username}`} className="w-6 h-6 rounded-full" />
+                          </Link>
+                          <Link href={`/profile/${targetUser.username}`} className="font-bold text-red-500 hover:underline">{targetUser.username}</Link>
                           {targetUser.isBanned && <span className="text-[10px] bg-red-500 text-white px-1 rounded">BANNED</span>}
                           <span className="text-xs text-[var(--voz-text-muted)]">— {contentType}</span>
                         </div>
