@@ -64,9 +64,16 @@ export async function deleteCachePattern(pattern) {
   try {
     const client = getRedisClient();
     if (!client) return;
-    const keys = await client.keys(pattern);
-    if (keys.length > 0) {
-      await client.del(...keys);
+    // Use SCAN instead of KEYS to avoid blocking Redis
+    const stream = client.scanStream({ match: pattern, count: 100 });
+    const keysToDelete = [];
+    await new Promise((resolve, reject) => {
+      stream.on('data', (keys) => { keysToDelete.push(...keys); });
+      stream.on('end', resolve);
+      stream.on('error', reject);
+    });
+    if (keysToDelete.length > 0) {
+      await client.del(...keysToDelete);
     }
   } catch {
     // bỏ qua

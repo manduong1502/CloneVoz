@@ -45,24 +45,13 @@ export default async function Home() {
         select: { id: true, username: true, avatar: true, points: true }
       });
 
-      // 4. Xếp hạng tháng (group PointLog by userId in current month)
-      const now = new Date();
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyRaw = await prisma.pointLog.groupBy({
-        by: ['userId'],
-        where: { createdAt: { gte: startOfMonth }, action: { in: ['like', 'dislike'] } },
-        _sum: { points: true },
-        orderBy: { _sum: { points: 'desc' } },
-        take: 5
+      // 4. Xếp hạng tháng (dùng monthlyPoints trực tiếp)
+      const topUsersMonth = await prisma.user.findMany({
+        where: { monthlyPoints: { not: 0 } },
+        orderBy: { monthlyPoints: 'desc' },
+        take: 5,
+        select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true }
       });
-      const monthlyUserIds = monthlyRaw.map(r => r.userId);
-      const monthlyUsers = monthlyUserIds.length > 0 
-        ? await prisma.user.findMany({ where: { id: { in: monthlyUserIds } }, select: { id: true, username: true, avatar: true, points: true } })
-        : [];
-      const topUsersMonth = monthlyRaw.map(r => {
-        const u = monthlyUsers.find(u => u.id === r.userId);
-        return u ? { ...u, monthPoints: r._sum.points } : null;
-      }).filter(Boolean);
 
       // 5. Kéo Forum Statistics
       const totalForumThreads = await prisma.thread.count();

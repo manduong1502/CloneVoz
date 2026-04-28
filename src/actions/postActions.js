@@ -8,6 +8,7 @@ import { checkNodePermission } from '@/lib/permissions';
 import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
 
 import { countWords } from '@/lib/wordCount';
+import { cascadeDeleteThread, cascadeDeletePost } from '@/lib/threadUtils';
 
 export async function deletePost(postId, threadId, isFirstPost) {
   const session = await auth();
@@ -26,7 +27,7 @@ export async function deletePost(postId, threadId, isFirstPost) {
     throw new Error("Bạn không có quyền xoá bài viết này");
   }
 
-  // Calculate penalty if post is old (already gave points)
+  // Calculate penalty: post content points + old like points
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   let penaltyPoints = 0;
@@ -36,34 +37,29 @@ export async function deletePost(postId, threadId, isFirstPost) {
      else if (!isFirstPost && words >= 20) penaltyPoints = 2;
   }
 
+  // Also count old likes on this post that were already processed by cron
+  const oldLikes = await prisma.reaction.count({
+    where: { postId, type: 'Like', createdAt: { lt: startOfToday } }
+  });
+  penaltyPoints += oldLikes;
+
   if (isFirstPost) {
-    // Nếu là bài đăng đầu tiên, tức là xoá Cả Thread
-    const allPosts = await prisma.post.findMany({ where: { threadId }, select: { id: true } });
-    const postIds = allPosts.map(p => p.id);
-    
-    await prisma.$transaction([
-      prisma.reaction.deleteMany({ where: { postId: { in: postIds } } }),
-      prisma.report.deleteMany({ where: { postId: { in: postIds } } }),
-      prisma.bookmark.deleteMany({ where: { threadId } }),
-      prisma.post.deleteMany({ where: { threadId } }),
-      prisma.thread.delete({ where: { id: threadId } })
-    ]);
+    await cascadeDeleteThread(threadId);
     revalidatePath(`/`);
   } else {
-    // Nếu chỉ là bình luận xoá lẻ
-    await prisma.$transaction([
-       prisma.reaction.deleteMany({ where: { postId } }),
-       prisma.report.deleteMany({ where: { postId } }),
-       prisma.post.delete({ where: { id: postId } }),
-       prisma.thread.update({ where: { id: threadId }, data: { replyCount: { decrement: 1 } } })
-    ]);
+    await cascadeDeletePost(postId, threadId);
   }
 
+  // Deduct penalty, floor at 0
   if (penaltyPoints > 0) {
-    await prisma.user.update({
-      where: { id: post.authorId },
-      data: { points: { decrement: penaltyPoints } }
-    });
+    const author = await prisma.user.findUnique({ where: { id: post.authorId }, select: { points: true } });
+    const actualDeduction = Math.min(penaltyPoints, Math.max(0, author?.points || 0));
+    if (actualDeduction > 0) {
+      await prisma.user.update({
+        where: { id: post.authorId },
+        data: { points: { decrement: actualDeduction } }
+      });
+    }
   }
   
   // Xóa cache màn hình
@@ -95,17 +91,17 @@ export async function createReply(threadId, formData) {
   const perm = await checkNodePermission(thread.nodeId);
   if (!perm.granted) throw new Error(perm.reason);
 
-  // Đếm số post hiện tại để lấy position cuối
-  const currentPostCount = await prisma.post.count({ where: { threadId }});
-
-  // Tạo post
-  const newPost = await prisma.post.create({
-    data: {
-      content: content,
-      position: currentPostCount + 1,
-      threadId,
-      authorId: session.user.id
-    }
+  // Tạo post với position atomic (tránh race condition)
+  const newPost = await prisma.$transaction(async (tx) => {
+    const currentPostCount = await tx.post.count({ where: { threadId }});
+    return tx.post.create({
+      data: {
+        content: content,
+        position: currentPostCount + 1,
+        threadId,
+        authorId: session.user.id
+      }
+    });
   });
 
   // PHÂN TÍCH VÀ GỬI THÔNG BÁO (Mentions / Quote / Watched Thread / Thread Author)
@@ -135,14 +131,15 @@ export async function createReply(threadId, formData) {
 
   for (const uid of userIdsToNotify) {
       let type = "reply";
-      let text = `${session.user.name} đã bình luận vào bài viết bạn đang theo dõi.`;
+      const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
+      let text = `<strong>${safeName}</strong> đã bình luận vào bài viết bạn đang theo dõi.`;
       
       if (uid === thread.authorId) {
-          text = `${session.user.name} đã bình luận vào bài viết của bạn.`;
+          text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
       }
       if (mentionedUserIds.includes(uid)) {
           type = "quote";
-          text = `${session.user.name} đã nhắc đến bạn trong một bài viết.`;
+          text = `<strong>${safeName}</strong> đã nhắc đến bạn trong một bài viết.`;
       }
       
       notificationsData.push({
@@ -269,7 +266,7 @@ export async function handleReaction(postId, path, reactionType) {
              userId: post.authorId,
              senderId: session.user.id,
              type: "reaction",
-             content: `<strong>${session.user.name}</strong> đã thả Ưng bài viết của bạn.`,
+             content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã thả Ưng bài viết của bạn.`,
              link: `/thread/${thread.thread.id}#post-${postId}`
            }
         });

@@ -109,13 +109,17 @@ export default async function ThreadPage({ params, searchParams }) {
     );
   }
 
-  // Tăng View Count (Fake simple mode, no IP checks)
-  await prisma.thread.update({
-    where: { id },
-    data: { viewCount: { increment: 1 } }
-  });
-
-  // ViewCount Update logic here.
+  // Tăng View Count (throttled: mỗi session chỉ đếm 1 lần/5 phút/thread)
+  const viewKey = `view:${id}:${session?.user?.id || 'anon'}`;
+  const { getCache, setCache } = await import('@/lib/redis');
+  const alreadyViewed = await getCache(viewKey);
+  if (!alreadyViewed) {
+    await prisma.thread.update({
+      where: { id },
+      data: { viewCount: { increment: 1 } }
+    });
+    await setCache(viewKey, '1', 300); // 5 phút
+  }
 
   return (
     <div className="w-full">

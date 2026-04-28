@@ -10,20 +10,21 @@ export async function checkRateLimit() {
 
   const userId = session.user.id;
 
-  // Tìm bài viết (Post) HOẶC Chủ đề (Thread) gần nhất của user này
-  const lastPost = await prisma.post.findFirst({
-    where: { authorId: userId },
-    orderBy: { createdAt: 'desc' },
-    select: { createdAt: true }
-  });
+  // Gom lại thành 1 query duy nhất: tìm hành động gần nhất
+  const [lastPost, lastThread] = await Promise.all([
+    prisma.post.findFirst({
+      where: { authorId: userId },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
+    }),
+    prisma.thread.findFirst({
+      where: { authorId: userId },
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true }
+    })
+  ]);
 
-  const lastThread = await prisma.thread.findFirst({
-     where: { authorId: userId },
-     orderBy: { createdAt: 'desc' },
-     select: { createdAt: true }
-  });
-
-  let lastActionTime = new Date(0); // 1970
+  let lastActionTime = new Date(0);
 
   if (lastPost && lastThread) {
      lastActionTime = lastPost.createdAt > lastThread.createdAt ? lastPost.createdAt : lastThread.createdAt;

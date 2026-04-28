@@ -37,28 +37,31 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Google(),
     CredentialsProvider({
-      name: "Tài khoản (Mock)",
+      name: "Tài khoản",
       credentials: {
-        username: { label: "Username", type: "text", placeholder: "Ví dụ: Kuang2 (Admin)" },
-        password: { label: "Password", type: "password", placeholder: "Gì cũng được" }
+        username: { label: "Username", type: "text" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        if (!credentials?.username) return null;
+        if (!credentials?.username || !credentials?.password) return null;
 
-        // Auto-match user for demo purposes
         const user = await prisma.user.findFirst({
            where: { username: credentials.username }
-        })
+        });
 
-        if (user) {
-           return { 
-              id: user.id, 
-              name: user.username, 
-              email: user.email, 
-              image: user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`
-           }
-        }
-        return null;
+        if (!user || !user.passwordHash) return null;
+
+        // Verify password with bcrypt
+        const bcrypt = await import('bcryptjs');
+        const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValid) return null;
+
+        return { 
+           id: user.id, 
+           name: user.username, 
+           email: user.email, 
+           image: user.avatar || `https://ui-avatars.com/api/?name=${user.username}&background=random`
+        };
       }
     })
   ],

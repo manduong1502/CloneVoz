@@ -58,7 +58,7 @@ export async function createConversation(formData) {
   const notif = await prisma.notification.create({
     data: {
       type: "pm",
-      content: `${session.user.name} đã gửi cho bạn một tin nhắn cá nhân: "${title}".`,
+      content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã gửi cho bạn một tin nhắn cá nhân: "${(title || '').replace(/[<>"'&]/g, '')}".`,
       userId: targetUser.id,
       senderId: session.user.id,
       link: `/conversations/${conversation.id}`
@@ -115,7 +115,7 @@ export async function replyToConversation(conversationId, formData) {
               userId: u.id,
               senderId: session.user.id,
               type: "pm_reply",
-              content: `${session.user.name} đã trả lời trong hộp thư: "${conv.title}".`,
+              content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã trả lời trong hộp thư: "${(conv.title || '').replace(/[<>"'&]/g, '')}".`,
               link: `/conversations/${conversationId}#msg-${newMessage.id}`
           },
           include: { sender: { select: { username: true, avatar: true } } }

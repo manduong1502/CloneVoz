@@ -41,8 +41,15 @@ export async function submitReport({ reason, postId, threadId, shoutboxMessageId
 export async function resolveReportAndWarn({ reportId, warningReason, warningPoints, targetUserId }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
-  // Security detail: Should check if session user is Admin or Mod
-  // We'll skip deep group checks here assuming it's protected by Admin UI route
+
+  // Kiểm tra quyền Admin/Mod
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { userGroups: true }
+  });
+  const isAdmin = currentUser?.userGroups.some(g => g.name === 'Admin');
+  const isMod = currentUser?.userGroups.some(g => g.name === 'Moderator');
+  if (!isAdmin && !isMod) throw new Error("Bạn không có quyền xử lý báo cáo.");
 
   const targetUser = await prisma.user.findUnique({ where: { id: targetUserId }});
   if (!targetUser) throw new Error("Không tìm thấy người dùng");
@@ -85,6 +92,15 @@ export async function resolveReportAndWarn({ reportId, warningReason, warningPoi
 export async function rejectReport(reportId) {
    const session = await auth();
    if (!session?.user?.id) throw new Error("Chưa đăng nhập");
+
+   // Kiểm tra quyền Admin/Mod
+   const currentUser = await prisma.user.findUnique({
+     where: { id: session.user.id },
+     include: { userGroups: true }
+   });
+   const isAdmin = currentUser?.userGroups.some(g => g.name === 'Admin');
+   const isMod = currentUser?.userGroups.some(g => g.name === 'Moderator');
+   if (!isAdmin && !isMod) throw new Error("Bạn không có quyền xử lý báo cáo.");
 
    await prisma.report.update({
       where: { id: reportId },

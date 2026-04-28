@@ -76,12 +76,14 @@ export async function createThread(nodeId, formData) {
   const notificationsData = [];
   const pusherPromises = [];
 
+  const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
+  const safeNodeTitle = (nodeName?.title || 'bạn đang theo dõi').replace(/[<>"'&]/g, '');
   for (const uid of watcherIds) {
       notificationsData.push({
           userId: uid,
           senderId: session.user.id,
           type: "reply",
-          content: `${session.user.name} đã tạo một chủ đề mới trong chuyên mục ${nodeName?.title || 'bạn đang theo dõi'}.`,
+          content: `<strong>${safeName}</strong> đã tạo một chủ đề mới trong chuyên mục ${safeNodeTitle}.`,
           link: `/thread/${newThread.id}`
       });
   }

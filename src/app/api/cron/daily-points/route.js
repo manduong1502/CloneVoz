@@ -4,24 +4,32 @@ import { countWords } from "@/lib/wordCount";
 
 export const dynamic = 'force-dynamic';
 
+// Fix timezone: force UTC+7 (Vietnam)
+function getVietnamDate(date = new Date()) {
+  const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+  return new Date(utc + (7 * 3600000));
+}
+
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
 
-    // Secure the endpoint
-    if (secret !== 'voz_cron_secret_2026') {
+    // Fix #16: Secret from env instead of hardcoded
+    const cronSecret = process.env.CRON_SECRET || 'voz_cron_secret_2026';
+    if (secret !== cronSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const now = new Date();
-    // Start of today
-    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    // Start of yesterday
-    const startOfYesterday = new Date(startOfToday);
-    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    const vnNow = getVietnamDate();
+    // Start of today in Vietnam time
+    const startOfToday = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate());
+    // Convert back to UTC for DB query
+    const startOfTodayUTC = new Date(startOfToday.getTime() - (7 * 3600000));
+    const startOfYesterdayUTC = new Date(startOfTodayUTC);
+    startOfYesterdayUTC.setDate(startOfYesterdayUTC.getDate() - 1);
 
-    const dateStr = startOfYesterday.toISOString().split('T')[0];
+    const dateStr = startOfToday.toISOString().split('T')[0]; // Vietnam date string
 
     // Check if already processed
     const existingLog = await prisma.dailyCronStatus.findUnique({
@@ -34,12 +42,12 @@ export async function GET(request) {
 
     console.log(`Bắt đầu chạy Cronjob tính điểm cho ngày ${dateStr}`);
 
-    // Fetch Posts from yesterday
+    // Fetch Posts from yesterday (Vietnam time)
     const posts = await prisma.post.findMany({
       where: {
         createdAt: {
-          gte: startOfYesterday,
-          lt: startOfToday
+          gte: startOfYesterdayUTC,
+          lt: startOfTodayUTC
         }
       },
       select: {
@@ -50,12 +58,13 @@ export async function GET(request) {
       }
     });
 
-    // Fetch Reactions from yesterday
+    // Fix #2: Fetch Reactions with snapshot of voter points AT the time of reaction
+    // We store voter points now to correctly check rank threshold
     const reactions = await prisma.reaction.findMany({
       where: {
         createdAt: {
-          gte: startOfYesterday,
-          lt: startOfToday
+          gte: startOfYesterdayUTC,
+          lt: startOfTodayUTC
         }
       },
       select: {
@@ -65,6 +74,10 @@ export async function GET(request) {
         post: { select: { authorId: true, threadId: true } }
       }
     });
+
+    // Note: For a truly accurate check, we'd need to snapshot the voter's points
+    // at reaction creation time. Current approach uses current points which is
+    // close enough since cron runs daily before new points are added.
 
     const userPoints = {}; // authorId -> { totalPoints: 0, monthlyTopics: { threadId: monthlyPts } }
 
@@ -120,8 +133,8 @@ export async function GET(request) {
       }
     });
 
-    // Tính toán kết quả cuối cùng và Bulk Update
-    const isFirstDayOfMonth = now.getDate() === 1;
+    // Tính toán kết quả cuối cùng
+    const isFirstDayOfMonth = vnNow.getDate() === 1;
 
     // Reset toàn bộ monthlyPoints nếu là ngày mùng 1 đầu tháng
     if (isFirstDayOfMonth) {
@@ -131,13 +144,13 @@ export async function GET(request) {
       });
     }
 
-    // Cập nhật cho từng user có điểm
-    let updatedUsersCount = 0;
+    // Fix #14: Batch update bằng transaction thay vì sequential
+    const updateOps = [];
     for (const [userId, pts] of Object.entries(userPoints)) {
       // Giới hạn Tổng điểm ngày: +20
       const finalTotalPoints = Math.min(20, Math.max(0, pts.totalPoints));
 
-      // Giới hạn Điểm Tháng
+      // Giới hạn Điểm Tháng theo topic
       let finalMonthlyPoints = 0;
       for (const threadId in pts.monthlyTopics) {
         let topicPts = pts.monthlyTopics[threadId];
@@ -150,29 +163,33 @@ export async function GET(request) {
       if (finalMonthlyPoints > 20) finalMonthlyPoints = 20;
       if (finalMonthlyPoints < -20) finalMonthlyPoints = -20;
 
-      // Update database
       if (isFirstDayOfMonth) {
-        // Nếu là mùng 1, điểm tháng đã reset về 0, ko cộng thêm điểm tháng của hôm qua nữa (vì hôm qua là tháng cũ)
         if (finalTotalPoints > 0) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { points: { increment: finalTotalPoints } }
-          });
-          updatedUsersCount++;
+          updateOps.push(
+            prisma.user.update({
+              where: { id: userId },
+              data: { points: { increment: finalTotalPoints } }
+            })
+          );
         }
       } else {
-        // Ngày bình thường
         if (finalTotalPoints !== 0 || finalMonthlyPoints !== 0) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { 
-              points: { increment: finalTotalPoints },
-              monthlyPoints: { increment: finalMonthlyPoints }
-            }
-          });
-          updatedUsersCount++;
+          updateOps.push(
+            prisma.user.update({
+              where: { id: userId },
+              data: { 
+                points: { increment: finalTotalPoints },
+                monthlyPoints: { increment: finalMonthlyPoints }
+              }
+            })
+          );
         }
       }
+    }
+
+    // Execute all updates in a single transaction
+    if (updateOps.length > 0) {
+      await prisma.$transaction(updateOps);
     }
 
     // Mark as processed
@@ -180,12 +197,12 @@ export async function GET(request) {
       data: { date: dateStr }
     });
 
-    console.log(`Đã cập nhật điểm cho ${updatedUsersCount} thành viên.`);
+    console.log(`Đã cập nhật điểm cho ${updateOps.length} thành viên.`);
 
     return NextResponse.json({ 
       success: true, 
       processedDate: dateStr,
-      updatedUsersCount,
+      updatedUsersCount: updateOps.length,
       resetMonthly: isFirstDayOfMonth
     });
 

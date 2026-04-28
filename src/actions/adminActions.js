@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { deleteCache, deleteCachePattern } from '@/lib/redis';
+import { isSuperAdmin } from '@/lib/adminConfig';
+import { cascadeDeleteThread, cascadeDeletePost } from '@/lib/threadUtils';
 
 // =============================================
 // HELPER: Kiểm tra quyền Admin hoặc Mod
@@ -11,14 +13,14 @@ async function requireAdminOrMod() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
   
-  const isSuperAdmin = session.user.email === 'lamphatcommerce@gmail.com' || session.user.email === 'mandtdn@gmail.com';
+  const superAdmin = isSuperAdmin(session.user.email);
   
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
     include: { userGroups: true }
   });
   
-  const isAdmin = isSuperAdmin || user?.userGroups.some(g => g.name === 'Admin');
+  const isAdmin = superAdmin || user?.userGroups.some(g => g.name === 'Admin');
   const isMod = user?.userGroups.some(g => g.name === 'Moderator');
   const canApprove = isAdmin || user?.userGroups.some(g => g.canApprove);
   
@@ -90,16 +92,7 @@ export async function rejectThread(threadId) {
   }
 
   // Xoá thread và tất cả dữ liệu liên quan
-  const allPosts = await prisma.post.findMany({ where: { threadId }, select: { id: true } });
-  const postIds = allPosts.map(p => p.id);
-  
-  await prisma.$transaction([
-    prisma.reaction.deleteMany({ where: { postId: { in: postIds } } }),
-    prisma.report.deleteMany({ where: { OR: [{ postId: { in: postIds } }, { threadId }] } }),
-    prisma.bookmark.deleteMany({ where: { threadId } }),
-    prisma.post.deleteMany({ where: { threadId } }),
-    prisma.thread.delete({ where: { id: threadId } })
-  ]);
+  const { postCount } = await cascadeDeleteThread(threadId);
 
   // Cập nhật counter trên Node
   if (thread) {
@@ -107,7 +100,7 @@ export async function rejectThread(threadId) {
       where: { id: thread.nodeId },
       data: {
         threadsCount: { decrement: 1 },
-        postsCount: { decrement: postIds.length }
+        postsCount: { decrement: postCount }
       }
     });
   }
@@ -227,16 +220,7 @@ export async function deleteThread(threadId) {
   });
   if (!thread) throw new Error("Thread không tồn tại");
 
-  const allPosts = await prisma.post.findMany({ where: { threadId }, select: { id: true } });
-  const postIds = allPosts.map(p => p.id);
-
-  await prisma.$transaction([
-    prisma.reaction.deleteMany({ where: { postId: { in: postIds } } }),
-    prisma.report.deleteMany({ where: { OR: [{ postId: { in: postIds } }, { threadId }] } }),
-    prisma.bookmark.deleteMany({ where: { threadId } }),
-    prisma.post.deleteMany({ where: { threadId } }),
-    prisma.thread.delete({ where: { id: threadId } })
-  ]);
+  const { postCount } = await cascadeDeleteThread(threadId);
 
   // Cập nhật counter trên Node
   if (thread.nodeId) {
@@ -244,7 +228,7 @@ export async function deleteThread(threadId) {
       where: { id: thread.nodeId },
       data: {
         threadsCount: { decrement: 1 },
-        postsCount: { decrement: postIds.length }
+        postsCount: { decrement: postCount }
       }
     });
   }
@@ -269,17 +253,7 @@ export async function deleteComment(postId, threadId) {
   if (!post) throw new Error("Bình luận không tồn tại");
   if (post.position === 1) throw new Error("Không thể xóa bài gốc. Hãy xóa cả thread thay vì comment.");
 
-  await prisma.$transaction([
-    prisma.reaction.deleteMany({ where: { postId } }),
-    prisma.report.deleteMany({ where: { postId } }),
-    prisma.post.delete({ where: { id: postId } })
-  ]);
-
-  // Cập nhật replyCount
-  await prisma.thread.update({
-    where: { id: threadId },
-    data: { replyCount: { decrement: 1 } }
-  });
+  await cascadeDeletePost(postId, threadId);
 
   revalidatePath(`/admin/nodes`);
   revalidatePath(`/thread/${threadId}`);
