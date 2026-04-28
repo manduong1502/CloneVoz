@@ -9,7 +9,20 @@ import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
 
 export async function deletePost(postId, threadId, isFirstPost) {
   const session = await auth();
-  if (!session?.user?.isAdmin) throw new Error("Chỉ Admin mới có quyền xoá bài");
+  if (!session?.user?.id) throw new Error("Chưa đăng nhập");
+
+  const post = await prisma.post.findUnique({
+    where: { id: postId },
+    select: { authorId: true }
+  });
+  if (!post) throw new Error("Không tìm thấy bài viết");
+
+  const isAdminOrMod = session.user.isAdmin || session.user.isMod;
+  const isAuthor = post.authorId === session.user.id;
+
+  if (!isAdminOrMod && !isAuthor) {
+    throw new Error("Bạn không có quyền xoá bài viết này");
+  }
 
   if (isFirstPost) {
     // Nếu là bài đăng đầu tiên, tức là xoá Cả Thread
