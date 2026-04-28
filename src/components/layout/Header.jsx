@@ -165,7 +165,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                             </div>
                           ) : (
                             liveNotifications.map(noti => (
-                              <Link href={noti.link || "#"} onClick={() => handleNotificationClick(noti.id)} key={noti.id} className={`flex items-start gap-3 p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors ${!noti.isRead ? 'bg-[#eef4f9]' : 'bg-[var(--voz-surface)]'}`}>
+                              <Link href={noti.link || "#"} onClick={() => handleNotificationClick(noti.id)} key={noti.id} className={`flex items-start gap-3 p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors ${!noti.isRead ? 'bg-[#eef4f9] dark:bg-[#1a3a5a]' : 'bg-[var(--voz-surface)]'}`}>
                                 <img src={noti.sender?.avatar || `https://ui-avatars.com/api/?name=${noti.sender?.username || 'U'}&background=random`} className="w-8 h-8 rounded-full" />
                                 <div className="flex-1 min-w-0">
                                   <div className="text-[13px] leading-tight mb-1" dangerouslySetInnerHTML={{ __html: noti.content }} />
