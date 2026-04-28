@@ -33,6 +33,7 @@ model User {
   messageCount  Int      @default(0)
   reactionScore Int      @default(0)
   points        Int      @default(0)
+  monthlyPoints Int      @default(0)
 
   // Status
   isBanned      Boolean  @default(false)
@@ -372,4 +373,13 @@ model PointLog {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------------
+// CRON JOB STATUS
+// ----------------------------------------------------------------------------
+model DailyCronStatus {
+  id          String   @id @default(cuid())
+  date        String   @unique // Format: YYYY-MM-DD
+  processedAt DateTime @default(now())
 }
