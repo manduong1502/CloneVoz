@@ -88,9 +88,9 @@ export default function ThreadCreateBox({ session, nodeId }) {
 
       </div>
 
-      <div className="flex items-center justify-between gap-3 mt-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 mt-2">
          {/* CLOUDFLARE TURNSTILE WIDGET */}
-         <div className="scale-[0.85] origin-left">
+         <div className="scale-[0.85] origin-left sm:scale-100">
            <Turnstile 
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} 
               onSuccess={(token) => setTurnstileToken(token)}
@@ -98,7 +98,7 @@ export default function ThreadCreateBox({ session, nodeId }) {
            />
          </div>
 
-         <div className="flex items-center gap-2 shrink-0">
+         <div className="flex items-center gap-2 shrink-0 ml-auto">
            {isPending && <span className="text-[13px] text-[var(--voz-text-muted)]">Đang chèn dữ liệu...</span>}
            <button type="submit" disabled={isPending || !turnstileToken} className="voz-button px-6 py-[10px] text-[15px] disabled:opacity-50">
               Đăng bài

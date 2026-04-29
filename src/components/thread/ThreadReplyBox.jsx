@@ -8,7 +8,7 @@ import { createReply } from '@/actions/postActions';
 export default function ThreadReplyBox({ session, threadId }) {
   const [content, setContent] = useState('');
   const [turnstileToken, setTurnstileToken] = useState(null);
-  const [showTurnstile, setShowTurnstile] = useState(false);
+  const [showTurnstile, setShowTurnstile] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [quotingUser, setQuotingUser] = useState(null); // Tên user đang được trích dẫn
   const editorRef = useRef(null);
@@ -87,9 +87,7 @@ export default function ThreadReplyBox({ session, threadId }) {
     });
   };
 
-  const handleEditorFocus = () => {
-    if (!showTurnstile) setShowTurnstile(true);
-  };
+
 
   if (!session) {
     return (
@@ -132,27 +130,23 @@ export default function ThreadReplyBox({ session, threadId }) {
         </div>
       )}
 
-      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full" onClick={handleEditorFocus}>
+      <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full">
          <RichTextEditor 
             ref={editorRef}
             content={content}
             onChange={setContent}
             onImageUpload={handleImageUpload}
          />
-         <div className="flex items-center mt-3 w-full justify-between">
-           <div className="flex items-center gap-2">
-             {showTurnstile ? (
-               <div className="scale-[0.85] origin-left">
-                 <TurnstileLazy 
-                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                    onSuccess={(token) => setTurnstileToken(token)}
-                 />
-               </div>
-             ) : (
-               <div className="text-xs text-[var(--voz-text-muted)]">Bảo mật Cloudflare sẽ kích hoạt khi bạn soạn thảo</div>
-             )}
-           </div>
-           <div className="flex gap-2 items-center shrink-0">
+         <div className="flex flex-col sm:flex-row items-stretch sm:items-center mt-3 w-full justify-between gap-2">
+           {showTurnstile && (
+             <div className="scale-[0.85] origin-left sm:scale-100">
+               <TurnstileLazy 
+                  siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                  onSuccess={(token) => setTurnstileToken(token)}
+               />
+             </div>
+           )}
+           <div className="flex gap-2 items-center shrink-0 ml-auto">
              {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
              <button type="submit" disabled={isPending || !turnstileToken} className="voz-button px-6 py-[6px] disabled:opacity-50">
                Gửi trả lời

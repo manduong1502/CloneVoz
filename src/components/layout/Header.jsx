@@ -249,7 +249,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
 
         {/* Mobile Sliding Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-[50px] left-0 w-full bg-[var(--voz-blue-dark)] border-t border-white/10 z-40 text-white flex flex-col shadow-lg transition-all duration-300 transform origin-top">
+          <div className="md:hidden absolute top-[50px] left-0 w-full bg-[var(--voz-blue-dark)] border-t border-white/10 z-40 text-white flex flex-col shadow-lg transition-all duration-300 transform origin-top header-dark">
             <Link href="/" className="px-4 py-3 border-b border-white/10 font-bold hover:bg-[var(--voz-surface)]/10 block">Diễn đàn</Link>
             <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Bài viết mới</Link>
             <Link href="/earn" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Cùng nhau kiếm tiền</Link>
