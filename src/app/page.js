@@ -90,7 +90,7 @@ export default async function Home() {
           <div key={category.id} className="voz-card overflow-hidden">
             {/* Header */}
             <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[var(--voz-link)]">
-              <h2 className="text-[16px] font-normal m-0 hover:underline cursor-pointer">{category.title}</h2>
+              <h2 className="text-[16px] font-bold m-0 hover:underline cursor-pointer">{category.title}</h2>
             </div>
             
             {/* List */}
@@ -106,7 +106,7 @@ export default async function Home() {
                       <MessageCircle strokeWidth={1.5} size={32} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link href={`/category/${node.id}`} className="text-[15px] font-normal hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
+                      <Link href={`/category/${node.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
                         {node.title}
                       </Link>
                       {node.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{node.description}</div>}
@@ -156,7 +156,7 @@ export default async function Home() {
         
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">
-           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[var(--voz-link)] border-b border-[var(--voz-border)] text-[15px] font-normal hover:underline cursor-pointer">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[var(--voz-link)] border-b border-[var(--voz-border)] text-[15px] font-bold hover:underline cursor-pointer">
               Đang thịnh hành
            </div>
            <div className="flex flex-col bg-[var(--voz-accent)]">
@@ -184,7 +184,7 @@ export default async function Home() {
 
         {/* Forum statistics */}
         <div className="voz-card overflow-hidden">
-           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[var(--voz-link)] border-b border-[var(--voz-border)] text-[14px] font-normal hover:underline cursor-pointer">
+           <div className="bg-[var(--voz-accent)] px-3 py-2 text-[var(--voz-link)] border-b border-[var(--voz-border)] text-[14px] font-bold hover:underline cursor-pointer">
               Thống kê diễn đàn
            </div>
            <div className="bg-[var(--voz-accent)] p-3 text-[12px] text-[var(--voz-text-strong)] flex flex-col gap-1">

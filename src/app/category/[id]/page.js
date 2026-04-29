@@ -75,11 +75,11 @@ export default async function CategoryPage({ params, searchParams }) {
             <span className="mx-1">›</span>
           </div>
 
-          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)] mb-4">{node.title}</h1>
+          <h1 className="text-[26px] tracking-tight font-bold text-[var(--voz-text)] mb-4">{node.title}</h1>
 
           <div className="voz-card overflow-hidden">
             <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
-              <h2 className="text-[16px] font-normal m-0">{node.title}</h2>
+              <h2 className="text-[16px] font-bold m-0">{node.title}</h2>
             </div>
 
             <div className="flex flex-col bg-[var(--voz-surface)]">
@@ -92,7 +92,7 @@ export default async function CategoryPage({ params, searchParams }) {
                       <MessageCircle strokeWidth={1.5} size={32} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <Link href={`/category/${child.id}`} className="text-[15px] font-normal hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
+                      <Link href={`/category/${child.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
                         {child.title}
                       </Link>
                       {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
@@ -273,7 +273,7 @@ export default async function CategoryPage({ params, searchParams }) {
         </div>
 
         <div className="flex items-center justify-between mb-4 gap-4">
-          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">{node.title}</h1>
+          <h1 className="text-[26px] tracking-tight font-bold text-[var(--voz-text)]">{node.title}</h1>
           <div className="flex gap-2 items-center shrink-0">
             {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
             <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
@@ -373,7 +373,7 @@ export default async function CategoryPage({ params, searchParams }) {
       {/* Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 pt-[32px]">
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Đang thịnh hành</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-bold px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
             {trendingThreads.map(t => (
               <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">

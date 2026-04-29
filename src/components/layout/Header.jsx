@@ -98,16 +98,16 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
 
               {/* Desktop Nav */}
               <nav className="hidden md:flex ml-4 h-full items-end gap-1">
-                <Link href="/" className={pathname === '/' || pathname.startsWith('/category') || pathname.startsWith('/thread') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/" className={pathname === '/' || pathname.startsWith('/category') || pathname.startsWith('/thread') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Diễn đàn
                 </Link>
-                <Link href="/earn" className={pathname.startsWith('/earn') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/earn" className={pathname.startsWith('/earn') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Cùng nhau kiếm tiền
                 </Link>
-                <Link href="/leaderboard" className={pathname.startsWith('/leaderboard') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/leaderboard" className={pathname.startsWith('/leaderboard') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Xếp hạng
                 </Link>
-                <Link href="/terms" className={pathname.startsWith('/terms') || pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-medium border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-medium text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <Link href="/terms" className={pathname.startsWith('/terms') || pathname.startsWith('/rules') ? "bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold text-white hover:text-white hover:bg-[var(--voz-surface)]/10 transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Nội quy
                 </Link>
               </nav>
