@@ -259,3 +259,32 @@ export async function deleteComment(postId, threadId) {
   revalidatePath(`/thread/${threadId}`);
   return { success: true };
 }
+
+// =============================================
+// GHIM / BỎ GHIM THREAD
+// =============================================
+export async function togglePinThread(threadId) {
+  await requireAdminOrMod();
+  
+  const thread = await prisma.thread.findUnique({ 
+    where: { id: threadId },
+    select: { isPinned: true, nodeId: true }
+  });
+  if (!thread) throw new Error("Thread không tồn tại");
+
+  const newPinned = !thread.isPinned;
+  
+  await prisma.thread.update({
+    where: { id: threadId },
+    data: { isPinned: newPinned }
+  });
+
+  // Xóa cache
+  await deleteCache('voz_homepage_data');
+  if (thread.nodeId) await deleteCachePattern(`voz_node_${thread.nodeId}_*`);
+  
+  revalidatePath(`/category/${thread.nodeId}`);
+  revalidatePath(`/thread/${threadId}`);
+  revalidatePath('/');
+  return { success: true, isPinned: newPinned };
+}

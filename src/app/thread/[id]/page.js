@@ -9,6 +9,7 @@ import QuoteButton from '@/components/thread/QuoteButton';
 import WatchButton from '@/components/thread/WatchButton';
 import ReportModal from '@/components/thread/ReportModal';
 import DeletePostButton from '@/components/thread/DeletePostButton';
+import PinThreadButton from '@/components/thread/PinThreadButton';
 import LikeButton from '@/components/thread/LikeButton';
 import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
@@ -137,7 +138,15 @@ export default async function ThreadPage({ params, searchParams }) {
       </div>
 
       <div className="mb-4">
-        <h1 className="text-[22px] font-normal leading-tight text-[var(--voz-text-strong)] mb-[2px]">{thread.title}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="text-[22px] font-normal leading-tight text-[var(--voz-text-strong)] mb-[2px]">
+            {thread.isPinned && <span className="text-amber-500 mr-1.5" title="Bài ghim">📌</span>}
+            {thread.title}
+          </h1>
+          {(session?.user?.isAdmin || session?.user?.isMod) && (
+            <PinThreadButton threadId={id} isPinned={thread.isPinned} />
+          )}
+        </div>
         <div className="text-[12px] text-[var(--voz-text-muted)] flex gap-1 items-center">
            <img src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username.charAt(0)}&background=random`} className="w-[16px] h-[16px] rounded-sm" />
            <Link href={`/profile/${thread.author.username}`} className="text-[var(--voz-text)] hover:underline hover:text-[var(--voz-link)] font-medium">{thread.author.username}</Link>

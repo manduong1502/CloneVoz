@@ -212,7 +212,7 @@ export default async function CategoryPage({ params, searchParams }) {
   if (!threadsDb) {
     threadsDb = await prisma.thread.findMany({
       where: whereCondition,
-      orderBy: { [orderField]: orderDir },
+      orderBy: [{ isPinned: 'desc' }, { [orderField]: orderDir }],
       skip: skip,
       take: threadsPerPage,
       include: {
@@ -325,6 +325,7 @@ export default async function CategoryPage({ params, searchParams }) {
                         </span>
                       )}
                       <Link href={`/thread/${thread.id}`} style={{ color: thread.isPinned ? '#c84448' : undefined }} className={`text-[16px] leading-snug ${thread.isPinned ? "font-bold" : "font-bold hover:underline"}`}>
+                        {thread.isPinned && <span className="mr-1">📌</span>}
                         <span className={thread.isPinned ? "" : "thread-title-link"}>{thread.title}</span>
                       </Link>
                     </div>
