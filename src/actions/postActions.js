@@ -263,27 +263,10 @@ export async function handleReaction(postId, path, reactionType) {
        }
     }
 
-    // Tính điểm points realtime dựa trên Like
-    let pointsDelta = 0;
-    if (reactionType === 'Like' && !existingReaction) {
-      // Like mới → +1 points
-      pointsDelta = 1;
-    } else if (existingReaction?.type === 'Like' && reactionType !== 'Like') {
-      // Bỏ Like hoặc đổi sang Dislike → -1 points
-      pointsDelta = -1;
-    } else if (existingReaction?.type === 'Dislike' && reactionType === 'Like') {
-      // Đổi từ Dislike sang Like → +1 points
-      pointsDelta = 1;
-    }
-
     await prisma.user.update({
       where: { id: post.authorId },
       data: { 
         reactionScore: { increment: scoreDelta },
-        ...(pointsDelta !== 0 ? { 
-          points: { increment: pointsDelta },
-          monthlyPoints: { increment: pointsDelta }
-        } : {}),
         ...(penaltyPoints > 0 ? { points: { decrement: penaltyPoints } } : {})
       }
     });

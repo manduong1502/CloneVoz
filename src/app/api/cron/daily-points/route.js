@@ -30,9 +30,13 @@ export async function GET(request) {
     const dateStr = startOfToday.toISOString().split('T')[0];
 
     if (mode === 'interval') {
-      // Mode interval: xử lý posts từ 15 phút trước đến hiện tại
+      // Mode interval: xử lý từ lần chạy cuối đến hiện tại (không overlap)
       periodEnd = new Date();
-      periodStart = new Date(periodEnd.getTime() - (15 * 60 * 1000));
+      const lastRun = await prisma.dailyCronStatus.findFirst({
+        where: { date: { startsWith: 'interval_' } },
+        orderBy: { processedAt: 'desc' }
+      });
+      periodStart = lastRun ? lastRun.processedAt : new Date(periodEnd.getTime() - (10 * 60 * 1000));
       console.log(`[Interval Mode] Xử lý từ ${periodStart.toISOString()} → ${periodEnd.toISOString()}`);
     } else {
       // Mode daily: xử lý posts ngày hôm qua (mặc định)
@@ -200,8 +204,12 @@ export async function GET(request) {
       await prisma.$transaction(updateOps);
     }
 
-    // Mark as processed (only in daily mode)
-    if (mode !== 'interval') {
+    // Mark as processed
+    if (mode === 'interval') {
+      await prisma.dailyCronStatus.create({
+        data: { date: `interval_${Date.now()}` }
+      });
+    } else {
       await prisma.dailyCronStatus.create({
         data: { date: dateStr }
       });
