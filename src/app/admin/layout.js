@@ -52,7 +52,7 @@ export default async function AdminLayout({ children }) {
            
          <nav className="flex-1 flex flex-col gap-1 px-3">
            {navItems.map(item => (
-             <Link key={item.href} href={item.href} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition text-sm">
+             <Link key={item.href} href={item.href} style={{ color: 'inherit' }} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white hover:no-underline transition text-sm">
                {item.icon === 'Home' && <Home size={18}/>}
                {item.icon === 'CheckCircle' && <CheckCircle size={18}/>}
                {item.icon === 'Flag' && <Flag size={18}/>}

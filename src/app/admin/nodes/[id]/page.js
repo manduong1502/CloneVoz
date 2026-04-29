@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma';
 import Link from 'next/link';
 import { ArrowLeft, MessageSquare, Eye } from 'lucide-react';
 import DeleteThreadButton from './DeleteThreadButton';
+import PinThreadButton from '@/components/thread/PinThreadButton';
 
 export default async function AdminNodeDetail({ params }) {
   const { id } = await params;
@@ -24,10 +25,11 @@ export default async function AdminNodeDetail({ params }) {
 
     const threads = await prisma.thread.findMany({
       where: { nodeId: id },
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
       select: {
         id: true,
         title: true,
+        isPinned: true,
         createdAt: true,
         replyCount: true,
         author: { select: { username: true, avatar: true } },
@@ -75,6 +77,7 @@ export default async function AdminNodeDetail({ params }) {
                     />
                     <div className="min-w-0">
                       <Link href={`/thread/${thread.id}`} target="_blank" className="text-[var(--voz-link)] hover:underline font-medium text-[13px] line-clamp-1 block">
+                        {thread.isPinned && <span className="text-amber-500 mr-1">📌</span>}
                         {thread.title}
                       </Link>
                       <div className="text-[11px] text-[var(--voz-text-muted)]">
@@ -91,6 +94,7 @@ export default async function AdminNodeDetail({ params }) {
                     >
                       <Eye size={15} />
                     </Link>
+                    <PinThreadButton threadId={thread.id} isPinned={thread.isPinned} />
                     <DeleteThreadButton threadId={thread.id} threadTitle={thread.title} nodeId={id} />
                   </div>
                 </div>

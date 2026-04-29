@@ -264,7 +264,7 @@ export async function deleteComment(postId, threadId) {
 // GHIM / BỎ GHIM THREAD
 // =============================================
 export async function togglePinThread(threadId) {
-  await requireAdminOrMod();
+  await requireAdmin();
   
   const thread = await prisma.thread.findUnique({ 
     where: { id: threadId },
