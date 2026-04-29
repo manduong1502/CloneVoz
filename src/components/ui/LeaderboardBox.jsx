@@ -47,7 +47,7 @@ export default function LeaderboardBox({ topUsersTotal, topUsersMonth }) {
         {users.map((user, index) => {
           const rank = getRankInfo(user.points);
           const pos = POSITION_STYLES[index] || POSITION_STYLES[4];
-          const displayPoints = tab === 'month' ? user.monthPoints : user.points;
+          const displayPoints = tab === 'month' ? user.monthlyPoints : user.points;
           
           return (
             <div 

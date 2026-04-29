@@ -14,6 +14,7 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
+    const mode = searchParams.get('mode'); // 'interval' = chạy mỗi 10 phút, mặc định = daily
 
     // Fix #16: Secret from env instead of hardcoded
     const cronSecret = process.env.CRON_SECRET || 'voz_cron_secret_2026';
@@ -22,32 +23,40 @@ export async function GET(request) {
     }
 
     const vnNow = getVietnamDate();
-    // Start of today in Vietnam time
     const startOfToday = new Date(vnNow.getFullYear(), vnNow.getMonth(), vnNow.getDate());
-    // Convert back to UTC for DB query
     const startOfTodayUTC = new Date(startOfToday.getTime() - (7 * 3600000));
-    const startOfYesterdayUTC = new Date(startOfTodayUTC);
-    startOfYesterdayUTC.setDate(startOfYesterdayUTC.getDate() - 1);
 
-    const dateStr = startOfToday.toISOString().split('T')[0]; // Vietnam date string
+    let periodStart, periodEnd;
+    const dateStr = startOfToday.toISOString().split('T')[0];
 
-    // Check if already processed
-    const existingLog = await prisma.dailyCronStatus.findUnique({
-      where: { date: dateStr }
-    });
+    if (mode === 'interval') {
+      // Mode interval: xử lý posts từ 15 phút trước đến hiện tại
+      periodEnd = new Date();
+      periodStart = new Date(periodEnd.getTime() - (15 * 60 * 1000));
+      console.log(`[Interval Mode] Xử lý từ ${periodStart.toISOString()} → ${periodEnd.toISOString()}`);
+    } else {
+      // Mode daily: xử lý posts ngày hôm qua (mặc định)
+      periodEnd = startOfTodayUTC;
+      periodStart = new Date(startOfTodayUTC);
+      periodStart.setDate(periodStart.getDate() - 1);
 
-    if (existingLog) {
-      return NextResponse.json({ message: `Ngày ${dateStr} đã được xử lý rồi.` });
+      // Check if already processed today
+      const existingLog = await prisma.dailyCronStatus.findUnique({
+        where: { date: dateStr }
+      });
+      if (existingLog) {
+        return NextResponse.json({ message: `Ngày ${dateStr} đã được xử lý rồi.` });
+      }
     }
 
-    console.log(`Bắt đầu chạy Cronjob tính điểm cho ngày ${dateStr}`);
+    console.log(`Bắt đầu chạy Cronjob tính điểm...`);
 
-    // Fetch Posts from yesterday (Vietnam time)
+    // Fetch Posts in time range
     const posts = await prisma.post.findMany({
       where: {
         createdAt: {
-          gte: startOfYesterdayUTC,
-          lt: startOfTodayUTC
+          gte: periodStart,
+          lt: periodEnd
         }
       },
       select: {
@@ -63,8 +72,8 @@ export async function GET(request) {
     const reactions = await prisma.reaction.findMany({
       where: {
         createdAt: {
-          gte: startOfYesterdayUTC,
-          lt: startOfTodayUTC
+          gte: periodStart,
+          lt: periodEnd
         }
       },
       select: {
@@ -160,11 +169,14 @@ export async function GET(request) {
       if (finalMonthlyPoints < -20) finalMonthlyPoints = -20;
 
       if (isFirstDayOfMonth) {
-        if (finalTotalPoints > 0) {
+        if (finalTotalPoints > 0 || finalMonthlyPoints !== 0) {
           updateOps.push(
             prisma.user.update({
               where: { id: userId },
-              data: { points: { increment: finalTotalPoints } }
+              data: { 
+                points: { increment: finalTotalPoints },
+                monthlyPoints: { increment: finalMonthlyPoints }
+              }
             })
           );
         }
@@ -188,16 +200,20 @@ export async function GET(request) {
       await prisma.$transaction(updateOps);
     }
 
-    // Mark as processed
-    await prisma.dailyCronStatus.create({
-      data: { date: dateStr }
-    });
+    // Mark as processed (only in daily mode)
+    if (mode !== 'interval') {
+      await prisma.dailyCronStatus.create({
+        data: { date: dateStr }
+      });
+    }
 
-    console.log(`Đã cập nhật điểm cho ${updateOps.length} thành viên.`);
+    console.log(`Đã cập nhật điểm cho ${updateOps.length} thành viên. (mode: ${mode || 'daily'})`);
 
     return NextResponse.json({ 
       success: true, 
-      processedDate: dateStr,
+      mode: mode || 'daily',
+      postsProcessed: posts.length,
+      reactionsProcessed: reactions.length,
       updatedUsersCount: updateOps.length,
       resetMonthly: isFirstDayOfMonth
     });

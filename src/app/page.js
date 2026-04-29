@@ -40,6 +40,7 @@ export default async function Home() {
 
     // 3. Xếp hạng tổng (top 5 by points)
     const topUsersTotal = await prisma.user.findMany({
+      where: { points: { gt: 0 } },
       orderBy: { points: 'desc' },
       take: 5,
       select: { id: true, username: true, avatar: true, points: true }
