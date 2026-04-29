@@ -329,14 +329,13 @@ export default async function CategoryPage({ params, searchParams }) {
                       </Link>
                     </div>
 
-                    <div className="text-[13px] flex items-center gap-1 flex-wrap">
+                    <div className="text-[13px] flex items-center gap-1" style={{ color: '#8c9197' }}>
                       <Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link>
-                      <span style={{ color: '#8c9197' }}>·</span>
-                      <span style={{ color: '#8c9197' }}>{formatRelativeTime(thread.createdAt)}</span>
-                      {/* Mobile stats inline */}
-                      <span className="md:hidden flex items-center gap-1" style={{ color: '#8c9197' }}>
-                        · 💬 {thread.replyCount} · 👁 {formatCount(thread.viewCount)}
-                      </span>
+                    </div>
+
+                    {/* Mobile: dòng riêng cho stats */}
+                    <div className="md:hidden text-[12px] mt-[2px] flex items-center gap-1" style={{ color: '#8c9197' }}>
+                      Replies: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}
                     </div>
                   </div>
 
