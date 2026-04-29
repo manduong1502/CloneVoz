@@ -84,7 +84,7 @@ export default function EditProfileModal({ user }) {
                 maxLength={30}
                 required
               />
-              <span className="text-[11px] text-[var(--voz-text-muted)]">3-30 ký tự. Chữ cái, số, dấu chấm và gạch dưới. Thay đổi sẽ cập nhật trên toàn bộ diễn đàn.</span>
+              <span className="text-[11px] text-[var(--voz-text-muted)]">3-30 ký tự. Chữ cái, số, dấu cách, dấu chấm và gạch dưới. Thay đổi sẽ cập nhật trên toàn bộ diễn đàn.</span>
             </div>
 
             <div className="flex flex-col gap-1">

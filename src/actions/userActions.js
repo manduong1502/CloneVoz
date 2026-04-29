@@ -23,19 +23,14 @@ export async function updateProfile(formData) {
     const signatureRaw = formData.get("signature") || '';
     const signature = signatureRaw;
 
-    // Validate username: không chứa khoảng trắng
-    if (/\s/.test(newUsername)) {
-      throw new Error("Tên hiển thị không được chứa khoảng trắng (dấu cách).");
-    }
-
     // Validate username length
     if (newUsername.length < 3 || newUsername.length > 30) {
       throw new Error("Tên hiển thị phải từ 3 đến 30 ký tự.");
     }
 
-    // Validate username characters
-    if (!/^[a-zA-Z0-9._\u00C0-\u024F\u1E00-\u1EFF]+$/.test(newUsername)) {
-      throw new Error("Tên hiển thị chỉ chấp nhận chữ cái, số, dấu chấm và gạch dưới.");
+    // Validate username characters (cho phép dấu cách)
+    if (!/^[a-zA-Z0-9._ \u00C0-\u024F\u1E00-\u1EFF]+$/.test(newUsername)) {
+      throw new Error("Tên hiển thị chỉ chấp nhận chữ cái, số, dấu cách, dấu chấm và gạch dưới.");
     }
 
     // Kiểm tra username trùng (nếu đổi)

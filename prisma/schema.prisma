@@ -383,6 +383,7 @@ model PointLog {
 // ----------------------------------------------------------------------------
 model DailyCronStatus {
   id          String   @id @default(cuid())
-  date        String   @unique // Format: YYYY-MM-DD
+  date        String   @unique // Format: YYYY-MM-DD or interval_YYYY-MM-DD
+  snapshot    String?  // JSON snapshot of applied points for interval mode
   processedAt DateTime @default(now())
 }

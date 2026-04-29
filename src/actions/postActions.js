@@ -26,26 +26,50 @@ export async function deletePost(postId, threadId, isFirstPost) {
   if (!isAdminOrMod && !isAuthor) {
     throw new Error("Bạn không có quyền xoá bài viết này");
   }
-
-  // Calculate penalty: post content points + old like points
+  // Calculate penalty: trừ lại điểm đã được cron cộng
+  // Với interval mode: cron xử lý toàn bộ ngày hôm nay, nên bài tạo hôm nay cũng đã được cộng
+  // Ta check xem interval snapshot có tồn tại không (= cron đã chạy ít nhất 1 lần hôm nay)
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
+  
+  let postWasProcessed = false;
+  if (post.createdAt < startOfToday) {
+    // Bài từ hôm qua → chắc chắn đã qua daily cron
+    postWasProcessed = true;
+  } else {
+    // Bài hôm nay → check xem interval cron đã chạy chưa
+    const intervalSnapshot = await prisma.dailyCronStatus.findFirst({
+      where: { date: { startsWith: 'interval_' } }
+    });
+    if (intervalSnapshot) postWasProcessed = true;
+  }
+
   let penaltyPoints = 0;
   let penaltyMonthly = 0;
 
-  // Post content penalty (only if already processed by cron = created before today)
-  if (post.createdAt < startOfToday) {
-     const words = countWords(post.content);
-     if (isFirstPost && words >= 200) { penaltyPoints = 5; penaltyMonthly = 1; }
-     else if (!isFirstPost && words >= 20) { penaltyPoints = 2; penaltyMonthly = 1; }
+  if (postWasProcessed) {
+    const words = countWords(post.content);
+    if (isFirstPost && words >= 200) { penaltyPoints = 5; penaltyMonthly = 1; }
+    else if (!isFirstPost && words >= 20) { penaltyPoints = 2; penaltyMonthly = 1; }
   }
 
-  // Also count likes on this post that were already processed by cron
-  const processedLikes = await prisma.reaction.count({
-    where: { postId, type: 'Like', createdAt: { lt: startOfToday } }
+  // Count likes đã được cron xử lý
+  const allLikes = await prisma.reaction.count({
+    where: { postId, type: 'Like' }
   });
-  penaltyPoints += processedLikes;
-  penaltyMonthly += processedLikes;
+  // Likes trước hôm nay chắc chắn đã xử lý
+  // Likes hôm nay: nếu interval đã chạy thì cũng đã xử lý
+  if (postWasProcessed) {
+    penaltyPoints += allLikes;
+    penaltyMonthly += allLikes;
+  } else {
+    // Chỉ count likes cũ (trước hôm nay)
+    const oldLikes = await prisma.reaction.count({
+      where: { postId, type: 'Like', createdAt: { lt: startOfToday } }
+    });
+    penaltyPoints += oldLikes;
+    penaltyMonthly += oldLikes;
+  }
 
   if (isFirstPost) {
     await cascadeDeleteThread(threadId);
@@ -54,19 +78,19 @@ export async function deletePost(postId, threadId, isFirstPost) {
     await cascadeDeletePost(postId, threadId);
   }
 
-  // Deduct penalty, floor at 0
+  // Deduct penalty — points floor at 0, monthlyPoints có thể âm nên luôn trừ
   if (penaltyPoints > 0 || penaltyMonthly > 0) {
-    const author = await prisma.user.findUnique({ where: { id: post.authorId }, select: { points: true, monthlyPoints: true } });
+    const author = await prisma.user.findUnique({ where: { id: post.authorId }, select: { points: true } });
     const actualPointsDeduction = Math.min(penaltyPoints, Math.max(0, author?.points || 0));
-    const actualMonthlyDeduction = Math.min(penaltyMonthly, Math.max(0, author?.monthlyPoints || 0));
     
-    if (actualPointsDeduction > 0 || actualMonthlyDeduction > 0) {
+    const updateData = {};
+    if (actualPointsDeduction > 0) updateData.points = { decrement: actualPointsDeduction };
+    if (penaltyMonthly > 0) updateData.monthlyPoints = { decrement: penaltyMonthly };
+    
+    if (Object.keys(updateData).length > 0) {
       await prisma.user.update({
         where: { id: post.authorId },
-        data: { 
-          ...(actualPointsDeduction > 0 ? { points: { decrement: actualPointsDeduction } } : {}),
-          ...(actualMonthlyDeduction > 0 ? { monthlyPoints: { decrement: actualMonthlyDeduction } } : {})
-        }
+        data: updateData
       });
     }
   }
