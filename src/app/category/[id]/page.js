@@ -363,16 +363,9 @@ export default async function CategoryPage({ params, searchParams }) {
           </div>
         </div>
 
-        {/* Bottom Pagination + Actions */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-2">
-          <div className="flex-1">{paginationComponent}</div>
-          
-          <div className="flex gap-2 items-center">
-            {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
-            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
-              <PenSquare size={14}/> Đăng bài
-            </Link>
-          </div>
+        {/* Bottom Pagination */}
+        <div className="mt-2">
+          {paginationComponent}
         </div>
       </div>
 

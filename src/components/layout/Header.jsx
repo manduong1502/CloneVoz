@@ -81,7 +81,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
 
   return (
     <>
-      <header className="w-full relative z-[60] shadow-sm font-sans">
+      <header className="w-full sticky top-0 z-[60] shadow-sm font-sans">
         {/* Top Main Bar */}
         <div className="bg-[var(--voz-blue-dark)] text-white">
           <div className="max-w-[1240px] px-2 md:px-4 mx-auto flex items-center justify-between h-[50px]">
