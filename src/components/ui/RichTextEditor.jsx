@@ -13,7 +13,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[#183254]">
+    <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[var(--voz-text)]">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}

@@ -28,9 +28,9 @@ export default async function ConversationsPage() {
       {/* Sidebar */}
       <div className="flex flex-col gap-2">
          <div className="voz-card overflow-hidden">
-            <h3 className="bg-[var(--voz-accent)] text-[13px] font-medium px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Hộp thư</h3>
+            <h3 className="bg-[var(--voz-accent)] text-[13px] font-medium px-3 py-2 border-b border-[var(--voz-border)] text-[var(--voz-link)]">Hộp thư</h3>
             <div className="flex flex-col text-[13px]">
-               <Link href="/conversations" className="px-3 py-2 border-l-2 border-[#183254] bg-[var(--voz-accent)] text-[var(--voz-text)] flex items-center justify-between font-bold">Danh sách <Mail size={14}/></Link>
+               <Link href="/conversations" className="px-3 py-2 border-l-2 border-[var(--voz-link)] bg-[var(--voz-accent)] text-[var(--voz-text)] flex items-center justify-between font-bold">Danh sách <Mail size={14}/></Link>
                <Link href="/conversations/add" className="px-3 py-2 border-l-2 border-transparent hover:bg-[var(--voz-accent)] text-[var(--voz-link)]">Bắt đầu cuộc trò chuyện mới</Link>
             </div>
          </div>

@@ -324,7 +324,7 @@ export default async function CategoryPage({ params, searchParams }) {
                           {thread.prefix.title}
                         </span>
                       )}
-                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[#183254] dark:text-[var(--voz-text-strong)]"}`}>
+                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[var(--voz-link)] dark:text-[var(--voz-text-strong)]"}`}>
                         {thread.title}
                       </Link>
                     </div>
@@ -373,7 +373,7 @@ export default async function CategoryPage({ params, searchParams }) {
       {/* Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 pt-[32px]">
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-bold px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Đang thịnh hành</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-bold px-3 py-2 border-b border-[var(--voz-border)] text-[var(--voz-link)]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
             {trendingThreads.map(t => (
               <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">

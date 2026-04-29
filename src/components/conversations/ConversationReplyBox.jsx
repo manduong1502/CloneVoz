@@ -48,7 +48,7 @@ export default function ConversationReplyBox({ session, conversationId }) {
 
   return (
     <form id="reply-box" onSubmit={handleSubmit} className="voz-card mt-4 overflow-hidden">
-      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#183254] font-medium flex gap-2 items-center">
+      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[var(--voz-link)] font-medium flex gap-2 items-center">
          <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi tin nhắn
       </div>
       <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full">

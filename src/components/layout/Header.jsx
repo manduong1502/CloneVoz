@@ -150,7 +150,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                       trigger={(isOpen) => (
                         <div className={`flex items-center h-full px-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer relative ${isOpen ? 'bg-[var(--voz-surface)]/10' : ''}`}>
                           <Bell size={18} className="text-white/80" />
-                          <span className={`absolute top-[12px] right=[8px] w-2 h-2 ${liveUnreadCount > 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'hidden'} rounded-full border border-[#183254]`}></span>
+                          <span className={`absolute top-[12px] right=[8px] w-2 h-2 ${liveUnreadCount > 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'hidden'} rounded-full border border-[var(--voz-link)]`}></span>
                         </div>
                       )}
                     >
