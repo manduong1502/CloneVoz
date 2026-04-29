@@ -25,3 +25,14 @@ export async function markNotificationAsRead(notificationId) {
 
   return { success: true };
 }
+
+export async function deleteReadNotifications() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Chưa đăng nhập");
+
+  const result = await prisma.notification.deleteMany({
+    where: { userId: session.user.id, isRead: true }
+  });
+
+  return { success: true, deletedCount: result.count };
+}

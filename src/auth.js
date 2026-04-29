@@ -99,6 +99,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.sub;
         // Đọc từ JWT cache, KHÔNG query DB
         session.user.name = token.dbUsername || session.user.name;
+        session.user.username = token.dbUsername || session.user.name;
         session.user.image = token.dbAvatar || session.user.image;
         session.user.email = token.dbEmail || session.user.email;
         session.user.isAdmin = token.isAdmin || false;

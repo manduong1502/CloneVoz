@@ -7,7 +7,7 @@ import { Search, Bell, Menu, X, ShieldAlert, Mail } from 'lucide-react';
 import Dropdown from '@/components/ui/Dropdown';
 import Modal from '@/components/ui/Modal';
 import { loginWithProvider, loginWithCredentials, handleLogOut, registerWithCredentials } from '@/actions/authActions';
-import { markAllNotificationsAsRead, markNotificationAsRead } from '@/actions/notificationActions';
+import { markAllNotificationsAsRead, markNotificationAsRead, deleteReadNotifications } from '@/actions/notificationActions';
 import ThemeToggle from '@/components/layout/ThemeToggle';
 import SearchDropdown from '@/components/layout/SearchDropdown';
 import Pusher from 'pusher-js';
@@ -69,6 +69,13 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
     await markAllNotificationsAsRead();
     setLiveUnreadCount(0);
     setLiveNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  };
+
+  const handleDeleteRead = async (e) => {
+    e.preventDefault();
+    if (!user) return;
+    await deleteReadNotifications();
+    setLiveNotifications(prev => prev.filter(n => !n.isRead));
   };
 
   const handleNotificationClick = async (notiId) => {
@@ -177,7 +184,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                           )}
                         </div>
                         <div className="bg-[var(--voz-accent)] border-t border-[var(--voz-border)] px-3 py-2 text-[12px] text-center w-full">
-                          <Link href="#" className="text-[var(--voz-link)] block w-full hover:underline">Hiển thị tất cả</Link>
+                          <button onClick={handleDeleteRead} className="text-red-500 hover:underline cursor-pointer bg-transparent border-0 p-0 m-0">Xóa thông báo đã xem</button>
                         </div>
                       </div>
                     </Dropdown>
