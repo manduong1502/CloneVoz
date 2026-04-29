@@ -171,7 +171,7 @@ function TurnstileLazy({ siteKey, onSuccess }) {
     <Turnstile 
       siteKey={siteKey}
       onSuccess={onSuccess}
-      options={{ theme: 'auto', size: 'compact' }}
+      options={{ theme: 'auto', size: 'flexible' }}
     />
   );
 }

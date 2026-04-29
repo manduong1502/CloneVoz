@@ -94,7 +94,7 @@ export default function ThreadCreateBox({ session, nodeId }) {
            <Turnstile 
               siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY} 
               onSuccess={(token) => setTurnstileToken(token)}
-              options={{ theme: 'auto', size: 'compact' }}
+              options={{ theme: 'auto', size: 'flexible' }}
            />
          </div>
 
