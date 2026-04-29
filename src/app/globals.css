@@ -57,6 +57,30 @@ a:hover {
   text-decoration: underline;
 }
 
+/* Force white text for links on dark blue header */
+.header-dark a {
+  color: white;
+}
+
+.header-dark a:hover {
+  color: white;
+  text-decoration: none;
+}
+
+/* Active tabs sit on light background, need dark text */
+.header-dark .header-tab-active {
+  color: var(--voz-text-strong) !important;
+}
+
+/* Dropdown panels inside header need normal link colors */
+.header-dark .dropdown-panel a {
+  color: var(--voz-link);
+}
+
+.header-dark .dropdown-panel a:hover {
+  color: var(--voz-link-hover);
+}
+
 .voz-card {
   background-color: var(--voz-surface);
   border: 1px solid var(--voz-border);

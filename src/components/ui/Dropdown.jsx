@@ -27,7 +27,7 @@ export default function Dropdown({ trigger, children, align = 'left', width = 'a
 
       {isOpen && (
         <div 
-          className={`absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-1 bg-[var(--voz-surface)] border border-[var(--voz-border)] shadow-xl z-50`}
+          className={`dropdown-panel absolute ${align === 'right' ? 'right-0' : 'left-0'} mt-1 bg-[var(--voz-surface)] border border-[var(--voz-border)] shadow-xl z-50`}
           style={{ width: width, minWidth: '150px' }}
         >
           {/* Arrow pointing up */}
