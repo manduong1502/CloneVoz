@@ -35,7 +35,7 @@ export default function Pagination({ basePath, currentPage, totalPages, queryPar
   };
 
   return (
-    <div className="flex bg-[var(--voz-accent)] border border-[var(--voz-border)] rounded-sm text-[13px] overflow-hidden w-fit">
+    <div className="flex bg-[var(--voz-surface)] border border-[var(--voz-link)] rounded-sm text-[13px] overflow-hidden w-fit">
       {currentPage > 1 && (
         <Link href={buildUrl(currentPage - 1)} className="px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-[var(--voz-border)] cursor-pointer text-[var(--voz-link)]">
           ‹ Trước
