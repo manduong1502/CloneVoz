@@ -160,11 +160,19 @@ export async function createReply(threadId, formData) {
 
     // Lấy người theo dõi chủ đề
     const watchers = await prisma.bookmark.findMany({ where: { threadId } });
+
+    // Lấy tất cả người đã bình luận trong thread (participants)
+    const participants = await prisma.post.findMany({
+      where: { threadId },
+      select: { authorId: true },
+      distinct: ['authorId']
+    });
     
     const userIdsToNotify = new Set();
     mentionedUserIds.forEach(id => userIdsToNotify.add(id));
     quotedUserIds.forEach(id => userIdsToNotify.add(id));
     if (thread.authorId) userIdsToNotify.add(thread.authorId);
+    participants.forEach(p => userIdsToNotify.add(p.authorId));
     watchers.forEach(w => userIdsToNotify.add(w.userId));
     
     // Xóa chính mình ra khỏi danh sách nhận
@@ -179,6 +187,10 @@ export async function createReply(threadId, formData) {
         const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
         let text = `<strong>${safeName}</strong> đã bình luận vào bài viết bạn đang theo dõi.`;
         
+        // Ưu tiên thấp → cao (text cuối cùng ghi đè)
+        if (participants.some(p => p.authorId === uid)) {
+            text = `<strong>${safeName}</strong> đã bình luận vào chủ đề bạn đã tham gia.`;
+        }
         if (uid === thread.authorId) {
             text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
         }
