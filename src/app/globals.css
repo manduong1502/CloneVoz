@@ -57,12 +57,24 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Force white text for links on dark blue header */
-.header-dark a {
+/* Force white text for links on dark blue backgrounds */
+.header-dark a,
+.dark-bg a {
   color: white;
 }
 
-.header-dark a:hover {
+.header-dark a:hover,
+.dark-bg a:hover {
+  color: white;
+  text-decoration: none;
+}
+
+/* Footer links inherit parent opacity (white/70) */
+.dark-bg-inherit a {
+  color: inherit;
+}
+
+.dark-bg-inherit a:hover {
   color: white;
   text-decoration: none;
 }
