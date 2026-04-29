@@ -317,7 +317,7 @@ export default async function CategoryPage({ params, searchParams }) {
                   </div>
 
                   {/* Title + Author */}
-                  <div className="flex-1 flex flex-col min-w-0 pr-4">
+                  <div className="flex-1 flex flex-col min-w-0 pr-2 md:pr-4">
                     <div className="leading-snug mb-[4px]">
                       {thread.prefix && (
                         <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>
@@ -329,10 +329,14 @@ export default async function CategoryPage({ params, searchParams }) {
                       </Link>
                     </div>
 
-                    <div className="text-[13px] flex items-center gap-1">
+                    <div className="text-[13px] flex items-center gap-1 flex-wrap">
                       <Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link>
                       <span style={{ color: '#8c9197' }}>·</span>
                       <span style={{ color: '#8c9197' }}>{formatRelativeTime(thread.createdAt)}</span>
+                      {/* Mobile stats inline */}
+                      <span className="md:hidden flex items-center gap-1" style={{ color: '#8c9197' }}>
+                        · 💬 {thread.replyCount} · 👁 {formatCount(thread.viewCount)}
+                      </span>
                     </div>
                   </div>
 
