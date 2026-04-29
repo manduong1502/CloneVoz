@@ -70,14 +70,10 @@ export async function GET(request) {
       select: {
         type: true,
         userId: true,
-        user: { select: { points: true } },
+        voterPoints: true,
         post: { select: { authorId: true, threadId: true } }
       }
     });
-
-    // Note: For a truly accurate check, we'd need to snapshot the voter's points
-    // at reaction creation time. Current approach uses current points which is
-    // close enough since cron runs daily before new points are added.
 
     const userPoints = {}; // authorId -> { totalPoints: 0, monthlyTopics: { threadId: monthlyPts } }
 
@@ -118,8 +114,8 @@ export async function GET(request) {
         totalPts = 1;
         monthlyPts = 1;
       } else if (r.type === 'Dislike') {
-        // Dislike: -1 điểm tháng nếu người bấm có rank >= Bản lĩnh (300đ tổng)
-        if (r.user.points >= 300) {
+        // Dislike: -1 điểm tháng nếu voter có rank >= Bản lĩnh (300đ) tại thời điểm dislike
+        if (r.voterPoints >= 300) {
           monthlyPts = -1;
         }
       }

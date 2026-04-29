@@ -15,14 +15,22 @@ export default function EditProfileModal({ user }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setIsLoading(true);
-    const formData = new FormData(e.target);
-    const res = await updateProfile(formData);
-    setIsLoading(false);
-    
-    if (res?.success) {
-      setIsOpen(false);
-    } else {
-      alert(res?.error || "Có lỗi xảy ra");
+    try {
+      const formData = new FormData(e.target);
+      const res = await updateProfile(formData);
+      
+      if (res?.success) {
+        setIsOpen(false);
+      } else {
+        alert(res?.error || "Có lỗi xảy ra");
+      }
+    } catch (err) {
+      // NEXT_REDIRECT sẽ throw, bỏ qua
+      if (!err?.digest?.startsWith?.('NEXT_REDIRECT')) {
+        alert(err?.message || "Có lỗi xảy ra khi lưu.");
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 

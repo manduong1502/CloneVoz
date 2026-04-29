@@ -201,6 +201,7 @@ export default async function ThreadPage({ params, searchParams }) {
                     initialDislikeCount={post.reactions.filter(r => r.type === 'Dislike').length}
                     initialReaction={session?.user ? post.reactions.find(r => r.userId === session.user.id)?.type || null : null}
                     isLoggedIn={!!session?.user}
+                    isOwnPost={session?.user?.id === post.authorId}
                   />
                  
                  <div className="flex gap-3 text-[12px] text-[var(--voz-text-muted)]">

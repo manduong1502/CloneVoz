@@ -12,19 +12,6 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
     return null;
   }
 
-  const handleImageClick = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        await onUploadWithLoading(file);
-      }
-    };
-    input.click();
-  };
-
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[#185886]">
       <button
@@ -84,15 +71,34 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
 
       <div className="w-[1px] h-4 bg-[var(--voz-border)] mx-1" />
 
-      <button
-        type="button"
-        onClick={handleImageClick}
-        disabled={isUploading}
-        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+      {/* Nút upload ảnh: dùng label + hidden input thay vì createElement 
+           để tương thích tốt hơn với mobile iOS/Android */}
+      <label
+        className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
         title="Tải ảnh lên"
       >
         {isUploading ? <Loader2 size={16} className="animate-spin" /> : <ImageIcon size={16} />}
-      </button>
+        <input
+          type="file"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          className="hidden"
+          disabled={isUploading}
+          onChange={async (e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              // Kiểm tra dung lượng file (max 10MB)
+              if (file.size > 10 * 1024 * 1024) {
+                alert('Ảnh quá lớn. Tối đa 10MB.');
+                e.target.value = '';
+                return;
+              }
+              await onUploadWithLoading(file);
+            }
+            // Reset input để có thể chọn lại cùng file
+            e.target.value = '';
+          }}
+        />
+      </label>
     </div>
   );
 };

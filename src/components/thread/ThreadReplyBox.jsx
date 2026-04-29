@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState, useEffect, useTransition } from 'react';
+import { X } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { createReply } from '@/actions/postActions';
 
@@ -9,6 +10,7 @@ export default function ThreadReplyBox({ session, threadId }) {
   const [turnstileToken, setTurnstileToken] = useState(null);
   const [showTurnstile, setShowTurnstile] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [quotingUser, setQuotingUser] = useState(null); // Tên user đang được trích dẫn
   const editorRef = useRef(null);
 
   // Lắng nghe Event gài Quote
@@ -19,11 +21,12 @@ export default function ThreadReplyBox({ session, threadId }) {
       
       const editor = editorRef.current?.getEditor();
       if (editor) {
-        editor.commands.insertContent(quoteHtml);
+        editor.commands.setContent(quoteHtml);
+        setContent(quoteHtml);
         editor.commands.focus();
-        setShowTurnstile(true); // Kích hoạt Turnstile khi quote
+        setShowTurnstile(true);
+        setQuotingUser(username);
         
-        // Scroll mượt xuống box reply
         document.getElementById('reply-box')?.scrollIntoView({ behavior: 'smooth' });
       }
     };
@@ -31,6 +34,15 @@ export default function ThreadReplyBox({ session, threadId }) {
     window.addEventListener('insert-quote', handleQuote);
     return () => window.removeEventListener('insert-quote', handleQuote);
   }, []);
+
+  const handleClearQuote = () => {
+    const editor = editorRef.current?.getEditor();
+    if (editor) {
+      editor.commands.setContent('');
+      setContent('');
+      setQuotingUser(null);
+    }
+  };
 
   const handleImageUpload = async (file) => {
     const formData = new FormData();
@@ -64,7 +76,6 @@ export default function ThreadReplyBox({ session, threadId }) {
       
       await createReply(threadId, formData);
       
-      // Xóa mây mù editor khi đăng xong
       const editor = editorRef.current?.getEditor();
       if (editor) {
         editor.commands.setContent('');
@@ -72,10 +83,10 @@ export default function ThreadReplyBox({ session, threadId }) {
       }
       setShowTurnstile(false);
       setTurnstileToken(null);
+      setQuotingUser(null);
     });
   };
 
-  // Kích hoạt Turnstile khi user bắt đầu soạn thảo
   const handleEditorFocus = () => {
     if (!showTurnstile) setShowTurnstile(true);
   };
@@ -100,9 +111,27 @@ export default function ThreadReplyBox({ session, threadId }) {
 
   return (
     <form id="reply-box" onSubmit={handleSubmit} className="voz-card mt-4 overflow-hidden">
-      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center">
-         <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
+      <div className="bg-[var(--voz-accent)] px-4 py-[10px] text-[13px] border-b border-[var(--voz-border)] text-[#185886] font-medium flex gap-2 items-center justify-between">
+         <div className="flex gap-2 items-center">
+           <img src={session.user.image} className="w-5 h-5 rounded-sm" /> Gửi trả lời dưới tên {session.user.name}
+         </div>
       </div>
+
+      {/* Quote indicator bar with dismiss button */}
+      {quotingUser && (
+        <div className="bg-[#f2930d]/15 border-l-[3px] border-[#f2930d] px-4 py-2 text-[13px] text-[var(--voz-text-strong)] flex justify-between items-center">
+          <span>💬 Gửi trả lời dưới tên <strong>{quotingUser}</strong></span>
+          <button 
+            type="button" 
+            onClick={handleClearQuote}
+            className="text-[var(--voz-text-muted)] hover:text-red-500 transition-colors p-1 rounded hover:bg-red-500/10"
+            title="Xóa trích dẫn"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
       <div className="p-4 bg-[var(--voz-surface)] flex flex-col items-end w-full" onClick={handleEditorFocus}>
          <RichTextEditor 
             ref={editorRef}

@@ -188,6 +188,9 @@ model Reaction {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 
+  // Snapshot: điểm tổng của voter tại thời điểm reaction (dùng cho dislike threshold)
+  voterPoints Int    @default(0)
+
   createdAt DateTime @default(now())
 
   @@unique([postId, userId]) // 1 user can only have 1 reaction per post

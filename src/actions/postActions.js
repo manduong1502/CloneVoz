@@ -205,12 +205,21 @@ export async function handleReaction(postId, path, reactionType) {
 
   const userId = session.user.id;
 
+  const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+  if (!post) throw new Error("Bài viết không tồn tại");
+
+  // Chặn tự like/dislike chính mình
+  if (post.authorId === userId) {
+    return { error: "Bạn không thể tự Ưng hoặc Gạch bài viết của chính mình." };
+  }
+
   const existingReaction = await prisma.reaction.findFirst({
     where: { postId, userId }
   });
 
-  const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
-  const isOwnPost = post && post.authorId === userId;
+  // Lấy điểm hiện tại của voter để lưu snapshot
+  const voter = await prisma.user.findUnique({ where: { id: userId }, select: { points: true } });
+  const currentVoterPoints = voter?.points || 0;
 
   let scoreDelta = 0;
 
@@ -224,20 +233,20 @@ export async function handleReaction(postId, path, reactionType) {
       // Đổi reaction (từ Like sang Dislike hoặc ngược lại)
       await prisma.reaction.update({
         where: { id: existingReaction.id },
-        data: { type: reactionType }
+        data: { type: reactionType, voterPoints: currentVoterPoints }
       });
       scoreDelta = reactionType === "Like" ? 2 : -2;
     }
   } else {
-    // Thêm mới reaction
+    // Thêm mới reaction + lưu snapshot điểm voter
     await prisma.reaction.create({
-      data: { postId, userId, type: reactionType }
+      data: { postId, userId, type: reactionType, voterPoints: currentVoterPoints }
     });
     scoreDelta = reactionType === "Like" ? 1 : -1;
   }
 
-  // Cập nhật điểm (chỉ cộng/trừ nếu không phải tự vote bài mình)
-  if (post && !isOwnPost && scoreDelta !== 0) {
+  // Cập nhật điểm reactionScore trực tiếp
+  if (scoreDelta !== 0) {
     // Calculate penalty if removing an old like
     const startOfToday = new Date();
     startOfToday.setHours(0, 0, 0, 0);
@@ -245,7 +254,7 @@ export async function handleReaction(postId, path, reactionType) {
     
     if (existingReaction && existingReaction.createdAt < startOfToday) {
        if (existingReaction.type === 'Like' && reactionType !== 'Like') {
-          penaltyPoints = 1; // Removed an old like, penalize 1 point
+          penaltyPoints = 1;
        }
     }
 
