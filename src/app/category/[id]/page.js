@@ -335,7 +335,7 @@ export default async function CategoryPage({ params, searchParams }) {
 
                     {/* Mobile: dòng riêng cho stats */}
                     <div className="md:hidden text-[12px] mt-[2px] flex items-center gap-1" style={{ color: '#8c9197' }}>
-                      Replies: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}
+                      Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}
                     </div>
                   </div>
 
