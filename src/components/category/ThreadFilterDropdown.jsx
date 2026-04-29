@@ -135,7 +135,7 @@ export default function ThreadFilterDropdown({ prefixes = [], currentParams = {}
                 </button>
                 <button 
                   onClick={handleFilter}
-                  className="bg-[#185886] text-white text-[12px] px-4 py-1.5 rounded-sm hover:bg-[#134970] font-medium"
+                  className="bg-[#183254] text-white text-[12px] px-4 py-1.5 rounded-sm hover:bg-[#134970] font-medium"
                 >
                   Lọc
                 </button>

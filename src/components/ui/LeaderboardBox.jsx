@@ -24,13 +24,13 @@ export default function LeaderboardBox({ topUsersTotal, topUsersMonth }) {
       <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] flex text-[13px]">
         <button 
           onClick={() => setTab('total')}
-          className={`flex-1 px-3 py-2 font-medium transition-colors ${tab === 'total' ? 'text-[#185886] border-b-2 border-[#185886]' : 'text-[var(--voz-text-muted)] hover:text-[var(--voz-text)]'}`}
+          className={`flex-1 px-3 py-2 font-medium transition-colors ${tab === 'total' ? 'text-[#183254] border-b-2 border-[#183254]' : 'text-[var(--voz-text-muted)] hover:text-[var(--voz-text)]'}`}
         >
           <Trophy size={14} className="inline mr-1" /> Tổng
         </button>
         <button 
           onClick={() => setTab('month')}
-          className={`flex-1 px-3 py-2 font-medium transition-colors ${tab === 'month' ? 'text-[#185886] border-b-2 border-[#185886]' : 'text-[var(--voz-text-muted)] hover:text-[var(--voz-text)]'}`}
+          className={`flex-1 px-3 py-2 font-medium transition-colors ${tab === 'month' ? 'text-[#183254] border-b-2 border-[#183254]' : 'text-[var(--voz-text-muted)] hover:text-[var(--voz-text)]'}`}
         >
           <Medal size={14} className="inline mr-1" /> Tháng
         </button>

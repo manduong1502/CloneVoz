@@ -22,7 +22,7 @@ export default function WatchButton({ threadId, initialIsWatching }) {
       disabled={isPending}
       className={`border rounded-sm px-3 py-[6px] transition-colors text-[13px] ${
         initialIsWatching 
-          ? 'bg-[#185886] text-white border-[#185886] hover:bg-[#134970]' 
+          ? 'bg-[#183254] text-white border-[#183254] hover:bg-[#134970]' 
           : 'bg-[var(--voz-surface)] border-[var(--voz-border)] hover:bg-[var(--voz-hover)]'
       } disabled:opacity-50`}
     >

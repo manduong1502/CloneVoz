@@ -140,7 +140,7 @@ export default function EditProfileModal({ user }) {
               <button 
                 type="submit" 
                 disabled={isLoading}
-                className="bg-[#185886] hover:bg-[#134970] text-white px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-[#0e3b5e] active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
+                className="bg-[#183254] hover:bg-[#134970] text-white px-4 py-2 font-medium text-[13px] rounded border-b-[3px] border-[#0e3b5e] active:border-b-0 active:translate-y-[2px] transition-all min-w-[120px]"
               >
                 {isLoading ? 'Đang lưu...' : 'Lưu Thay Đổi'}
               </button>

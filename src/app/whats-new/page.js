@@ -22,7 +22,7 @@ export default async function WhatsNewPage() {
 
       {/* Tabs */}
       <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
-        <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Bài viết mới</Link>
+        <Link href="/whats-new" className="px-4 py-2 border-b-[3px] border-[#183254] font-semibold text-[#183254]">Bài viết mới</Link>
       </div>
 
       <div className="voz-card overflow-hidden">

@@ -140,13 +140,13 @@ export default async function CategoryPage({ params, searchParams }) {
   if (!perm.granted) {
     return (
       <div className="voz-card overflow-hidden my-6 max-w-3xl mx-auto">
-        <h2 className="bg-[#185886] text-white px-4 py-3 text-[15px] font-bold">DanOngThongMinh Error</h2>
+        <h2 className="bg-[#183254] text-white px-4 py-3 text-[15px] font-bold">DanOngThongMinh Error</h2>
         <div className="p-8 text-center text-[var(--voz-text-strong)] font-medium bg-[var(--voz-surface)]">
           <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" height="48px" width="48px" xmlns="http://www.w3.org/2000/svg" className="mx-auto mb-4 text-red-500"><path d="M256 32c14.2 0 27.3 7.5 34.5 19.8l216 368c7.3 12.4 7.3 27.7 .2 40.1S486.3 480 472 480H40c-14.3 0-27.6-7.7-34.7-20.1s-7-27.8 .2-40.1l216-368C228.7 39.5 241.8 32 256 32zm0 128c-13.3 0-24 10.7-24 24V296c0 13.3 10.7 24 24 24s24-10.7 24-24V184c0-13.3-10.7-24-24-24zm32 224a32 32 0 1 0 -64 0 32 32 0 1 0 64 0z"></path></svg>
           <div className="text-lg mb-2 text-red-600">Bạn không có quyền truy cập vào trang này.</div>
           <div className="text-sm text-gray-600">{perm.reason}</div>
           {!session?.user && (
-            <Link href="/" className="mt-4 inline-block bg-[#185886] text-white px-4 py-2 rounded-sm text-sm hover:no-underline">Đăng nhập ngay</Link>
+            <Link href="/" className="mt-4 inline-block bg-[#183254] text-white px-4 py-2 rounded-sm text-sm hover:no-underline">Đăng nhập ngay</Link>
           )}
         </div>
       </div>
@@ -324,15 +324,15 @@ export default async function CategoryPage({ params, searchParams }) {
                           {thread.prefix.title}
                         </span>
                       )}
-                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[var(--voz-text-strong)]"}`}>
+                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[#183254] dark:text-[var(--voz-text-strong)]"}`}>
                         {thread.title}
                       </Link>
                     </div>
 
-                    <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1">
-                      <Link href={`/profile/${thread.author.username}`} className="hover:underline text-[var(--voz-link)]">{thread.author.username}</Link>
-                      <span>·</span>
-                      <span>{formatRelativeTime(thread.createdAt)}</span>
+                    <div className="text-[12px] flex items-center gap-1">
+                      <Link href={`/profile/${thread.author.username}`} className="hover:underline text-[#8c8c8c]">{thread.author.username}</Link>
+                      <span className="text-[#8c8c8c]">·</span>
+                      <span className="text-[#666]">{formatRelativeTime(thread.createdAt)}</span>
                     </div>
                   </div>
 
@@ -373,7 +373,7 @@ export default async function CategoryPage({ params, searchParams }) {
       {/* Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 pt-[32px]">
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Đang thịnh hành</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
             {trendingThreads.map(t => (
               <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">

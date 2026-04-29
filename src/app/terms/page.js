@@ -10,7 +10,7 @@ export default function TermsPage() {
   return (
     <div className="w-full max-w-4xl mx-auto my-6">
       <div className="voz-card overflow-hidden">
-        <h2 className="bg-[#185886] text-white px-4 py-3 text-[16px] font-medium flex items-center justify-between">
+        <h2 className="bg-[#183254] text-white px-4 py-3 text-[16px] font-medium flex items-center justify-between">
            <span className="flex items-center gap-2"><Book size={18} /> Nội quy hoạt động tại DanOngThongMinh</span>
         </h2>
         <div className="p-6 bg-[var(--voz-surface)] text-[var(--voz-text-strong)] leading-relaxed text-[15px]">

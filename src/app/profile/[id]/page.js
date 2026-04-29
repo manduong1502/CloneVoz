@@ -59,7 +59,7 @@ export default async function ProfilePage({ params, searchParams }) {
       {/* Hero Header Area */}
       <div className="voz-card overflow-hidden mb-4 border border-[var(--voz-border)]">
         {/* Cover Photo / Top Bar */}
-        <div className="h-[120px] bg-gradient-to-r from-[#185886] to-[#2574A9] relative"></div>
+        <div className="h-[120px] bg-gradient-to-r from-[#183254] to-[#2574A9] relative"></div>
         
         <div className="bg-[var(--voz-surface)] px-6 pb-6 pt-0 relative flex flex-col md:flex-row md:items-end gap-6 justify-between">
           
@@ -109,7 +109,7 @@ export default async function ProfilePage({ params, searchParams }) {
         <div className="flex flex-col gap-4 w-full">
           {/* Stats Card */}
           <div className="voz-card overflow-hidden">
-            <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Thống kê</h3>
+            <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Thống kê</h3>
             <div className="bg-[var(--voz-surface)] p-3 text-[13px] text-[var(--voz-text-strong)] flex flex-col gap-3">
               <div className="flex justify-between items-center border-b border-[var(--voz-border-light)] pb-2">
                 <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><MessageSquare size={16}/> Bình luận:</span> 
@@ -133,7 +133,7 @@ export default async function ProfilePage({ params, searchParams }) {
           {/* Signature Preview */}
           {targetUser.signature && (
             <div className="voz-card overflow-hidden">
-              <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Chữ ký</h3>
+              <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Chữ ký</h3>
               <div className="bg-[var(--voz-surface)] p-3 text-[12px] text-[var(--voz-text-muted)] italic border-l-[3px] border-[#2574A9] bg-[var(--voz-accent)]">
                  <div dangerouslySetInnerHTML={{ __html: targetUser.signature }} />
               </div>
@@ -144,7 +144,7 @@ export default async function ProfilePage({ params, searchParams }) {
         {/* Right Content Area (Recent Activity) */}
         <div className="flex flex-col gap-4">
           <div className="voz-card overflow-hidden">
-            <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Hoạt động gần đây</h3>
+            <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Hoạt động gần đây</h3>
             <div className="bg-[#white]">
                {recentPosts.length === 0 ? (
                  <div className="p-8 text-center text-[var(--voz-text-muted)] text-[13px]">

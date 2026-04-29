@@ -22,7 +22,7 @@ export default function WatchNodeButton({ nodeId, initialIsWatching }) {
       disabled={isPending}
       className={`border rounded-sm px-3 py-[6px] transition-colors text-[13px] ${
         initialIsWatching 
-          ? 'bg-[#185886] text-white border-[#185886] hover:bg-[#134970]' 
+          ? 'bg-[#183254] text-white border-[#183254] hover:bg-[#134970]' 
           : 'bg-[var(--voz-surface)] border-[var(--voz-border)] hover:bg-[var(--voz-hover)] text-[var(--voz-text-strong)]'
       } disabled:opacity-50 h-[30px] flex items-center justify-center min-w-[70px]`}
     >

@@ -23,7 +23,7 @@ export default function Modal({ isOpen, onClose, title, children, width = '500px
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="bg-[#185886] text-white px-4 py-3 flex justify-between items-center text-[18px]">
+        <div className="bg-[#183254] text-white px-4 py-3 flex justify-between items-center text-[18px]">
           <h2 className="m-0 font-normal">{title}</h2>
           <button onClick={onClose} className="hover:text-gray-300 transition-colors">
             <X size={20} />

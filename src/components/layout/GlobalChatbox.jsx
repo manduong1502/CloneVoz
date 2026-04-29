@@ -307,11 +307,11 @@ export default function GlobalChatbox({ session }) {
         >
           {/* Resize Handles (Custom) */}
           <div
-            className="absolute top-0 left-0 right-0 h-[6px] cursor-ns-resize z-50 hover:bg-[#185886]/20 transition-colors"
+            className="absolute top-0 left-0 right-0 h-[6px] cursor-ns-resize z-50 hover:bg-[#183254]/20 transition-colors"
             onMouseDown={(e) => handleResize(e, 'top')}
           />
           <div
-            className="absolute top-0 left-0 bottom-0 w-[6px] cursor-ew-resize z-50 hover:bg-[#185886]/20 transition-colors"
+            className="absolute top-0 left-0 bottom-0 w-[6px] cursor-ew-resize z-50 hover:bg-[#183254]/20 transition-colors"
             onMouseDown={(e) => handleResize(e, 'left')}
           />
           <div
@@ -320,7 +320,7 @@ export default function GlobalChatbox({ session }) {
           />
 
           {/* Header */}
-          <div className="bg-[#185886] text-white px-4 py-3 flex justify-between items-center text-[15px] font-bold cursor-default rounded-t-lg shrink-0">
+          <div className="bg-[#183254] text-white px-4 py-3 flex justify-between items-center text-[15px] font-bold cursor-default rounded-t-lg shrink-0">
             <div className="flex items-center gap-2 pointer-events-none">
               <MessageCircle size={18} /> Server Chat
             </div>
@@ -551,10 +551,10 @@ export default function GlobalChatbox({ session }) {
           
           <button
             onClick={() => setIsOpen(true)}
-            className="bg-[#185886] text-white rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative flex items-center gap-2 pl-4 pr-3 py-2.5 group"
+            className="bg-[#183254] text-white rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative flex items-center gap-2 pl-4 pr-3 py-2.5 group"
           >
             {/* Pulse ring */}
-            <span className="absolute inset-0 rounded-full bg-[#185886] animate-ping opacity-20 pointer-events-none" />
+            <span className="absolute inset-0 rounded-full bg-[#183254] animate-ping opacity-20 pointer-events-none" />
             
             <span className="text-[13px] font-medium relative z-10 hidden sm:inline">Chat</span>
             <MessageCircle size={22} className="relative z-10" />

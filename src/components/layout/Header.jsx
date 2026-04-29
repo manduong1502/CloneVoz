@@ -150,7 +150,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                       trigger={(isOpen) => (
                         <div className={`flex items-center h-full px-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer relative ${isOpen ? 'bg-[var(--voz-surface)]/10' : ''}`}>
                           <Bell size={18} className="text-white/80" />
-                          <span className={`absolute top-[12px] right=[8px] w-2 h-2 ${liveUnreadCount > 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'hidden'} rounded-full border border-[#185886]`}></span>
+                          <span className={`absolute top-[12px] right=[8px] w-2 h-2 ${liveUnreadCount > 0 ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'hidden'} rounded-full border border-[#183254]`}></span>
                         </div>
                       )}
                     >
@@ -336,7 +336,7 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                 <input name="password" type="password" placeholder="Tùy ý" className="border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none" required />
               </div>
               <div className="mt-4 flex gap-3 justify-center border-t border-[var(--voz-border)] pt-4">
-                <button type="submit" className="voz-button bg-[#185886] hover:bg-[#134468] justify-center min-w-[120px]">
+                <button type="submit" className="voz-button bg-[#183254] hover:bg-[#134468] justify-center min-w-[120px]">
                   Đăng ký tài khoản
                 </button>
               </div>

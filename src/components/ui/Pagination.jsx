@@ -55,7 +55,7 @@ export default function Pagination({ basePath, currentPage, totalPages, queryPar
         <Link 
           key={number} 
           href={buildUrl(number)}
-          className={`px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-[var(--voz-border)] cursor-pointer ${currentPage === number ? 'bg-[#185886] text-white font-medium hover:bg-[#185886]' : 'text-[var(--voz-link)]'}`}
+          className={`px-3 py-[6px] border-r border-[var(--voz-border)] hover:bg-[var(--voz-border)] cursor-pointer ${currentPage === number ? 'bg-[#183254] text-white font-medium hover:bg-[#183254]' : 'text-[var(--voz-link)]'}`}
         >
           {number}
         </Link>

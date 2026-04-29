@@ -3,7 +3,7 @@
 
 :root {
   /* SÁNG (Light Mode) */
-  --voz-blue-dark: #185886;
+  --voz-blue-dark: #183254;
   --voz-blue-light: #2574A9;
   --voz-bg: #ececec;
   --voz-surface: #ffffff;
@@ -13,7 +13,7 @@
   --voz-text-strong: #000000;
   --voz-text-muted: #8c8c8c;
   --voz-link: #267fbe;
-  --voz-link-hover: #185886;
+  --voz-link-hover: #183254;
   --voz-accent: #f9f9f9;
   --voz-hover: #fafafa;
 }

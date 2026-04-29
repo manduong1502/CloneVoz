@@ -17,13 +17,13 @@ export default function MembersPage() {
 
         {/* Tabs */}
         <div className="flex border-b border-[var(--voz-border)] mb-4 text-[13px]">
-          <Link href="/members" className="px-4 py-2 border-b-[3px] border-[#185886] font-semibold text-[#185886]">Nhiều bài viết nhất</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Nhiều lượt thích nhất</Link>
-          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#185886] hidden sm:block">Nhiều điểm nhất</Link>
+          <Link href="/members" className="px-4 py-2 border-b-[3px] border-[#183254] font-semibold text-[#183254]">Nhiều bài viết nhất</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#183254] hidden sm:block">Nhiều lượt thích nhất</Link>
+          <Link href="#" className="px-4 py-2 border-b-[3px] border-transparent hover:border-[#2574A9]/50 text-[var(--voz-text-muted)] hover:text-[#183254] hidden sm:block">Nhiều điểm nhất</Link>
         </div>
 
         <div className="voz-card overflow-hidden">
-          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-[8px] text-[13px] text-[#185886] font-medium">
+          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-[8px] text-[13px] text-[#183254] font-medium">
              Nhiều bài viết nhất
           </div>
           
@@ -70,16 +70,16 @@ export default function MembersPage() {
       <div className="hidden lg:flex flex-col gap-4 pt-[46px]">
         {/* Find Member */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Tìm thành viên</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Tìm thành viên</h3>
           <div className="bg-[var(--voz-surface)] px-3 py-3">
              <input type="text" placeholder="Name..." className="w-full border border-[var(--voz-border)] rounded-[2px] px-2 py-[6px] text-[13px] focus:outline-none focus:border-[var(--voz-link)] mb-2" />
-             <button className="bg-[#185886] hover:bg-[#2574A9] text-white w-full rounded-[2px] py-[6px] text-[13px] font-medium transition-colors">Tìm kiếm</button>
+             <button className="bg-[#183254] hover:bg-[#2574A9] text-white w-full rounded-[2px] py-[6px] text-[13px] font-medium transition-colors">Tìm kiếm</button>
           </div>
         </div>
 
         {/* Member Online */}
         <div className="voz-card overflow-hidden">
-          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Thành viên trực tuyến</h3>
+          <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#183254]">Thành viên trực tuyến</h3>
           <div className="bg-[var(--voz-surface)] px-3 py-3 text-[12px] text-[var(--voz-text-muted)]">
              <div className="flex flex-wrap gap-1 mb-2">
                <Link href="#" className="hover:underline text-[var(--voz-link)] font-medium">Bimbim2002</Link>, 

@@ -54,7 +54,7 @@ export default function ThreadCreateBox({ session, nodeId }) {
   if (!session) {
     return (
       <div className="voz-card mt-4 p-4 text-center bg-[var(--voz-accent)]">
-         <span className="text-[var(--voz-text-muted)]">Bạn phải <span className="text-[#185886] font-bold cursor-pointer">đăng nhập</span> để tạo chủ đề mới.</span>
+         <span className="text-[var(--voz-text-muted)]">Bạn phải <span className="text-[#183254] font-bold cursor-pointer">đăng nhập</span> để tạo chủ đề mới.</span>
       </div>
     );
   }
