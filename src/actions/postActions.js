@@ -338,14 +338,15 @@ export async function handleReaction(postId, path, reactionType) {
     // Thông báo nếu có Like mới (không gửi nếu tự like bài mình)
     if (reactionType === "Like" && !existingReaction && post.authorId !== session.user.id) {
       try {
-        const thread = await prisma.post.findUnique({ where: { id: postId }, select: { thread: true } });
+        const postData = await prisma.post.findUnique({ where: { id: postId }, select: { position: true, thread: true } });
+        const label = postData.position === 1 ? 'bài viết' : 'bình luận';
         await prisma.notification.create({
            data: {
              userId: post.authorId,
              senderId: session.user.id,
              type: "reaction",
-             content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã thả Ưng bài viết của bạn.`,
-             link: `/thread/${thread.thread.id}#post-${postId}`
+             content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã thả Ưng ${label} của bạn.`,
+             link: `/thread/${postData.thread.id}#post-${postId}`
            }
         });
         pusherServer.trigger(`user-${post.authorId}`, 'new-notification', { type: 'reaction' }).catch(() => {});
