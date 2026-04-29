@@ -12,9 +12,9 @@
   --voz-text: #141414;
   --voz-text-strong: #000000;
   --voz-text-muted: #8c8c8c;
-  --voz-link: #2574A9;
+  --voz-link: #56646d;
   --voz-link-hover: #185886;
-  --voz-accent: #f9f9f9; 
+  --voz-accent: #f9f9f9;
   --voz-hover: #fafafa;
 }
 
@@ -29,9 +29,9 @@
   --voz-text: #b3b3b3;
   --voz-text-strong: #e4e4e4;
   --voz-text-muted: #8c8c8c;
-  --voz-link: #e4e4e4;
+  --voz-link: #56646d;
   --voz-link-hover: #ffffff;
-  --voz-accent: #333333; 
+  --voz-accent: #333333;
   --voz-hover: #3a3a3a;
 }
 
@@ -61,7 +61,7 @@ a:hover {
   background-color: var(--voz-surface);
   border: 1px solid var(--voz-border);
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 .voz-button {
@@ -92,6 +92,7 @@ a:hover {
   font-weight: 600;
   text-transform: uppercase;
 }
+
 .voz-badge-danger {
   background-color: #dc3545;
   color: #fff;
@@ -102,6 +103,7 @@ a:hover {
   font-weight: 600;
   text-transform: uppercase;
 }
+
 .voz-badge-info {
   background-color: #17a2b8;
   color: #fff;
@@ -206,6 +208,7 @@ blockquote:not(.voz-quote) strong {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -222,6 +225,7 @@ blockquote:not(.voz-quote) strong {
 }
 
 @media (min-width: 768px) {
+
   .post-content img,
   .ProseMirror img {
     max-height: 500px;
@@ -233,25 +237,55 @@ blockquote:not(.voz-quote) strong {
 
 /* Rank Badge - Sử thi shimmer effect */
 @keyframes rank-shimmer {
-  0% { background-position: -200% center; }
-  100% { background-position: 200% center; }
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
 }
 
 .rank-epic {
-  background: linear-gradient(90deg, rgba(239,68,68,0.15) 0%, rgba(245,158,11,0.25) 50%, rgba(239,68,68,0.15) 100%) !important;
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(245, 158, 11, 0.25) 50%, rgba(239, 68, 68, 0.15) 100%) !important;
   background-size: 200% 100%;
   animation: rank-shimmer 3s ease-in-out infinite;
-  border-color: rgba(239,68,68,0.4) !important;
-  text-shadow: 0 0 8px rgba(239,68,68,0.3);
+  border-color: rgba(239, 68, 68, 0.4) !important;
+  text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
 }
 
 /* Leaderboard crown bounce */
 @keyframes crown-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-2px);
+  }
 }
+
 .crown-animate {
   animation: crown-bounce 2s ease-in-out infinite;
+}
+
+/* Chat hint fade-in */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in-up 0.3s ease-out;
 }
 
 /* ========================================
@@ -259,8 +293,11 @@ blockquote:not(.voz-quote) strong {
    iOS tự phóng to khi input có font-size < 16px
    ======================================== */
 @media screen and (max-width: 768px) {
-  input, textarea, select, .ProseMirror {
+
+  input,
+  textarea,
+  select,
+  .ProseMirror {
     font-size: 16px !important;
   }
 }
-

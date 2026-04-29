@@ -9,6 +9,35 @@ import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { submitReport } from '@/actions/reportActions';
 
+function ChatHint() {
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    // Chỉ hiển thị gợi ý nếu user chưa từng đóng
+    const dismissed = localStorage.getItem('chat_hint_dismissed');
+    if (!dismissed) {
+      setShow(true);
+      // Tự ẩn sau 8 giây
+      const timer = setTimeout(() => setShow(false), 8000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const dismiss = () => {
+    setShow(false);
+    localStorage.setItem('chat_hint_dismissed', '1');
+  };
+
+  if (!show) return null;
+
+  return (
+    <div className="bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg shadow-lg px-3 py-2 text-[12px] text-[var(--voz-text)] flex items-center gap-2 animate-fade-in max-w-[200px]">
+      <span>💬 Tham gia trò chuyện cùng mọi người!</span>
+      <button onClick={dismiss} className="text-[var(--voz-text-muted)] hover:text-[var(--voz-text)] shrink-0 text-[14px] leading-none">✕</button>
+    </div>
+  );
+}
+
 export default function GlobalChatbox({ session }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -516,17 +545,26 @@ export default function GlobalChatbox({ session }) {
 
       {/* Box Nổi Toggle */}
       {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="bg-[#185886] text-white p-3 rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative"
-        >
-          <MessageCircle size={24} />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-[6px] py-[2px] rounded-full animate-bounce">
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </span>
-          )}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Tooltip gợi ý */}
+          <ChatHint />
+          
+          <button
+            onClick={() => setIsOpen(true)}
+            className="bg-[#185886] text-white rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative flex items-center gap-2 pl-4 pr-3 py-2.5 group"
+          >
+            {/* Pulse ring */}
+            <span className="absolute inset-0 rounded-full bg-[#185886] animate-ping opacity-20 pointer-events-none" />
+            
+            <span className="text-[13px] font-medium relative z-10 hidden sm:inline">Chat</span>
+            <MessageCircle size={22} className="relative z-10" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-[6px] py-[2px] rounded-full animate-bounce z-20">
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </span>
+            )}
+          </button>
+        </div>
       )}
 
     </div>
