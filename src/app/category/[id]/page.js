@@ -309,11 +309,11 @@ export default async function CategoryPage({ params, searchParams }) {
               const lastPosterAvatar = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
 
               return (
-                <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-center">
+                <div key={thread.id} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-center">
 
                   {/* Author Avatar */}
                   <div className="shrink-0 mr-3">
-                    <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
+                    <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[42px] h-[42px] rounded-full object-cover" />
                   </div>
 
                   {/* Title + Author */}
@@ -329,7 +329,7 @@ export default async function CategoryPage({ params, searchParams }) {
                       </Link>
                     </div>
 
-                    <div className="text-[12px] flex items-center gap-1">
+                    <div className="text-[13px] flex items-center gap-1">
                       <Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link>
                       <span style={{ color: '#8c9197' }}>·</span>
                       <span style={{ color: '#8c9197' }}>{formatRelativeTime(thread.createdAt)}</span>
@@ -337,7 +337,7 @@ export default async function CategoryPage({ params, searchParams }) {
                   </div>
 
                   {/* Stats: Replies + Views */}
-                  <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[120px]">
+                  <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[13px] text-[var(--voz-text-muted)] w-[130px]">
                     <div className="flex items-center gap-1.5">
                       <span>Trả lời:</span>
                       <span className="text-[var(--voz-text-strong)] font-medium min-w-[30px] text-right">{thread.replyCount}</span>
@@ -349,14 +349,14 @@ export default async function CategoryPage({ params, searchParams }) {
                   </div>
 
                   {/* Last Post Info + Avatar */}
-                  <div className="hidden sm:flex items-center gap-2 w-[180px] shrink-0 min-w-0 justify-end">
-                    <div className="flex-1 min-w-0 text-right text-[12px]">
+                  <div className="hidden sm:flex items-center gap-2.5 w-[200px] shrink-0 min-w-0 justify-end">
+                    <div className="flex-1 min-w-0 text-right text-[13px]">
                       <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(thread.updatedAt)}</div>
                       <Link href={`/profile/${lastPoster.username}`} className="hover:underline truncate inline-block max-w-full" style={{ color: '#8c9197' }}>
                         {lastPoster.username}
                       </Link>
                     </div>
-                    <img src={lastPosterAvatar} className="w-[28px] h-[28px] rounded-full shrink-0 object-cover" />
+                    <img src={lastPosterAvatar} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover" />
                   </div>
                 </div>
               );
