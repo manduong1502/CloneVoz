@@ -253,3 +253,14 @@ blockquote:not(.voz-quote) strong {
 .crown-animate {
   animation: crown-bounce 2s ease-in-out infinite;
 }
+
+/* ========================================
+   FIX iOS Safari: Chặn auto-zoom khi focus vào input
+   iOS tự phóng to khi input có font-size < 16px
+   ======================================== */
+@media screen and (max-width: 768px) {
+  input, textarea, select, .ProseMirror {
+    font-size: 16px !important;
+  }
+}
+
