@@ -41,7 +41,7 @@ export async function createThread(nodeId, formData) {
       authorId: session.user.id,
       viewCount: 0,
       replyCount: 0,
-      isApproved: true,
+      isApproved: autoApprove,
     }
   });
 
