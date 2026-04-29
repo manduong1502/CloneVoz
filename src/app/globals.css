@@ -63,6 +63,14 @@ a:hover {
   color: white;
 }
 
+/* Thread title link: sáng = xanh đậm header, tối = sáng cho dễ đọc */
+.thread-title-link {
+  color: #183254;
+}
+:root.dark .thread-title-link {
+  color: var(--voz-text-strong);
+}
+
 .header-dark a:hover,
 .dark-bg a:hover {
   color: white;

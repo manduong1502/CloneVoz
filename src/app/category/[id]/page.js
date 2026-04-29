@@ -318,21 +318,21 @@ export default async function CategoryPage({ params, searchParams }) {
 
                   {/* Title + Author */}
                   <div className="flex-1 flex flex-col min-w-0 pr-4">
-                    <div className="leading-tight mb-[3px]">
+                    <div className="leading-snug mb-[4px]">
                       {thread.prefix && (
                         <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>
                           {thread.prefix.title}
                         </span>
                       )}
-                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[var(--voz-link)] dark:text-[var(--voz-text-strong)]"}`}>
-                        {thread.title}
+                      <Link href={`/thread/${thread.id}`} style={{ color: thread.isPinned ? '#c84448' : undefined }} className={`text-[16px] leading-snug ${thread.isPinned ? "font-bold" : "font-bold hover:underline"}`}>
+                        <span className={thread.isPinned ? "" : "thread-title-link"}>{thread.title}</span>
                       </Link>
                     </div>
 
                     <div className="text-[12px] flex items-center gap-1">
-                      <Link href={`/profile/${thread.author.username}`} className="hover:underline text-[#8c8c8c]">{thread.author.username}</Link>
-                      <span className="text-[#8c8c8c]">·</span>
-                      <span className="text-[#666]">{formatRelativeTime(thread.createdAt)}</span>
+                      <Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link>
+                      <span style={{ color: '#8c9197' }}>·</span>
+                      <span style={{ color: '#8c9197' }}>{formatRelativeTime(thread.createdAt)}</span>
                     </div>
                   </div>
 
@@ -352,7 +352,7 @@ export default async function CategoryPage({ params, searchParams }) {
                   <div className="hidden sm:flex items-center gap-2 w-[180px] shrink-0 min-w-0 justify-end">
                     <div className="flex-1 min-w-0 text-right text-[12px]">
                       <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(thread.updatedAt)}</div>
-                      <Link href={`/profile/${lastPoster.username}`} className="text-[var(--voz-text-muted)] hover:underline truncate inline-block max-w-full">
+                      <Link href={`/profile/${lastPoster.username}`} className="hover:underline truncate inline-block max-w-full" style={{ color: '#8c9197' }}>
                         {lastPoster.username}
                       </Link>
                     </div>
