@@ -148,11 +148,22 @@ export async function createReply(threadId, formData) {
       usersToNotify.forEach(u => mentionedUserIds.push(u.id));
     }
 
+    // Phân tích Quote: tìm username trong voz-quote-header ("username đã viết:")
+    const quotedUsernames = [...content.matchAll(/class="voz-quote-header">([^<]+)\s+đã viết:/g)].map(m => m[1].trim());
+    const uniqueQuotedNames = [...new Set(quotedUsernames)].filter(name => name !== session.user.username);
+    
+    const quotedUserIds = [];
+    if (uniqueQuotedNames.length > 0) {
+      const quotedUsers = await prisma.user.findMany({ where: { username: { in: uniqueQuotedNames } } });
+      quotedUsers.forEach(u => quotedUserIds.push(u.id));
+    }
+
     // Lấy người theo dõi chủ đề
     const watchers = await prisma.bookmark.findMany({ where: { threadId } });
     
     const userIdsToNotify = new Set();
     mentionedUserIds.forEach(id => userIdsToNotify.add(id));
+    quotedUserIds.forEach(id => userIdsToNotify.add(id));
     if (thread.authorId) userIdsToNotify.add(thread.authorId);
     watchers.forEach(w => userIdsToNotify.add(w.userId));
     
@@ -170,6 +181,10 @@ export async function createReply(threadId, formData) {
         
         if (uid === thread.authorId) {
             text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
+        }
+        if (quotedUserIds.includes(uid)) {
+            type = "quote";
+            text = `<strong>${safeName}</strong> đã trả lời bình luận của bạn.`;
         }
         if (mentionedUserIds.includes(uid)) {
             type = "quote";
@@ -320,8 +335,8 @@ export async function handleReaction(postId, path, reactionType) {
       }
     });
 
-    // Thông báo nếu có Like mới
-    if (reactionType === "Like" && !existingReaction) {
+    // Thông báo nếu có Like mới (không gửi nếu tự like bài mình)
+    if (reactionType === "Like" && !existingReaction && post.authorId !== session.user.id) {
       try {
         const thread = await prisma.post.findUnique({ where: { id: postId }, select: { thread: true } });
         await prisma.notification.create({
