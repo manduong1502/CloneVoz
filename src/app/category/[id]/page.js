@@ -210,21 +210,45 @@ export default async function CategoryPage({ params, searchParams }) {
 
   let threadsDb = cachedData?.threadsDb;
   if (!threadsDb) {
-    threadsDb = await prisma.thread.findMany({
-      where: whereCondition,
-      orderBy: [{ isPinned: 'desc' }, { [orderField]: orderDir }],
-      skip: skip,
-      take: threadsPerPage,
-      include: {
-        author: true,
-        prefix: true,
-        posts: {
-          take: 1,
-          orderBy: { position: 'desc' },
-          include: { author: true }
+    if (page === 1) {
+      // Trang 1: pinned lên đầu, rồi đến unpinned
+      const pinnedThreads = await prisma.thread.findMany({
+        where: { ...whereCondition, isPinned: true },
+        orderBy: { [orderField]: orderDir },
+        include: {
+          author: true,
+          prefix: true,
+          posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } }
         }
-      }
-    });
+      });
+      const remaining = threadsPerPage - pinnedThreads.length;
+      const unpinnedThreads = remaining > 0 ? await prisma.thread.findMany({
+        where: { ...whereCondition, isPinned: false },
+        orderBy: { [orderField]: orderDir },
+        take: remaining,
+        include: {
+          author: true,
+          prefix: true,
+          posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } }
+        }
+      }) : [];
+      threadsDb = [...pinnedThreads, ...unpinnedThreads];
+    } else {
+      // Trang 2+: chỉ unpinned, skip tính trừ đi pinned đã hiện ở trang 1
+      const pinnedCount = await prisma.thread.count({ where: { ...whereCondition, isPinned: true } });
+      const unpinnedSkip = skip - pinnedCount;
+      threadsDb = await prisma.thread.findMany({
+        where: { ...whereCondition, isPinned: false },
+        orderBy: { [orderField]: orderDir },
+        skip: Math.max(0, unpinnedSkip),
+        take: threadsPerPage,
+        include: {
+          author: true,
+          prefix: true,
+          posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } }
+        }
+      });
+    }
   }
 
   let trendingThreads = cachedData?.trendingThreads;

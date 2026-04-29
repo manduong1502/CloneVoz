@@ -33,7 +33,8 @@ export default function AdminSidebar({ navItems, userName, userImage, role }) {
                   key={item.href} 
                   href={item.href} 
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white transition text-sm"
+                  className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-slate-800 hover:text-white hover:no-underline transition text-sm"
+                  style={{ color: 'inherit' }}
                 >
                   {Icon && <Icon size={18}/>}
                   <span>{item.label}</span>

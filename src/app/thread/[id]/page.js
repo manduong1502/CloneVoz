@@ -9,7 +9,6 @@ import QuoteButton from '@/components/thread/QuoteButton';
 import WatchButton from '@/components/thread/WatchButton';
 import ReportModal from '@/components/thread/ReportModal';
 import DeletePostButton from '@/components/thread/DeletePostButton';
-import PinThreadButton from '@/components/thread/PinThreadButton';
 import LikeButton from '@/components/thread/LikeButton';
 import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
