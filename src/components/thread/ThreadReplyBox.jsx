@@ -139,16 +139,20 @@ export default function ThreadReplyBox({ session, threadId }) {
             onChange={setContent}
             onImageUpload={handleImageUpload}
          />
-         <div className="flex flex-col sm:flex-row gap-3 items-center mt-3 w-full justify-between">
-           {showTurnstile ? (
-             <TurnstileLazy 
-                siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
-                onSuccess={(token) => setTurnstileToken(token)}
-             />
-           ) : (
-             <div className="text-xs text-[var(--voz-text-muted)]">Bảo mật Cloudflare sẽ kích hoạt khi bạn soạn thảo</div>
-           )}
-           <div className="flex gap-2 items-center">
+         <div className="flex items-center mt-3 w-full justify-between">
+           <div className="flex items-center gap-2">
+             {showTurnstile ? (
+               <div className="scale-[0.85] origin-left">
+                 <TurnstileLazy 
+                    siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY}
+                    onSuccess={(token) => setTurnstileToken(token)}
+                 />
+               </div>
+             ) : (
+               <div className="text-xs text-[var(--voz-text-muted)]">Bảo mật Cloudflare sẽ kích hoạt khi bạn soạn thảo</div>
+             )}
+           </div>
+           <div className="flex gap-2 items-center shrink-0">
              {isPending && <span className="text-sm text-[var(--voz-text-muted)]">Đang gửi...</span>}
              <button type="submit" disabled={isPending || !turnstileToken} className="voz-button px-6 py-[6px] disabled:opacity-50">
                Gửi trả lời
