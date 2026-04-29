@@ -68,131 +68,136 @@ export async function deletePost(postId, threadId, isFirstPost) {
 }
 
 export async function createReply(threadId, formData) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Chưa đăng nhập");
-  const content = formData.get("content");
-  if (!content || typeof content !== 'string' || content.trim() === '') throw new Error("Nội dung trống");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Chưa đăng nhập" };
+    const content = formData.get("content");
+    if (!content || typeof content !== 'string' || content.trim() === '') return { success: false, error: "Nội dung trống" };
 
-  const turnstileToken = formData.get("turnstileToken");
-  const tsCheck = await verifyTurnstile(turnstileToken);
-  if (!tsCheck.success) throw new Error(tsCheck.error);
+    const turnstileToken = formData.get("turnstileToken");
+    const tsCheck = await verifyTurnstile(turnstileToken);
+    if (!tsCheck.success) return { success: false, error: tsCheck.error || "Xác minh Cloudflare thất bại" };
 
-  const spamCheck = await checkRateLimit();
-  if (!spamCheck.passed) throw new Error(spamCheck.reason);
+    const spamCheck = await checkRateLimit();
+    if (!spamCheck.passed) return { success: false, error: spamCheck.reason };
 
-  const thread = await prisma.thread.findUnique({
-     where: { id: threadId },
-     select: { nodeId: true, isLocked: true, authorId: true }
-  });
-
-  if (!thread) throw new Error("Thread không tồn tại");
-  if (thread.isLocked) throw new Error("Thread đã bị khóa, không thể bình luận.");
-
-  const perm = await checkNodePermission(thread.nodeId);
-  if (!perm.granted) throw new Error(perm.reason);
-
-  // Tạo post với position atomic (tránh race condition)
-  const newPost = await prisma.$transaction(async (tx) => {
-    const currentPostCount = await tx.post.count({ where: { threadId }});
-    return tx.post.create({
-      data: {
-        content: content,
-        position: currentPostCount + 1,
-        threadId,
-        authorId: session.user.id
-      }
+    const thread = await prisma.thread.findUnique({
+       where: { id: threadId },
+       select: { nodeId: true, isLocked: true, authorId: true }
     });
-  });
 
-  // PHÂN TÍCH VÀ GỬI THÔNG BÁO (Mentions / Quote / Watched Thread / Thread Author)
-  const mentionedUsernames = [...content.matchAll(/@([a-zA-Z0-9_]+)/g)].map(m => m[1]);
-  const uniqueMentions = [...new Set(mentionedUsernames)].filter(name => name !== session.user.username);
-  
-  const mentionedUserIds = [];
-  if (uniqueMentions.length > 0) {
-    const usersToNotify = await prisma.user.findMany({ where: { username: { in: uniqueMentions } } });
-    usersToNotify.forEach(u => mentionedUserIds.push(u.id));
-  }
+    if (!thread) return { success: false, error: "Thread không tồn tại" };
+    if (thread.isLocked) return { success: false, error: "Thread đã bị khóa, không thể bình luận." };
 
-  // Lấy người theo dõi chủ đề
-  const watchers = await prisma.bookmark.findMany({ where: { threadId } });
-  
-  const userIdsToNotify = new Set();
-  mentionedUserIds.forEach(id => userIdsToNotify.add(id));
-  if (thread.authorId) userIdsToNotify.add(thread.authorId);
-  watchers.forEach(w => userIdsToNotify.add(w.userId));
-  
-  // Xóa chính mình ra khỏi danh sách nhận
-  userIdsToNotify.delete(session.user.id);
+    const perm = await checkNodePermission(thread.nodeId);
+    if (!perm.granted) return { success: false, error: perm.reason };
 
-  // Đóng gói mảng Data để xả đạn (Batch Insert)
-  const notificationsData = [];
-  const pusherPromises = [];
-
-  for (const uid of userIdsToNotify) {
-      let type = "reply";
-      const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
-      let text = `<strong>${safeName}</strong> đã bình luận vào bài viết bạn đang theo dõi.`;
-      
-      if (uid === thread.authorId) {
-          text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
-      }
-      if (mentionedUserIds.includes(uid)) {
-          type = "quote";
-          text = `<strong>${safeName}</strong> đã nhắc đến bạn trong một bài viết.`;
-      }
-      
-      notificationsData.push({
-         userId: uid,
-         senderId: session.user.id,
-         type,
-         content: text,
-         link: `/thread/${threadId}#post-${newPost.id}`
+    // Tạo post với position atomic (tránh race condition)
+    const newPost = await prisma.$transaction(async (tx) => {
+      const currentPostCount = await tx.post.count({ where: { threadId }});
+      return tx.post.create({
+        data: {
+          content: content,
+          position: currentPostCount + 1,
+          threadId,
+          authorId: session.user.id
+        }
       });
+    });
+
+    // PHÂN TÍCH VÀ GỬI THÔNG BÁO (Mentions / Quote / Watched Thread / Thread Author)
+    const mentionedUsernames = [...content.matchAll(/@([a-zA-Z0-9_]+)/g)].map(m => m[1]);
+    const uniqueMentions = [...new Set(mentionedUsernames)].filter(name => name !== session.user.username);
+    
+    const mentionedUserIds = [];
+    if (uniqueMentions.length > 0) {
+      const usersToNotify = await prisma.user.findMany({ where: { username: { in: uniqueMentions } } });
+      usersToNotify.forEach(u => mentionedUserIds.push(u.id));
+    }
+
+    // Lấy người theo dõi chủ đề
+    const watchers = await prisma.bookmark.findMany({ where: { threadId } });
+    
+    const userIdsToNotify = new Set();
+    mentionedUserIds.forEach(id => userIdsToNotify.add(id));
+    if (thread.authorId) userIdsToNotify.add(thread.authorId);
+    watchers.forEach(w => userIdsToNotify.add(w.userId));
+    
+    // Xóa chính mình ra khỏi danh sách nhận
+    userIdsToNotify.delete(session.user.id);
+
+    // Đóng gói mảng Data để xả đạn (Batch Insert)
+    const notificationsData = [];
+    const pusherPromises = [];
+
+    for (const uid of userIdsToNotify) {
+        let type = "reply";
+        const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
+        let text = `<strong>${safeName}</strong> đã bình luận vào bài viết bạn đang theo dõi.`;
+        
+        if (uid === thread.authorId) {
+            text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
+        }
+        if (mentionedUserIds.includes(uid)) {
+            type = "quote";
+            text = `<strong>${safeName}</strong> đã nhắc đến bạn trong một bài viết.`;
+        }
+        
+        notificationsData.push({
+           userId: uid,
+           senderId: session.user.id,
+           type,
+           content: text,
+           link: `/thread/${threadId}#post-${newPost.id}`
+        });
+    }
+
+    if (notificationsData.length > 0) {
+        // 1. Lưu toàn bộ notification vào DB trong TÍCH TẮC cực độ (1 Query duy nhất)
+        await prisma.notification.createMany({
+            data: notificationsData
+        });
+
+        // Lấy danh sách Notify vừa tạo (Dùng để lấy ID gửi kèm pusher, tuỳ chọn)
+        // Nhưng do Pusher chỉ cần báo UI báo số, ta tạo fake package báo tin luôn.
+        if (pusherServer) {
+           notificationsData.forEach(notif => {
+               const payload = {
+                   ...notif, 
+                   id: Math.random().toString(36).substr(2, 9), 
+                   sender: { username: session.user.username, avatar: session.user.avatar || null }
+               };
+               pusherPromises.push(pusherServer.trigger(`user-${notif.userId}`, 'new-notification', payload).catch(e => {}));
+           });
+           // 2. Kích hoạt toàn sóng không cần chờ đồng bộ
+           Promise.all(pusherPromises).catch(console.error);
+        }
+    }
+
+    // Cập nhật số liệu Thread
+    await prisma.thread.update({
+      where: { id: threadId },
+      data: { replyCount: { increment: 1 }, updatedAt: new Date() }
+    });
+
+    // Cập nhật số liệu User: +1 messageCount
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { messageCount: { increment: 1 } }
+    });
+
+    // Xóa rác Cache để Data mới nổi lên
+    await deleteCache('voz_homepage_data');
+    await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
+
+    revalidatePath(`/thread/${threadId}`);
+    revalidatePath(`/`);
+    
+    return { success: true, post: newPost };
+  } catch (err) {
+    console.error('[createReply] Unexpected error:', err);
+    return { success: false, error: err?.message || 'Đã xảy ra lỗi không xác định.' };
   }
-
-  if (notificationsData.length > 0) {
-      // 1. Lưu toàn bộ notification vào DB trong TÍCH TẮC cực độ (1 Query duy nhất)
-      await prisma.notification.createMany({
-          data: notificationsData
-      });
-
-      // Lấy danh sách Notify vừa tạo (Dùng để lấy ID gửi kèm pusher, tuỳ chọn)
-      // Nhưng do Pusher chỉ cần báo UI báo số, ta tạo fake package báo tin luôn.
-      if (pusherServer) {
-         notificationsData.forEach(notif => {
-             const payload = {
-                 ...notif, 
-                 id: Math.random().toString(36).substr(2, 9), 
-                 sender: { username: session.user.username, avatar: session.user.avatar || null }
-             };
-             pusherPromises.push(pusherServer.trigger(`user-${notif.userId}`, 'new-notification', payload).catch(e => {}));
-         });
-         // 2. Kích hoạt toàn sóng không cần chờ đồng bộ
-         Promise.all(pusherPromises).catch(console.error);
-      }
-  }
-
-  // Cập nhật số liệu Thread
-  await prisma.thread.update({
-    where: { id: threadId },
-    data: { replyCount: { increment: 1 }, updatedAt: new Date() }
-  });
-
-  // Cập nhật số liệu User: +1 messageCount
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { messageCount: { increment: 1 } }
-  });
-
-  // Xóa rác Cache để Data mới nổi lên
-  await deleteCache('voz_homepage_data');
-  await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
-
-  revalidatePath(`/thread/${threadId}`);
-  revalidatePath(`/`);
-  
-  return { success: true, post: newPost };
 }
 
 // ==========================================

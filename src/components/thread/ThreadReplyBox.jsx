@@ -70,20 +70,32 @@ export default function ThreadReplyBox({ session, threadId }) {
     }
 
     startTransition(async () => {
-      const formData = new FormData();
-      formData.append('content', content);
-      formData.append('turnstileToken', turnstileToken);
-      
-      await createReply(threadId, formData);
-      
-      const editor = editorRef.current?.getEditor();
-      if (editor) {
-        editor.commands.setContent('');
-        setContent('');
+      try {
+        const formData = new FormData();
+        formData.append('content', content);
+        formData.append('turnstileToken', turnstileToken);
+        
+        const result = await createReply(threadId, formData);
+        
+        if (result?.success) {
+          const editor = editorRef.current?.getEditor();
+          if (editor) {
+            editor.commands.setContent('');
+            setContent('');
+          }
+          setQuotingUser(null);
+        } else if (result?.error) {
+          alert(result.error);
+        }
+      } catch (err) {
+        alert(err?.message || 'Đã xảy ra lỗi khi gửi bình luận. Vui lòng thử lại.');
+      } finally {
+        // Always reset Turnstile for next submission
+        setTurnstileToken(null);
+        setShowTurnstile(false);
+        // Re-mount Turnstile after a tick
+        setTimeout(() => setShowTurnstile(true), 100);
       }
-      setShowTurnstile(false);
-      setTurnstileToken(null);
-      setQuotingUser(null);
     });
   };
 
