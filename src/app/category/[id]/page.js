@@ -309,7 +309,7 @@ export default async function CategoryPage({ params, searchParams }) {
               const lastPosterAvatar = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
 
               return (
-                <div key={thread.id} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-center">
+                <div key={thread.id} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-start">
 
                   {/* Author Avatar */}
                   <div className="shrink-0 mr-3">
