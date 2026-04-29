@@ -76,7 +76,7 @@ export default async function ProfilePage({ params, searchParams }) {
               <h1 className="text-[28px] font-semibold text-[var(--voz-text)] flex flex-wrap items-center justify-center md:justify-start gap-3 leading-none mb-2">
                 {targetUser.username}
                 {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
-                <RankBadge points={targetUser.points} size="lg" />
+                <RankBadge points={targetUser.points} size="lg" showProgress />
               </h1>
               
               <div className="text-[14px] text-[var(--voz-text-muted)] mb-2">{targetUser.customTitle || "Thành viên"}</div>

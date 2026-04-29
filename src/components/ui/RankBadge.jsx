@@ -8,7 +8,7 @@ export default function RankBadge({ points, showProgress = false, size = 'sm' })
     : 'text-[10px] px-1.5 py-[1px]';
   
   return (
-    <div className="inline-flex flex-col items-center gap-[2px]">
+    <div className="inline-flex flex-col items-start gap-[2px]">
       <span 
         className={`rank-badge inline-flex items-center gap-1 rounded-sm font-bold ${sizeClasses} whitespace-nowrap ${rank.isMax ? 'rank-epic' : ''}`}
         style={{ 
@@ -21,6 +21,14 @@ export default function RankBadge({ points, showProgress = false, size = 'sm' })
         {rank.title}
       </span>
       
+      {showProgress && !rank.isMax && (
+        <div className="w-full max-w-[80px] h-[3px] rounded-full bg-[var(--voz-border)] overflow-hidden">
+          <div 
+            className="h-full rounded-full transition-all"
+            style={{ width: `${rank.progress}%`, backgroundColor: rank.color }}
+          />
+        </div>
+      )}
     </div>
   );
 }

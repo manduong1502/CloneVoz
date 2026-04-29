@@ -31,17 +31,21 @@ export async function deletePost(postId, threadId, isFirstPost) {
   const startOfToday = new Date();
   startOfToday.setHours(0, 0, 0, 0);
   let penaltyPoints = 0;
+  let penaltyMonthly = 0;
+
+  // Post content penalty (only if already processed by cron = created before today)
   if (post.createdAt < startOfToday) {
      const words = countWords(post.content);
-     if (isFirstPost && words >= 200) penaltyPoints = 5;
-     else if (!isFirstPost && words >= 20) penaltyPoints = 2;
+     if (isFirstPost && words >= 200) { penaltyPoints = 5; penaltyMonthly = 1; }
+     else if (!isFirstPost && words >= 20) { penaltyPoints = 2; penaltyMonthly = 1; }
   }
 
-  // Also count old likes on this post that were already processed by cron
-  const oldLikes = await prisma.reaction.count({
+  // Also count likes on this post that were already processed by cron
+  const processedLikes = await prisma.reaction.count({
     where: { postId, type: 'Like', createdAt: { lt: startOfToday } }
   });
-  penaltyPoints += oldLikes;
+  penaltyPoints += processedLikes;
+  penaltyMonthly += processedLikes;
 
   if (isFirstPost) {
     await cascadeDeleteThread(threadId);
@@ -51,13 +55,18 @@ export async function deletePost(postId, threadId, isFirstPost) {
   }
 
   // Deduct penalty, floor at 0
-  if (penaltyPoints > 0) {
-    const author = await prisma.user.findUnique({ where: { id: post.authorId }, select: { points: true } });
-    const actualDeduction = Math.min(penaltyPoints, Math.max(0, author?.points || 0));
-    if (actualDeduction > 0) {
+  if (penaltyPoints > 0 || penaltyMonthly > 0) {
+    const author = await prisma.user.findUnique({ where: { id: post.authorId }, select: { points: true, monthlyPoints: true } });
+    const actualPointsDeduction = Math.min(penaltyPoints, Math.max(0, author?.points || 0));
+    const actualMonthlyDeduction = Math.min(penaltyMonthly, Math.max(0, author?.monthlyPoints || 0));
+    
+    if (actualPointsDeduction > 0 || actualMonthlyDeduction > 0) {
       await prisma.user.update({
         where: { id: post.authorId },
-        data: { points: { decrement: actualDeduction } }
+        data: { 
+          ...(actualPointsDeduction > 0 ? { points: { decrement: actualPointsDeduction } } : {}),
+          ...(actualMonthlyDeduction > 0 ? { monthlyPoints: { decrement: actualMonthlyDeduction } } : {})
+        }
       });
     }
   }
@@ -252,22 +261,38 @@ export async function handleReaction(postId, path, reactionType) {
 
   // Cập nhật điểm reactionScore trực tiếp
   if (scoreDelta !== 0) {
-    // Calculate penalty if removing an old like
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    let penaltyPoints = 0;
+    // Kiểm tra xem like đã được cron xử lý chưa (= đã cộng points rồi)
+    // Với interval mode: like có thể đã được xử lý dù tạo hôm nay
+    // Ta check DailyCronStatus có interval nào processedAt > reaction.createdAt không
+    let likeWasProcessed = false;
     
-    if (existingReaction && existingReaction.createdAt < startOfToday) {
-       if (existingReaction.type === 'Like' && reactionType !== 'Like') {
-          penaltyPoints = 1;
-       }
+    if (existingReaction && existingReaction.type === 'Like' && reactionType !== 'Like') {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      
+      if (existingReaction.createdAt < startOfToday) {
+        // Like từ trước hôm nay → chắc chắn đã qua daily cron
+        likeWasProcessed = true;
+      } else {
+        // Like hôm nay → check xem interval cron đã xử lý chưa
+        const intervalRun = await prisma.dailyCronStatus.findFirst({
+          where: { 
+            date: { startsWith: 'interval_' },
+            processedAt: { gt: existingReaction.createdAt }
+          }
+        });
+        if (intervalRun) likeWasProcessed = true;
+      }
     }
 
     await prisma.user.update({
       where: { id: post.authorId },
       data: { 
         reactionScore: { increment: scoreDelta },
-        ...(penaltyPoints > 0 ? { points: { decrement: penaltyPoints } } : {})
+        ...(likeWasProcessed ? { 
+          points: { decrement: 1 },
+          monthlyPoints: { decrement: 1 }
+        } : {})
       }
     });
 
