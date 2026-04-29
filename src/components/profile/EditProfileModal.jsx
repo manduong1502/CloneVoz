@@ -77,7 +77,7 @@ export default function EditProfileModal({ user }) {
                 name="username" 
                 type="text" 
                 value={username}
-                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9._\u00C0-\u024F\u1E00-\u1EFF]/g, ''))}
+                onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9._ \u00C0-\u024F\u1E00-\u1EFF]/g, ''))}
                 placeholder="Ví dụ: NguyenVanA, coolboy99..." 
                 className="border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none text-[13px]" 
                 minLength={3}
