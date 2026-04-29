@@ -12,9 +12,9 @@ import { getCache, setCache } from '@/lib/redis';
 export async function generateMetadata({ params }) {
   const { id } = await params;
   const node = await prisma.node.findUnique({ where: { id: id }, select: { title: true, description: true } });
-  
+
   if (!node) return { title: 'Box không tồn tại | DanOngThongMinh' };
-  
+
   return {
     title: `${node.title} | DanOngThongMinh`,
     description: node.description || `Tham gia thảo luận về ${node.title} tại diễn đàn DanOngThongMinh.`,
@@ -29,35 +29,35 @@ export async function generateMetadata({ params }) {
 export default async function CategoryPage({ params, searchParams }) {
   const { id } = await params;
   const sp = await searchParams;
-  
+
   const page = parseInt(sp.page) || 1;
   const threadsPerPage = 20;
   const skip = (page - 1) * threadsPerPage;
 
   // Dùng bộ nhớ Cache siêu tốc để tiết kiệm RAM Database
-  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix||'none'}_sb_${sp.startedBy||'none'}_lu_${sp.lastUpdated||'none'}_sort_${sp.sortBy||'updatedAt'}_${sp.sortOrder||'desc'}`;
+  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix || 'none'}_sb_${sp.startedBy || 'none'}_lu_${sp.lastUpdated || 'none'}_sort_${sp.sortBy || 'updatedAt'}_${sp.sortOrder || 'desc'}`;
   let cachedData = await getCache(cacheKey);
 
   // Gọi CSDL nếu chưa có Cache
   let node = cachedData?.node;
   if (!node) {
-      node = await prisma.node.findUnique({
-        where: { id: id },
-        include: { 
-          parent: true,
-          children: {
-            orderBy: { displayOrder: 'asc' },
-            include: {
-              threads: {
-                where: { isApproved: true },
-                orderBy: { createdAt: 'desc' },
-                take: 1,
-                include: { author: true }
-              }
+    node = await prisma.node.findUnique({
+      where: { id: id },
+      include: {
+        parent: true,
+        children: {
+          orderBy: { displayOrder: 'asc' },
+          include: {
+            threads: {
+              where: { isApproved: true },
+              orderBy: { createdAt: 'desc' },
+              take: 1,
+              include: { author: true }
             }
           }
         }
-      });
+      }
+    });
   }
 
   if (!node) {
@@ -81,12 +81,12 @@ export default async function CategoryPage({ params, searchParams }) {
             <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
               <h2 className="text-[16px] font-normal m-0">{node.title}</h2>
             </div>
-            
+
             <div className="flex flex-col bg-[var(--voz-surface)]">
               {(!node.children || node.children.length === 0) ? (
-                 <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
+                <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
               ) : node.children.map((child, i) => (
-                <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
+                <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length - 1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
                   <div className="flex-1 flex items-center min-w-0 pr-4">
                     <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[#BFE3FF]">
                       <MessageCircle strokeWidth={1.5} size={32} />
@@ -99,26 +99,26 @@ export default async function CategoryPage({ params, searchParams }) {
                     </div>
                   </div>
                   <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
-                     <div className="flex flex-col items-center">
-                        <div>Chủ đề</div>
-                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
-                     </div>
-                     <div className="flex flex-col items-center">
-                        <div>Bình luận</div>
-                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
-                     </div>
+                    <div className="flex flex-col items-center">
+                      <div>Chủ đề</div>
+                      <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <div>Bình luận</div>
+                      <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
+                    </div>
                   </div>
                   <div className="hidden sm:flex items-center w-[260px] shrink-0 pl-4 min-w-0">
                     {child.threads && child.threads.length > 0 ? (
                       <>
                         <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover bg-gray-100" />
                         <div className="flex-1 min-w-0 text-[12px] ml-3 flex flex-col justify-center">
-                           <Link href={`/thread/${child.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
-                              {child.threads[0].title}
-                           </Link>
-                           <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
-                              {formatRelativeTime(child.threads[0].createdAt)} · <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{child.threads[0].author.username}</Link>
-                           </div>
+                          <Link href={`/thread/${child.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
+                            {child.threads[0].title}
+                          </Link>
+                          <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
+                            {formatRelativeTime(child.threads[0].createdAt)} · <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{child.threads[0].author.username}</Link>
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -203,47 +203,47 @@ export default async function CategoryPage({ params, searchParams }) {
 
   let availablePrefixes = cachedData?.availablePrefixes;
   if (!availablePrefixes) {
-      availablePrefixes = await prisma.threadPrefix.findMany({
-        where: { nodes: { some: { id } } }
-      });
+    availablePrefixes = await prisma.threadPrefix.findMany({
+      where: { nodes: { some: { id } } }
+    });
   }
 
   let threadsDb = cachedData?.threadsDb;
   if (!threadsDb) {
-      threadsDb = await prisma.thread.findMany({
-        where: whereCondition,
-        orderBy: { [orderField]: orderDir },
-        skip: skip,
-        take: threadsPerPage,
-        include: {
-          author: true,
-          prefix: true,
-          posts: {
-            take: 1,
-            orderBy: { position: 'desc' },
-            include: { author: true }
-          }
+    threadsDb = await prisma.thread.findMany({
+      where: whereCondition,
+      orderBy: { [orderField]: orderDir },
+      skip: skip,
+      take: threadsPerPage,
+      include: {
+        author: true,
+        prefix: true,
+        posts: {
+          take: 1,
+          orderBy: { position: 'desc' },
+          include: { author: true }
         }
-      });
+      }
+    });
   }
 
   let trendingThreads = cachedData?.trendingThreads;
   if (!trendingThreads) {
-      trendingThreads = await prisma.thread.findMany({
-        where: { isApproved: true },
-        orderBy: { replyCount: 'desc' },
-        take: 5,
-        include: { author: true }
-      });
+    trendingThreads = await prisma.thread.findMany({
+      where: { isApproved: true },
+      orderBy: { replyCount: 'desc' },
+      take: 5,
+      include: { author: true }
+    });
   }
 
   if (!cachedData) {
-      await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads }, 10);
+    await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads }, 10);
   }
 
   // Helper: format view count (e.g. 1234 -> 1.2K)
   const formatCount = (n) => {
-    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0','') + 'K';
+    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0', '') + 'K';
     return n.toString();
   };
 
@@ -277,7 +277,7 @@ export default async function CategoryPage({ params, searchParams }) {
           <div className="flex gap-2 items-center shrink-0">
             {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
             <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
-              <PenSquare size={14}/> Đăng bài
+              <PenSquare size={14} /> Đăng bài
             </Link>
           </div>
         </div>
@@ -287,7 +287,7 @@ export default async function CategoryPage({ params, searchParams }) {
           {paginationComponent}
         </div>
 
-        <div className="voz-card overflow-hidden">
+        <div className="voz-card overflow-visible">
           {/* Filter bar */}
           <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center">
             <div className="text-[12px] text-[var(--voz-text-muted)]">
@@ -303,14 +303,14 @@ export default async function CategoryPage({ params, searchParams }) {
             {threadsDb.length === 0 && (
               <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Chưa có bài viết nào khớp với bộ lọc.</div>
             )}
-            
+
             {threadsDb.map((thread) => {
               const lastPoster = thread.posts[0] ? thread.posts[0].author : thread.author;
               const lastPosterAvatar = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
 
               return (
                 <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-center">
-                  
+
                   {/* Author Avatar */}
                   <div className="shrink-0 mr-3">
                     <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
@@ -328,7 +328,7 @@ export default async function CategoryPage({ params, searchParams }) {
                         {thread.title}
                       </Link>
                     </div>
-                    
+
                     <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1">
                       <Link href={`/profile/${thread.author.username}`} className="hover:underline text-[var(--voz-link)]">{thread.author.username}</Link>
                       <span>·</span>
@@ -371,7 +371,7 @@ export default async function CategoryPage({ params, searchParams }) {
       </div>
 
       {/* Sidebar */}
-      <div className="hidden lg:flex flex-col gap-4 pt-[36px]">
+      <div className="hidden lg:flex flex-col gap-4 pt-[32px]">
         <div className="voz-card overflow-hidden">
           <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
@@ -383,7 +383,7 @@ export default async function CategoryPage({ params, searchParams }) {
                     {t.title}
                   </Link>
                   <div className="text-[11px] text-[var(--voz-text-muted)]">
-                    {t.author.username} · {formatRelativeTime(t.createdAt)}<br/>Trả lời: {t.replyCount}
+                    {t.author.username} · {formatRelativeTime(t.createdAt)}<br />Trả lời: {t.replyCount}
                   </div>
                 </div>
               </div>
