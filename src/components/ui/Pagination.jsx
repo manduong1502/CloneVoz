@@ -1,7 +1,6 @@
 import Link from 'next/link';
 
 export default function Pagination({ basePath, currentPage, totalPages, queryParam = 'page', existingParams = {} }) {
-  if (totalPages <= 1) return null;
 
   const pageNumbers = [];
   const maxVisiblePages = 5;
