@@ -5,6 +5,7 @@ import Pagination from '@/components/ui/Pagination';
 import { auth } from '@/auth';
 import { checkNodePermission } from '@/lib/permissions';
 import WatchNodeButton from '@/components/category/WatchNodeButton';
+import ThreadFilterDropdown from '@/components/category/ThreadFilterDropdown';
 import { formatRelativeTime } from '@/lib/formatTime';
 import { getCache, setCache } from '@/lib/redis';
 
@@ -34,7 +35,7 @@ export default async function CategoryPage({ params, searchParams }) {
   const skip = (page - 1) * threadsPerPage;
 
   // Dùng bộ nhớ Cache siêu tốc để tiết kiệm RAM Database
-  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix||'none'}`;
+  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix||'none'}_sb_${sp.startedBy||'none'}_lu_${sp.lastUpdated||'none'}_sort_${sp.sortBy||'updatedAt'}_${sp.sortOrder||'desc'}`;
   let cachedData = await getCache(cacheKey);
 
   // Gọi CSDL nếu chưa có Cache
@@ -64,7 +65,6 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   // ========== CATEGORY VIEW ==========
-  // Nếu node là Category (chứa forum con), hiển thị danh sách forum con
   if (node.nodeType === 'Category') {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
@@ -78,19 +78,15 @@ export default async function CategoryPage({ params, searchParams }) {
           <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)] mb-4">{node.title}</h1>
 
           <div className="voz-card overflow-hidden">
-            {/* Header */}
             <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
               <h2 className="text-[16px] font-normal m-0">{node.title}</h2>
             </div>
             
-            {/* List of child forums */}
             <div className="flex flex-col bg-[var(--voz-surface)]">
               {(!node.children || node.children.length === 0) ? (
                  <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
               ) : node.children.map((child, i) => (
                 <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length -1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
-                  
-                  {/* Icon & Title */}
                   <div className="flex-1 flex items-center min-w-0 pr-4">
                     <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[#BFE3FF]">
                       <MessageCircle strokeWidth={1.5} size={32} />
@@ -102,8 +98,6 @@ export default async function CategoryPage({ params, searchParams }) {
                       {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
                     </div>
                   </div>
-
-                  {/* Stats */}
                   <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
                      <div className="flex flex-col items-center">
                         <div>Chủ đề</div>
@@ -114,8 +108,6 @@ export default async function CategoryPage({ params, searchParams }) {
                         <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
                      </div>
                   </div>
-
-                  {/* Last Post */}
                   <div className="hidden sm:flex items-center w-[260px] shrink-0 pl-4 min-w-0">
                     {child.threads && child.threads.length > 0 ? (
                       <>
@@ -133,14 +125,11 @@ export default async function CategoryPage({ params, searchParams }) {
                       <div className="flex-1 text-[12px] text-[var(--voz-text-muted)] italic">Chưa có bài viết</div>
                     )}
                   </div>
-
                 </div>
               ))}
             </div>
           </div>
         </div>
-
-        {/* Sidebar placeholder for category view */}
         <div className="hidden lg:block"></div>
       </div>
     );
@@ -164,11 +153,42 @@ export default async function CategoryPage({ params, searchParams }) {
     );
   }
 
+  // ========== FILTER LOGIC ==========
   const prefixId = sp.prefix || null;
+  const startedByFilter = sp.startedBy || null;
+  const lastUpdatedFilter = sp.lastUpdated || null;
+  const sortBy = sp.sortBy || 'updatedAt';
+  const sortOrder = sp.sortOrder || 'desc';
+
   const whereCondition = { nodeId: id, isApproved: true };
   if (prefixId) whereCondition.prefixId = prefixId;
 
-  // Lấy tổng số Thread để tính số trang
+  // Filter: started by username
+  if (startedByFilter) {
+    const filterUser = await prisma.user.findFirst({ where: { username: startedByFilter }, select: { id: true } });
+    if (filterUser) {
+      whereCondition.authorId = filterUser.id;
+    } else {
+      whereCondition.authorId = 'nonexistent'; // No results
+    }
+  }
+
+  // Filter: last updated time range
+  if (lastUpdatedFilter) {
+    const daysMap = { '1d': 1, '7d': 7, '30d': 30, '90d': 90, '365d': 365 };
+    const days = daysMap[lastUpdatedFilter];
+    if (days) {
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      whereCondition.updatedAt = { gte: cutoff };
+    }
+  }
+
+  // Sort
+  const validSortFields = ['updatedAt', 'createdAt', 'replyCount', 'viewCount'];
+  const orderField = validSortFields.includes(sortBy) ? sortBy : 'updatedAt';
+  const orderDir = sortOrder === 'asc' ? 'asc' : 'desc';
+
   const totalThreads = await prisma.thread.count({ where: whereCondition });
   const totalPages = Math.ceil(totalThreads / threadsPerPage) || 1;
 
@@ -181,7 +201,6 @@ export default async function CategoryPage({ params, searchParams }) {
     if (bookmark) isWatchingNode = true;
   }
 
-  // Lấy danh sách Prefix đang có của Box này
   let availablePrefixes = cachedData?.availablePrefixes;
   if (!availablePrefixes) {
       availablePrefixes = await prisma.threadPrefix.findMany({
@@ -189,12 +208,11 @@ export default async function CategoryPage({ params, searchParams }) {
       });
   }
 
-  // Kéo Thread ra list (BUMPING FIX: Sắp xếp theo updatedAt)
   let threadsDb = cachedData?.threadsDb;
   if (!threadsDb) {
       threadsDb = await prisma.thread.findMany({
         where: whereCondition,
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { [orderField]: orderDir },
         skip: skip,
         take: threadsPerPage,
         include: {
@@ -209,7 +227,6 @@ export default async function CategoryPage({ params, searchParams }) {
       });
   }
 
-  // Kéo Trending Content (Nhiều Reply nhất) cho Sidebar
   let trendingThreads = cachedData?.trendingThreads;
   if (!trendingThreads) {
       trendingThreads = await prisma.thread.findMany({
@@ -221,9 +238,24 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   if (!cachedData) {
-      // Save full compiled data into Cache
       await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads }, 10);
   }
+
+  // Helper: format view count (e.g. 1234 -> 1.2K)
+  const formatCount = (n) => {
+    if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0','') + 'K';
+    return n.toString();
+  };
+
+  const currentFilterParams = {
+    prefix: prefixId || '',
+    startedBy: startedByFilter || '',
+    lastUpdated: lastUpdatedFilter || '',
+    sortBy: sortBy,
+    sortOrder: sortOrder
+  };
+
+  const paginationComponent = <Pagination basePath={`/category/${id}`} currentPage={page} totalPages={totalPages} />;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
@@ -240,47 +272,29 @@ export default async function CategoryPage({ params, searchParams }) {
           )}
         </div>
 
-        <div className="mb-4 flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)]">{node.title}</h1>
+        <h1 className="text-[26px] tracking-tight font-normal text-[var(--voz-text)] mb-4">{node.title}</h1>
+
+        {/* Top Controls: Pagination + Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-2">
+          <div className="flex-1">{paginationComponent}</div>
           
-          <div className="flex gap-4 items-center">
-            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded px-4 py-2 font-medium text-sm flex items-center gap-2 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[3px] transition-all">
-              <PenSquare size={16}/> Đăng bài
+          <div className="flex gap-2 items-center">
+            {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
+            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
+              <PenSquare size={14}/> Đăng bài
             </Link>
           </div>
         </div>
 
-        <div className="flex justify-between items-center mb-2 min-h-[30px]">
-          <Pagination basePath={`/category/${id}`} currentPage={page} totalPages={totalPages} />
-
-          <div className="flex gap-2 text-[13px] ml-auto">
-             {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
-          </div>
-        </div>
-
         <div className="voz-card overflow-hidden">
-          {/* Filters Bar */}
-          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center text-[12px] text-[var(--voz-text-muted)]">
-             <div>{prefixId && <Link href={`/category/${id}`} className="hover:underline text-[var(--voz-link)] flex items-center gap-1 font-medium bg-[#e3e3e3] px-2 py-1 rounded">✖ Bỏ lọc Prefix</Link>}</div>
-             <div className="group relative">
-               <button className="hover:text-[var(--voz-text)] pb-1">Bộ lọc ▾</button>
-               <div className="hidden group-hover:flex absolute right-0 top-full mt-[-4px] bg-[var(--voz-surface)] border border-[#ccc] shadow-[0_4px_8px_rgba(0,0,0,0.1)] z-10 flex-col w-[200px] text-left">
-                  <div className="px-3 py-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border-light)] font-bold text-[13px] text-[var(--voz-text-strong)]">Lọc theo Tiền tố</div>
-                  <Link href={`/category/${id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574a9] hover:text-white transition">(Tất cả)</Link>
-                  {availablePrefixes.map(p => (
-                     <Link key={p.id} href={`/category/${id}?prefix=${p.id}`} className="px-3 py-2 text-[13px] hover:bg-[#2574A9] hover:text-white transition">{p.title}</Link>
-                  ))}
-               </div>
-             </div>
-          </div>
-          
-          {/* Table Header mimicking "Tiêu đề bài viết" fake input */}
-          <div className="p-3 border-b border-[var(--voz-border-light)] bg-[var(--voz-surface)] flex gap-3 items-center text-[13px]">
-             <img src="https://ui-avatars.com/api/?name=YOU&background=random" className="w-[36px] h-[36px] rounded-full opacity-50 object-cover" />
-             <div className="flex-1 flex gap-2">
-                <span className="border border-[var(--voz-border)] rounded-sm px-2 py-1 text-[var(--voz-text-muted)] bg-[var(--voz-accent)] font-medium">{prefixId ? availablePrefixes.find(p => p.id === prefixId)?.title : '(Không có)'} ▾</span>
-                <input type="text" placeholder="Tiêu đề bài viết" className="border border-transparent hover:border-[var(--voz-border)] bg-transparent w-full outline-none px-2 text-[var(--voz-text-muted)] cursor-not-allowed" readOnly/>
-             </div>
+          {/* Filter bar */}
+          <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 flex justify-between items-center">
+            <div className="text-[12px] text-[var(--voz-text-muted)]">
+              {(prefixId || startedByFilter || lastUpdatedFilter) && (
+                <Link href={`/category/${id}`} className="hover:underline text-[var(--voz-link)] flex items-center gap-1 font-medium text-[12px]">✖ Xóa bộ lọc</Link>
+              )}
+            </div>
+            <ThreadFilterDropdown prefixes={availablePrefixes} currentParams={currentFilterParams} />
           </div>
 
           {/* Thread List */}
@@ -289,59 +303,81 @@ export default async function CategoryPage({ params, searchParams }) {
               <div className="p-8 text-center text-sm text-[var(--voz-text-muted)]">Chưa có bài viết nào khớp với bộ lọc.</div>
             )}
             
-            {threadsDb.map((thread) => (
-              <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors">
-                
-                <div className="shrink-0 mr-3 mt-1">
-                  <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
-                </div>
+            {threadsDb.map((thread) => {
+              const lastPoster = thread.posts[0] ? thread.posts[0].author : thread.author;
+              const lastPosterAvatar = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
 
-                <div className="flex-1 flex flex-col min-w-0 pr-4">
-                  <div className="text-[15px] mb-[2px] leading-tight">
-                    {thread.prefix && (
-                      <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>
-                        {thread.prefix.title}
-                      </span>
-                    )}
-                    <Link href={`/thread/${thread.id}`} className={thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[var(--voz-link)]"}>
-                      {thread.title}
-                    </Link>
-                  </div>
+              return (
+                <div key={thread.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-center">
                   
-                  <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1 mt-1">
-                    <Link href={`/profile/${thread.author.username}`} className="hover:underline">{thread.author.username}</Link>
-                    <span>·</span>
-                    <span>{formatRelativeTime(thread.createdAt)}</span>
+                  {/* Author Avatar */}
+                  <div className="shrink-0 mr-3">
+                    <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
                   </div>
-                </div>
 
-                {/* Stats */}
-                <div className="hidden md:flex gap-4 items-center shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[140px] border-r border-transparent">
-                  <div className="flex flex-col items-end w-full">
-                     <div className="flex gap-2"><span>Trả lời:</span> <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
-                     <div className="flex gap-2"><span>Lượt xem:</span> <span className="text-[var(--voz-text-strong)]">{thread.viewCount}</span></div>
-                  </div>
-                </div>
-
-                {/* Last Post (LAST POSTER FIX) */}
-                <div className="hidden sm:flex items-center gap-3 w-[160px] lg:w-[150px] shrink-0 min-w-0 justify-end lg:justify-between px-2">
-                   <div className="flex-1 min-w-0 text-right text-[12px]">
-                      <div className="text-[var(--voz-text)] truncate mb-1 bg-transparent hover:none">{formatRelativeTime(thread.updatedAt)}</div>
-                      <Link href={`/profile/${thread.posts[0] ? thread.posts[0].author.username : thread.author.username}`} className="text-[var(--voz-text-muted)] hover:underline truncate inline-block max-w-full">
-                        {thread.posts[0] ? thread.posts[0].author.username : thread.author.username}
+                  {/* Title + Author */}
+                  <div className="flex-1 flex flex-col min-w-0 pr-4">
+                    <div className="leading-tight mb-[3px]">
+                      {thread.prefix && (
+                        <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>
+                          {thread.prefix.title}
+                        </span>
+                      )}
+                      <Link href={`/thread/${thread.id}`} className={`text-[15px] ${thread.isPinned ? "font-bold text-[#c84448] hover:underline" : "font-semibold hover:underline text-[var(--voz-text-strong)]"}`}>
+                        {thread.title}
                       </Link>
-                   </div>
-                   <img src={(thread.posts[0] ? thread.posts[0].author.avatar : thread.author.avatar) || `https://ui-avatars.com/api/?name=${(thread.posts[0] ? thread.posts[0].author.username : thread.author.username)?.charAt(0) || 'U'}&background=random`} className="hidden lg:block w-[24px] h-[24px] rounded-sm shrink-0 object-cover" />
+                    </div>
+                    
+                    <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center gap-1">
+                      <Link href={`/profile/${thread.author.username}`} className="hover:underline text-[var(--voz-link)]">{thread.author.username}</Link>
+                      <span>·</span>
+                      <span>{formatRelativeTime(thread.createdAt)}</span>
+                    </div>
+                  </div>
+
+                  {/* Stats: Replies + Views */}
+                  <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[120px]">
+                    <div className="flex items-center gap-1.5">
+                      <span>Trả lời:</span>
+                      <span className="text-[var(--voz-text-strong)] font-medium min-w-[30px] text-right">{thread.replyCount}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span>Lượt xem:</span>
+                      <span className="text-[var(--voz-text-strong)] min-w-[30px] text-right">{formatCount(thread.viewCount)}</span>
+                    </div>
+                  </div>
+
+                  {/* Last Post Info + Avatar */}
+                  <div className="hidden sm:flex items-center gap-2 w-[180px] shrink-0 min-w-0 justify-end">
+                    <div className="flex-1 min-w-0 text-right text-[12px]">
+                      <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(thread.updatedAt)}</div>
+                      <Link href={`/profile/${lastPoster.username}`} className="text-[var(--voz-text-muted)] hover:underline truncate inline-block max-w-full">
+                        {lastPoster.username}
+                      </Link>
+                    </div>
+                    <img src={lastPosterAvatar} className="w-[28px] h-[28px] rounded-full shrink-0 object-cover" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Bottom Pagination + Actions */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mt-2">
+          <div className="flex-1">{paginationComponent}</div>
+          
+          <div className="flex gap-2 items-center">
+            {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingNode} />}
+            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
+              <PenSquare size={14}/> Đăng bài
+            </Link>
           </div>
         </div>
       </div>
 
       {/* Sidebar */}
       <div className="hidden lg:flex flex-col gap-4 pt-[36px]">
-        {/* Trending Content */}
         <div className="voz-card overflow-hidden">
           <h3 className="bg-[var(--voz-accent)] text-[13px] font-normal px-3 py-2 border-b border-[var(--voz-border)] text-[#185886]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
@@ -364,3 +400,4 @@ export default async function CategoryPage({ params, searchParams }) {
     </div>
   );
 }
+
