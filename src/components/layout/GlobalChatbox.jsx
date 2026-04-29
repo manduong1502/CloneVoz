@@ -551,7 +551,7 @@ export default function GlobalChatbox({ session }) {
           
           <button
             onClick={() => setIsOpen(true)}
-            className="bg-[#183254] text-white rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative flex items-center gap-2 pl-4 pr-3 py-2.5 group"
+            className="bg-[#183254] text-white rounded-full shadow-xl hover:bg-[#134970] hover:scale-105 transition-all relative flex items-center gap-2 pl-4 pr-3 py-2.5 group border-2 border-white/40"
           >
             {/* Pulse ring */}
             <span className="absolute inset-0 rounded-full bg-[#183254] animate-ping opacity-20 pointer-events-none" />
