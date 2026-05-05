@@ -29,6 +29,22 @@ export async function postShout(content) {
   // Xóa giới hạn spam chat theo yêu cầu của Sếp (không giới hạn thời gian chat)
   // const spamCheck = await checkRateLimit(); // Tắt Spam Check
   
+  // Chống spam: không cho chèn link bậy (block mọi URL để an toàn)
+  const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/|\b))/i;
+  if (urlRegex.test(content)) {
+    throw new Error("Không được chèn link vào kênh chat chung.");
+  }
+
+  // Chống spam: không cho gửi nội dung giống hệt tin nhắn vừa gửi
+  const lastUserMessage = await prisma.shoutboxMessage.findFirst({
+    where: { authorId: session.user.id },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  if (lastUserMessage && lastUserMessage.content === content.trim()) {
+    throw new Error("Bạn vừa gửi nội dung này rồi, vui lòng không spam.");
+  }
+  
   try {
     const newShout = await prisma.shoutboxMessage.create({
       data: {
@@ -46,6 +62,35 @@ export async function postShout(content) {
     console.error(err);
     throw new Error("Lỗi máy chủ.");
   }
+}
+
+export async function deleteShout(messageId) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Vui lòng đăng nhập.");
+
+  const message = await prisma.shoutboxMessage.findUnique({
+    where: { id: messageId },
+    include: { author: true }
+  });
+
+  if (!message) throw new Error("Không tìm thấy tin nhắn.");
+
+  // Quyền xóa: chính chủ, hoặc là Admin/Mod
+  const isOwner = message.authorId === session.user.id;
+  const isAdminOrMod = session.user.isAdmin || session.user.isMod;
+
+  if (!isOwner && !isAdminOrMod) {
+    throw new Error("Bạn không có quyền xóa tin nhắn này.");
+  }
+
+  await prisma.shoutboxMessage.delete({
+    where: { id: messageId }
+  });
+
+  // Bắn Pusher để client tự động xóa
+  await pusherServer.trigger('global-chat', 'delete-shout', { messageId });
+
+  return { success: true };
 }
 
 export async function toggleShoutboxReaction(messageId, type) {

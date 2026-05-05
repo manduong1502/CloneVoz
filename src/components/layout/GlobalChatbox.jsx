@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { getPusherClient } from '@/lib/pusher.client';
-import { getRecentShouts, postShout, toggleShoutboxReaction } from '@/actions/shoutboxActions';
-import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile } from 'lucide-react';
+import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout } from '@/actions/shoutboxActions';
+import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -151,18 +151,24 @@ export default function GlobalChatbox({ session }) {
         }));
       };
 
+      const handleDeleteShout = (data) => {
+        setMessages(prev => prev.filter(msg => msg.id !== data.messageId));
+      };
+
       channel.bind('new-shout', handleNewShout);
       channel.bind('shout-reaction', handleReaction);
+      channel.bind('delete-shout', handleDeleteShout);
 
       // Lưu lại tham chiếu để unbind khi unmount
       window._globalChatChannel = channel;
-      window._globalChatHandlers = { handleNewShout, handleReaction };
+      window._globalChatHandlers = { handleNewShout, handleReaction, handleDeleteShout };
     });
 
     return () => {
       if (window._globalChatChannel && window._globalChatHandlers) {
         window._globalChatChannel.unbind('new-shout', window._globalChatHandlers.handleNewShout);
         window._globalChatChannel.unbind('shout-reaction', window._globalChatHandlers.handleReaction);
+        window._globalChatChannel.unbind('delete-shout', window._globalChatHandlers.handleDeleteShout);
       }
     };
   }, []);
@@ -210,6 +216,16 @@ export default function GlobalChatbox({ session }) {
       alert("Đã gửi báo cáo thành công. Cảm ơn bạn!");
     } catch (err) {
       alert(err.message);
+    }
+  };
+
+  const handleDelete = async (messageId) => {
+    if (!confirm('Bạn có chắc muốn xóa tin nhắn này?')) return;
+    try {
+      const res = await deleteShout(messageId);
+      // Pusher event will update the UI
+    } catch (e) {
+      alert(e.message || 'Lỗi khi xóa tin nhắn');
     }
   };
 
@@ -464,6 +480,17 @@ export default function GlobalChatbox({ session }) {
                                 title="Báo cáo vi phạm"
                               >
                                 <AlertTriangle size={14} />
+                              </button>
+                            )}
+
+                            {/* Nút Xóa (Cho Owner, Admin, Mod) */}
+                            {(isMine || session?.user?.isAdmin || session?.user?.isMod) && (
+                              <button
+                                onClick={() => handleDelete(msg.id)}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                                title="Xóa tin nhắn"
+                              >
+                                <Trash2 size={14} />
                               </button>
                             )}
                           </div>
