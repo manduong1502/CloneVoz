@@ -8,7 +8,9 @@ import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { submitReport } from '@/actions/reportActions';
-
+import Lightbox from 'yet-another-react-lightbox';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import 'yet-another-react-lightbox/styles.css';
 function ChatHint() {
   const [show, setShow] = useState(false);
 
@@ -100,6 +102,9 @@ export default function GlobalChatbox({ session }) {
 
   // Unread count
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Lightbox
+  const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
     // Load initial messages
@@ -276,7 +281,7 @@ export default function GlobalChatbox({ session }) {
       }
       parts.push(
         <div key={match.index} className="w-full">
-          <img src={match[1]} alt="Attached image" className="max-w-full rounded-2xl cursor-pointer hover:opacity-90 max-h-[300px] object-cover" onClick={() => window.open(match[1], '_blank')} />
+          <img src={match[1]} alt="Attached image" className="max-w-full rounded-2xl cursor-zoom-in hover:opacity-90 max-h-[300px] object-cover" onClick={() => setLightboxImage(match[1])} />
         </div>
       );
       lastIndex = regex.lastIndex;
@@ -565,6 +570,31 @@ export default function GlobalChatbox({ session }) {
             )}
           </button>
         </div>
+      )}
+
+      {lightboxImage && (
+        <Lightbox
+          open={!!lightboxImage}
+          close={() => setLightboxImage(null)}
+          slides={[{ src: lightboxImage }]}
+          plugins={[Zoom]}
+          carousel={{ finite: true }}
+          render={{
+            buttonPrev: () => null,
+            buttonNext: () => null,
+          }}
+          zoom={{
+            maxZoomPixelRatio: 3,
+            zoomInMultiplier: 2,
+            doubleTapDelay: 300,
+            doubleClickDelay: 300,
+            doubleClickMaxStops: 2,
+            keyboardMoveDistance: 50,
+            wheelZoomDistanceFactor: 100,
+            pinchZoomDistanceFactor: 100,
+            scrollToZoom: true,
+          }}
+        />
       )}
 
     </div>
