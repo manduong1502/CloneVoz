@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import LinkPreview from './LinkPreview';
+import HtmlWithLightbox from '@/components/ui/HtmlWithLightbox';
 
 // Regex phát hiện URL trong HTML text
 const URL_REGEX = /https?:\/\/[^\s<>"']+/g;
@@ -40,7 +41,7 @@ export default function PostContentWithPreview({ html }) {
   return (
     <div>
       {/* Nội dung bài viết gốc */}
-      <div className="post-content" dangerouslySetInnerHTML={{ __html: html }} />
+      <HtmlWithLightbox className="post-content" html={html} />
       
       {/* Link previews */}
       {urls.length > 0 && (

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import ConversationReplyBox from '@/components/conversations/ConversationReplyBox';
 import AutoRefresh from '@/components/ui/AutoRefresh';
+import HtmlWithLightbox from '@/components/ui/HtmlWithLightbox';
 
 export default async function ConversationDetailPage({ params }) {
   const { id } = await params;
@@ -66,7 +67,7 @@ export default async function ConversationDetailPage({ params }) {
                <div className="flex justify-between text-[11px] text-[var(--voz-text-muted)] px-4 py-2 border-b border-[var(--voz-border-light)]">
                   <span>{new Date(message.createdAt).toLocaleString('vi-VN')}</span>
                </div>
-               <div className="p-4 text-[15px] leading-relaxed flex-1" dangerouslySetInnerHTML={{ __html: message.content }} />
+               <HtmlWithLightbox className="p-4 text-[15px] leading-relaxed flex-1 post-content" html={message.content} />
             </div>
           </div>
         ))}
