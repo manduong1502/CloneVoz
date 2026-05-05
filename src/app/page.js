@@ -200,7 +200,7 @@ export default async function Home() {
       </div>
 
       {/* Sidebar */}
-      <div className="hidden lg:flex flex-col gap-4 w-[300px]">
+      <div className="flex flex-col gap-4 w-full lg:w-[300px]">
 
         {/* Trending Content */}
         <div className="voz-card overflow-hidden">

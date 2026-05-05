@@ -445,7 +445,7 @@ export default async function CategoryPage({ params, searchParams }) {
       </div>
 
       {/* Sidebar */}
-      <div className="hidden lg:flex flex-col gap-4 pt-[32px]">
+      <div className="flex flex-col gap-4 pt-4 lg:pt-[32px] w-full lg:w-[300px]">
         <div className="voz-card overflow-hidden">
           <h3 className="bg-[var(--voz-accent)] text-[13px] font-bold px-3 py-2 border-b border-[var(--voz-border)] text-[var(--voz-link)]">Đang thịnh hành</h3>
           <div className="bg-[var(--voz-accent)]">
