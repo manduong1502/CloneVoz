@@ -140,7 +140,6 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                         {(user.isAdmin || user.isMod || SUPER_ADMIN_EMAILS.includes(user.email)) && (
                           <Link href="/admin/pending" className="px-3 py-2 hover:bg-[var(--voz-accent)] text-red-600 font-bold">Vào trang Quản Trị (Admin)</Link>
                         )}
-                        <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[var(--voz-accent)]">Chi tiết tài khoản (Profile)</Link>
                         <form action={handleLogOut}>
                           <button type="submit" className="text-left w-full px-3 py-2 hover:bg-[var(--voz-accent)] text-[var(--voz-link)] border-t border-[var(--voz-border-light)] mt-1">Đăng xuất</button>
                         </form>

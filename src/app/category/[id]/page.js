@@ -58,6 +58,29 @@ export default async function CategoryPage({ params, searchParams }) {
         }
       }
     });
+
+    if (node) {
+      // Tải lại bộ đếm chính xác (bỏ qua chưa duyệt) cho các thư mục con
+      const statsQuery = await prisma.thread.groupBy({
+        by: ['nodeId'],
+        where: { isApproved: true },
+        _count: { id: true },
+        _sum: { replyCount: true }
+      });
+      const nodeStats = {};
+      for (const stat of statsQuery) {
+        nodeStats[stat.nodeId] = {
+          threadsCount: stat._count.id,
+          postsCount: (stat._sum.replyCount || 0) + stat._count.id
+        };
+      }
+      if (node.children) {
+        for (const child of node.children) {
+          child.threadsCount = nodeStats[child.id]?.threadsCount || 0;
+          child.postsCount = nodeStats[child.id]?.postsCount || 0;
+        }
+      }
+    }
   }
 
   if (!node) {

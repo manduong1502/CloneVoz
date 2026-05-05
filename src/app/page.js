@@ -30,6 +30,30 @@ export default async function Home() {
       }
     });
 
+    // Tính toán số lượng threads/posts đã được duyệt cho mỗi node
+    const statsQuery = await prisma.thread.groupBy({
+      by: ['nodeId'],
+      where: { isApproved: true },
+      _count: { id: true },
+      _sum: { replyCount: true }
+    });
+
+    const nodeStats = {};
+    for (const stat of statsQuery) {
+      nodeStats[stat.nodeId] = {
+        threadsCount: stat._count.id,
+        postsCount: (stat._sum.replyCount || 0) + stat._count.id
+      };
+    }
+
+    // Gán lại stats thực tế vào từng node
+    for (const category of categoriesDb) {
+      for (const node of category.children) {
+        node.threadsCount = nodeStats[node.id]?.threadsCount || 0;
+        node.postsCount = nodeStats[node.id]?.postsCount || 0;
+      }
+    }
+
     // 2. Kéo Trending Content (Nhiều Reply nhất)
     const trendingThreads = await prisma.thread.findMany({
       where: { isApproved: true },
@@ -55,8 +79,8 @@ export default async function Home() {
     });
 
     // 5. Kéo Forum Statistics
-    const totalForumThreads = await prisma.thread.count();
-    const totalForumPosts = await prisma.post.count();
+    const totalForumThreads = await prisma.thread.count({ where: { isApproved: true } });
+    const totalForumPosts = await prisma.post.count({ where: { thread: { isApproved: true } } });
     const totalForumUsers = await prisma.user.count();
     const latestUser = await prisma.user.findFirst({ orderBy: { createdAt: 'desc' } });
 
