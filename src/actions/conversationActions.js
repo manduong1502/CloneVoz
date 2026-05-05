@@ -176,3 +176,46 @@ export async function findOrCreateDirectConversation(targetUserId) {
   revalidatePath('/conversations');
   return { success: true, conversationId: conversation.id, isNew: true };
 }
+
+export async function editConversationMessage(messageId, newContent) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Chưa đăng nhập");
+  if (!newContent || newContent.trim() === '' || newContent === '<p></p>') throw new Error("Nội dung không được để trống");
+
+  const message = await prisma.conversationMessage.findUnique({
+    where: { id: messageId },
+    select: { authorId: true, conversationId: true }
+  });
+
+  if (!message) throw new Error("Không tìm thấy tin nhắn");
+  if (message.authorId !== session.user.id) throw new Error("Bạn không có quyền sửa tin nhắn này");
+
+  await prisma.conversationMessage.update({
+    where: { id: messageId },
+    data: { content: newContent }
+  });
+
+  revalidatePath(`/conversations/${message.conversationId}`);
+  return { success: true };
+}
+
+export async function deleteConversationMessage(messageId) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Chưa đăng nhập");
+
+  const message = await prisma.conversationMessage.findUnique({
+    where: { id: messageId },
+    select: { authorId: true, conversationId: true }
+  });
+
+  if (!message) throw new Error("Không tìm thấy tin nhắn");
+  if (message.authorId !== session.user.id) throw new Error("Bạn không có quyền xóa tin nhắn này");
+
+  await prisma.conversationMessage.delete({
+    where: { id: messageId }
+  });
+
+  revalidatePath(`/conversations/${message.conversationId}`);
+  revalidatePath('/conversations');
+  return { success: true };
+}
