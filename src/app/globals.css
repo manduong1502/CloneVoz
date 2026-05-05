@@ -354,3 +354,88 @@ blockquote:not(.voz-quote) strong {
     font-size: 16px !important;
   }
 }
+
+/* ========================================
+   RICH TEXT EDITOR & POST CONTENT STYLING
+   Khôi phục lại style cơ bản cho p, ul, ol bị Tailwind xoá mất
+   ======================================== */
+.tiptap p,
+.post-content p {
+  margin-bottom: 0.8em;
+  min-height: 1.2em; /* Cho phép dòng trống có chiều cao */
+}
+
+.tiptap p:last-child,
+.post-content p:last-child {
+  margin-bottom: 0;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  color: var(--voz-text-muted);
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Khôi phục List */
+.tiptap ul,
+.post-content ul {
+  list-style-type: disc !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 1em;
+}
+
+.tiptap ol,
+.post-content ol {
+  list-style-type: decimal !important;
+  padding-left: 1.5em !important;
+  margin-bottom: 1em;
+}
+
+.tiptap li,
+.post-content li {
+  margin-bottom: 0.25em;
+  display: list-item;
+}
+
+.tiptap li > p,
+.post-content li > p {
+  margin-bottom: 0; /* Xoá khoảng cách p bên trong li để list không bị quá thưa */
+  display: inline-block;
+}
+
+/* Heading */
+.tiptap h1, .post-content h1 { font-size: 1.5em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+.tiptap h2, .post-content h2 { font-size: 1.25em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+.tiptap h3, .post-content h3 { font-size: 1.1em; font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; }
+
+/* Quote / Blockquote */
+.tiptap blockquote,
+.post-content blockquote {
+  border-left: 3px solid var(--voz-border);
+  padding-left: 1em;
+  color: var(--voz-text-muted);
+  background: var(--voz-accent);
+  padding: 0.5em 1em;
+  margin-bottom: 1em;
+  border-radius: 2px;
+}
+
+/* Khác */
+.tiptap a, .post-content a {
+  color: var(--voz-link);
+  text-decoration: underline;
+}
+
+.tiptap img, .post-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 0.5em 0;
+}
+
+.tiptap hr, .post-content hr {
+  border-color: var(--voz-border);
+  margin: 1.5em 0;
+}
