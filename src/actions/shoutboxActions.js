@@ -22,9 +22,9 @@ export async function getRecentShouts() {
 
 export async function postShout(content) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Vui lòng đăng nhập để chat.");
-  if (!content || typeof content !== 'string' || content.trim() === '') throw new Error("Tin nhắn không hợp lệ.");
-  if (content.length > 500) throw new Error("Tin nhắn quá dài (tối đa 500 ký tự).");
+  if (!session?.user?.id) return { error: "Vui lòng đăng nhập để chat." };
+  if (!content || typeof content !== 'string' || content.trim() === '') return { error: "Tin nhắn không hợp lệ." };
+  if (content.length > 500) return { error: "Tin nhắn quá dài (tối đa 500 ký tự)." };
 
   // Xóa giới hạn spam chat theo yêu cầu của Sếp (không giới hạn thời gian chat)
   // const spamCheck = await checkRateLimit(); // Tắt Spam Check
@@ -32,7 +32,7 @@ export async function postShout(content) {
   // Chống spam: không cho chèn link bậy (block mọi URL để an toàn)
   const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/|\b))/i;
   if (urlRegex.test(content)) {
-    throw new Error("Không được chèn link vào kênh chat chung.");
+    return { error: "Không được chèn link vào kênh chat chung." };
   }
 
   // Chống spam: không cho gửi nội dung giống hệt tin nhắn vừa gửi
@@ -42,7 +42,7 @@ export async function postShout(content) {
   });
 
   if (lastUserMessage && lastUserMessage.content === content.trim()) {
-    throw new Error("Bạn vừa gửi nội dung này rồi, vui lòng không spam.");
+    return { error: "Bạn vừa gửi nội dung này rồi, vui lòng không spam." };
   }
   
   try {
@@ -60,27 +60,27 @@ export async function postShout(content) {
     return { success: true, shout: { ...newShout, reactions: [] } };
   } catch (err) {
     console.error(err);
-    throw new Error("Lỗi máy chủ.");
+    return { error: "Lỗi máy chủ." };
   }
 }
 
 export async function deleteShout(messageId) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Vui lòng đăng nhập.");
+  if (!session?.user?.id) return { error: "Vui lòng đăng nhập." };
 
   const message = await prisma.shoutboxMessage.findUnique({
     where: { id: messageId },
     include: { author: true }
   });
 
-  if (!message) throw new Error("Không tìm thấy tin nhắn.");
+  if (!message) return { error: "Không tìm thấy tin nhắn." };
 
   // Quyền xóa: chính chủ, hoặc là Admin/Mod
   const isOwner = message.authorId === session.user.id;
   const isAdminOrMod = session.user.isAdmin || session.user.isMod;
 
   if (!isOwner && !isAdminOrMod) {
-    throw new Error("Bạn không có quyền xóa tin nhắn này.");
+    return { error: "Bạn không có quyền xóa tin nhắn này." };
   }
 
   await prisma.shoutboxMessage.delete({

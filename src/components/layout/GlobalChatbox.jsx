@@ -52,6 +52,12 @@ export default function GlobalChatbox({ session }) {
   const { resolvedTheme } = useTheme();
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   // Resize State
   const [size, setSize] = useState({ w: 1000, h: 600 });
@@ -199,9 +205,13 @@ export default function GlobalChatbox({ session }) {
 
     startTransition(async () => {
       try {
-        await postShout(msgContent);
+        const res = await postShout(msgContent);
+        if (res.error) {
+           showToast(res.error, 'error');
+           setContent(msgContent);
+        }
       } catch (err) {
-        alert(err.message);
+        showToast(err.message || 'Lỗi máy chủ', 'error');
         setContent(msgContent); // Revert input if error
       }
     });
@@ -212,10 +222,14 @@ export default function GlobalChatbox({ session }) {
     if (!reason || reason.trim() === "") return;
 
     try {
-      await submitReport({ reason, shoutboxMessageId: msgId });
-      alert("Đã gửi báo cáo thành công. Cảm ơn bạn!");
+      const res = await submitReport({ reason, shoutboxMessageId: msgId });
+      if (res.error) {
+        showToast(res.error, 'error');
+      } else {
+        showToast("Đã gửi báo cáo thành công. Cảm ơn bạn!", 'success');
+      }
     } catch (err) {
-      alert(err.message);
+      showToast(err.message || "Lỗi khi báo cáo", 'error');
     }
   };
 
@@ -223,9 +237,11 @@ export default function GlobalChatbox({ session }) {
     if (!confirm('Bạn có chắc muốn xóa tin nhắn này?')) return;
     try {
       const res = await deleteShout(messageId);
-      // Pusher event will update the UI
+      if (res.error) {
+        showToast(res.error, 'error');
+      }
     } catch (e) {
-      alert(e.message || 'Lỗi khi xóa tin nhắn');
+      showToast(e.message || 'Lỗi khi xóa tin nhắn', 'error');
     }
   };
 
@@ -269,15 +285,17 @@ export default function GlobalChatbox({ session }) {
           method: 'POST',
           body: formData
         });
-
         const data = await res.json();
-        if (data.url) {
-          await postShout(`[IMG]${data.url}[/IMG]`);
-        } else {
-          alert(data.error || "Lỗi tải ảnh");
+        
+        if (!data.url) throw new Error("Upload thất bại.");
+
+        const postRes = await postShout(`[IMG]${data.url}[/IMG]`);
+        if (postRes.error) {
+          showToast(postRes.error, 'error');
         }
-      } catch (error) {
-        alert("Không thể tải ảnh. Vui lòng thử lại.");
+        
+      } catch (err) {
+        showToast('Lỗi gửi ảnh: ' + err.message, 'error');
       }
     });
 
@@ -579,6 +597,16 @@ export default function GlobalChatbox({ session }) {
               </form>
             ) : (
               <div className="text-center text-[13px] text-gray-500 py-2 border border-gray-200 dark:border-[#3a3b3c] rounded-full">Vui lòng đăng nhập để tham gia chat.</div>
+            )}
+            
+            {/* Toast Overlay cho trạng thái mở */}
+            {toast && (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] animate-fade-in pointer-events-none">
+                <div className="bg-[#262626] text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-gray-700 min-w-[250px] max-w-[80%] justify-center backdrop-blur-sm bg-opacity-90">
+                  {toast.type === 'error' ? <AlertTriangle size={18} className="text-red-400 shrink-0" /> : <MessageCircle size={18} className="text-green-400 shrink-0" />}
+                  <span className="text-[14px] font-medium leading-tight">{toast.message}</span>
+                </div>
+              </div>
             )}
           </div>
 

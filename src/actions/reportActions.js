@@ -6,9 +6,9 @@ import { notifyAdmins } from '@/lib/adminNotify';
 
 export async function submitReport({ reason, postId, threadId, shoutboxMessageId }) {
   const session = await auth();
-  if (!session?.user?.id) throw new Error("Vui lòng đăng nhập để gửi báo cáo.");
-  if (!reason || reason.trim() === "") throw new Error("Lý do không được để trống.");
-  if (!postId && !threadId && !shoutboxMessageId) throw new Error("Lỗi: Không tìm thấy đối tượng báo cáo.");
+  if (!session?.user?.id) return { error: "Vui lòng đăng nhập để gửi báo cáo." };
+  if (!reason || reason.trim() === "") return { error: "Lý do không được để trống." };
+  if (!postId && !threadId && !shoutboxMessageId) return { error: "Lỗi: Không tìm thấy đối tượng báo cáo." };
 
   // Check if already reported and pending
   const existingReport = await prisma.report.findFirst({
@@ -22,7 +22,7 @@ export async function submitReport({ reason, postId, threadId, shoutboxMessageId
   });
 
   if (existingReport) {
-     throw new Error("Bạn đã báo cáo nội dung này rồi. Vui lòng chờ Mod xử lý.");
+     return { error: "Bạn đã báo cáo nội dung này rồi. Vui lòng chờ Mod xử lý." };
   }
 
   await prisma.report.create({
