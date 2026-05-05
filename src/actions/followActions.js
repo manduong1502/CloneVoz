@@ -43,7 +43,7 @@ export async function toggleFollow(targetUserId) {
     });
 
     try {
-      const { pusherServer } = await import('@/lib/pusher');
+      const { pusherServer } = await import('@/lib/pusher.server');
       if (pusherServer) {
         pusherServer.trigger(`user-${targetUserId}`, 'new-notification', {
           ...notification,
