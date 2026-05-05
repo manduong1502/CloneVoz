@@ -70,6 +70,11 @@ export async function createThread(nodeId, formData) {
   const nodeWatchers = await prisma.bookmark.findMany({ where: { nodeId } });
   const watcherIds = new Set(nodeWatchers.map(w => w.userId));
   watcherIds.delete(session.user.id);
+
+  // Thông báo cho những người đang theo dõi USER (followers)
+  const userFollowers = await prisma.userFollow.findMany({ where: { followingId: session.user.id } });
+  const followerIds = new Set(userFollowers.map(f => f.followerId));
+  followerIds.delete(session.user.id);
   
   const nodeName = await prisma.node.findUnique({ where: { id: nodeId }, select: { title: true }});
   
@@ -78,6 +83,8 @@ export async function createThread(nodeId, formData) {
 
   const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
   const safeNodeTitle = (nodeName?.title || 'bạn đang theo dõi').replace(/[<>"'&]/g, '');
+  const safeThreadTitle = (newThread.title || '').replace(/[<>"'&]/g, '');
+
   for (const uid of watcherIds) {
       notificationsData.push({
           userId: uid,
@@ -86,6 +93,19 @@ export async function createThread(nodeId, formData) {
           content: `<strong>${safeName}</strong> đã tạo một chủ đề mới trong chuyên mục ${safeNodeTitle}.`,
           link: `/thread/${newThread.id}`
       });
+  }
+
+  // Gửi thông báo cho followers (không trùng với watcher)
+  for (const uid of followerIds) {
+      if (!watcherIds.has(uid)) {
+          notificationsData.push({
+              userId: uid,
+              senderId: session.user.id,
+              type: "reply",
+              content: `<strong>${safeName}</strong> (người bạn theo dõi) đã đăng bài viết mới "<em>${safeThreadTitle}</em>".`,
+              link: `/thread/${newThread.id}`
+          });
+      }
   }
 
   if (notificationsData.length > 0) {
@@ -98,8 +118,9 @@ export async function createThread(nodeId, formData) {
          notificationsData.forEach(notif => {
              const payload = {
                  ...notif, 
-                 id: Math.random().toString(36).substr(2, 9), 
-                 sender: { username: session.user.username, avatar: session.user.avatar || null }
+                 id: Math.random().toString(36).substr(2, 9),
+                 createdAt: new Date().toISOString(),
+                 sender: { username: session.user.username || session.user.name, avatar: session.user.avatar || session.user.image || null }
              };
              pusherPromises.push(pusherServer.trigger(`user-${notif.userId}`, 'new-notification', payload).catch(e => {}));
          });

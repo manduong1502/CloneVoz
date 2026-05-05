@@ -116,7 +116,7 @@ export async function createReply(threadId, formData) {
 
     const thread = await prisma.thread.findUnique({
        where: { id: threadId },
-       select: { nodeId: true, isLocked: true, authorId: true }
+       select: { nodeId: true, isLocked: true, authorId: true, title: true }
     });
 
     if (!thread) return { success: false, error: "Thread không tồn tại" };
@@ -186,13 +186,14 @@ export async function createReply(threadId, formData) {
         let type = "reply";
         const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
         let text = `<strong>${safeName}</strong> đã bình luận vào bài viết bạn đang theo dõi.`;
-        
+        const safeTitle = (thread.title || '').replace(/[<>"'&]/g, '');
+
         // Ưu tiên thấp → cao (text cuối cùng ghi đè)
         if (participants.some(p => p.authorId === uid)) {
-            text = `<strong>${safeName}</strong> đã bình luận vào chủ đề bạn đã tham gia.`;
+            text = `<strong>${safeName}</strong> đã trả lời bình luận của bạn tại bài viết "<em>${safeTitle}</em>".`;
         }
         if (uid === thread.authorId) {
-            text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn.`;
+            text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn "<em>${safeTitle}</em>".`;
         }
         if (quotedUserIds.includes(uid)) {
             type = "quote";
@@ -223,10 +224,11 @@ export async function createReply(threadId, formData) {
         if (pusherServer) {
            notificationsData.forEach(notif => {
                const payload = {
-                   ...notif, 
-                   id: Math.random().toString(36).substr(2, 9), 
-                   sender: { username: session.user.username, avatar: session.user.avatar || null }
-               };
+                    ...notif, 
+                    id: Math.random().toString(36).substr(2, 9),
+                    createdAt: new Date().toISOString(),
+                    sender: { username: session.user.username || session.user.name, avatar: session.user.avatar || session.user.image || null }
+                };
                pusherPromises.push(pusherServer.trigger(`user-${notif.userId}`, 'new-notification', payload).catch(e => {}));
            });
            // 2. Kích hoạt toàn sóng không cần chờ đồng bộ

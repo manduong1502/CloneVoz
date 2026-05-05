@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import EditProfileModal from '@/components/profile/EditProfileModal';
+import FollowButton from '@/components/profile/FollowButton';
 import RankBadge from '@/components/ui/RankBadge';
 import { getRankInfo } from '@/lib/rank';
+import { checkIsFollowing } from '@/actions/followActions';
 
 import Pagination from '@/components/ui/Pagination';
 import { formatRelativeTime } from '@/lib/formatTime';
@@ -36,6 +38,9 @@ export default async function ProfilePage({ params, searchParams }) {
   if (!targetUser) {
     return <div className="p-8 text-center text-red-500 font-bold text-xl">Thành viên không tồn tại hoặc đã bị khóa.</div>;
   }
+
+  // Check follow status
+  const isFollowing = !isOwner ? await checkIsFollowing(targetUser.id) : false;
 
   // Calculate actual stats (Fallback if the model doesn't have it built-in properly)
   const postsCount = await prisma.post.count({ where: { authorId: targetUser.id } });
@@ -92,12 +97,10 @@ export default async function ProfilePage({ params, searchParams }) {
                 <EditProfileModal user={targetUser} />
              ) : (
                 <>
-                  <button className="bg-[var(--voz-surface)] hover:bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-2 font-medium text-[13px] rounded flex items-center gap-2 border border-[#ccc] transition-all">
-                     Theo dọi
-                  </button>
-                  <button className="bg-[var(--voz-surface)] hover:bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-2 font-medium text-[13px] rounded flex items-center gap-2 border border-[#ccc] transition-all">
+                   <FollowButton targetUserId={targetUser.id} initialIsFollowing={isFollowing} />
+                   <button className="bg-[var(--voz-surface)] hover:bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-2 font-medium text-[13px] rounded flex items-center gap-2 border border-[#ccc] transition-all">
                      Bỏ qua
-                  </button>
+                   </button>
                 </>
              )}
           </div>

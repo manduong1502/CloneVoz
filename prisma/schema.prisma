@@ -66,6 +66,10 @@ model User {
   reportsAssigned   Report[]  @relation("ModAssignedReports")
   warningsReceived  Warning[] @relation("UserWarnings")
   warningsIssued    Warning[] @relation("ModIssuedWarnings")
+
+  // Follow System
+  following         UserFollow[] @relation("UserFollowing")
+  followers         UserFollow[] @relation("UserFollowers")
 }
 
 model UserGroup {
@@ -386,4 +390,19 @@ model DailyCronStatus {
   date        String   @unique // Format: YYYY-MM-DD or interval_YYYY-MM-DD
   snapshot    String?  // JSON snapshot of applied points for interval mode
   processedAt DateTime @default(now())
+}
+
+// ----------------------------------------------------------------------------
+// USER FOLLOW SYSTEM
+// ----------------------------------------------------------------------------
+model UserFollow {
+  id          String   @id @default(cuid())
+  followerId  String   // Người theo dõi
+  followingId String   // Người được theo dõi
+  createdAt   DateTime @default(now())
+
+  follower    User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
 }
