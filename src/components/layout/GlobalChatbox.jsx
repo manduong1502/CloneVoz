@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { getPusherClient } from '@/lib/pusher.client';
-import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout } from '@/actions/shoutboxActions';
-import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2 } from 'lucide-react';
+import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout, getChatPauseState, toggleChatPause } from '@/actions/shoutboxActions';
+import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -53,6 +53,7 @@ export default function GlobalChatbox({ session }) {
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
   const [toast, setToast] = useState(null);
+  const [isChatPaused, setIsChatPaused] = useState(false);
 
   const showToast = (message, type = 'error') => {
     setToast({ message, type });
@@ -113,12 +114,18 @@ export default function GlobalChatbox({ session }) {
   const [lightboxImage, setLightboxImage] = useState(null);
 
   useEffect(() => {
-    // Load initial messages
+    // Load initial messages and chat pause state
     getRecentShouts().then(res => {
       if (res.success) {
         setMessages(res.messages);
       }
       setLoading(false);
+    });
+
+    getChatPauseState().then(res => {
+      if (res.success) {
+        setIsChatPaused(res.isPaused);
+      }
     });
 
     let channel;
@@ -161,13 +168,18 @@ export default function GlobalChatbox({ session }) {
         setMessages(prev => prev.filter(msg => msg.id !== data.messageId));
       };
 
+      const handleChatLock = (data) => {
+        setIsChatPaused(data.isPaused);
+      };
+
       channel.bind('new-shout', handleNewShout);
       channel.bind('shout-reaction', handleReaction);
       channel.bind('delete-shout', handleDeleteShout);
+      channel.bind('chat-lock', handleChatLock);
 
       // Lưu lại tham chiếu để unbind khi unmount
       window._globalChatChannel = channel;
-      window._globalChatHandlers = { handleNewShout, handleReaction, handleDeleteShout };
+      window._globalChatHandlers = { handleNewShout, handleReaction, handleDeleteShout, handleChatLock };
     });
 
     return () => {
@@ -175,6 +187,7 @@ export default function GlobalChatbox({ session }) {
         window._globalChatChannel.unbind('new-shout', window._globalChatHandlers.handleNewShout);
         window._globalChatChannel.unbind('shout-reaction', window._globalChatHandlers.handleReaction);
         window._globalChatChannel.unbind('delete-shout', window._globalChatHandlers.handleDeleteShout);
+        window._globalChatChannel.unbind('chat-lock', window._globalChatHandlers.handleChatLock);
       }
     };
   }, []);
@@ -242,6 +255,15 @@ export default function GlobalChatbox({ session }) {
       }
     } catch (e) {
       showToast(e.message || 'Lỗi khi xóa tin nhắn', 'error');
+    }
+  };
+
+  const handleToggleChatPause = async () => {
+    try {
+      const res = await toggleChatPause();
+      if (res.error) showToast(res.error, 'error');
+    } catch (e) {
+      showToast('Lỗi khi thao tác khóa/mở chat', 'error');
     }
   };
 
@@ -372,10 +394,20 @@ export default function GlobalChatbox({ session }) {
           <div className="bg-[#183254] text-white px-4 py-3 flex justify-between items-center text-[15px] font-bold cursor-default rounded-t-lg shrink-0">
             <div className="flex items-center gap-2 pointer-events-none">
               <MessageCircle size={18} /> Server Chat
+              {isChatPaused && <span className="text-[11px] bg-red-500 text-white px-2 py-0.5 rounded-full uppercase ml-2">Đang khóa</span>}
             </div>
-            <button onClick={() => setIsOpen(false)} className="hover:text-gray-300 transition-colors p-1">
-              <X size={20} />
-            </button>
+            
+            <div className="flex items-center gap-2">
+              {/* Nút Khóa/Mở Chat (Chỉ Admin/Mod) */}
+              {(session?.user?.isAdmin || session?.user?.isMod) && (
+                <button onClick={handleToggleChatPause} className={`hover:text-gray-300 transition-colors p-1 rounded-md ${isChatPaused ? 'text-red-400' : 'text-gray-300'}`} title={isChatPaused ? "Mở khóa chat" : "Khóa kênh chat"}>
+                  {isChatPaused ? <Lock size={18} /> : <Unlock size={18} />}
+                </button>
+              )}
+              <button onClick={() => setIsOpen(false)} className="hover:text-gray-300 transition-colors p-1">
+                <X size={20} />
+              </button>
+            </div>
           </div>
 
           {/* Messages Area */}
@@ -551,6 +583,9 @@ export default function GlobalChatbox({ session }) {
             />
 
             {session?.user ? (
+              (isChatPaused && !session?.user?.isAdmin && !session?.user?.isMod) ? (
+                <div className="text-center text-[13px] text-red-500 font-medium py-2.5 border border-red-200 dark:border-red-900/30 rounded-3xl bg-red-50 dark:bg-red-900/10">Kênh chat hiện đang bị khóa bởi Quản trị viên.</div>
+              ) : (
               <form onSubmit={handleSend} className="relative flex items-end w-full">
                 <div className="flex-1 flex items-end border border-[#dbdbdb] dark:border-[#3a3b3c] bg-transparent dark:bg-[#262626] rounded-3xl px-1 justify-between transition-colors focus-within:border-gray-400 dark:focus-within:border-[#555] py-1">
 
@@ -595,6 +630,7 @@ export default function GlobalChatbox({ session }) {
                   </div>
                 </div>
               </form>
+              )
             ) : (
               <div className="text-center text-[13px] text-gray-500 py-2 border border-gray-200 dark:border-[#3a3b3c] rounded-full">Vui lòng đăng nhập để tham gia chat.</div>
             )}

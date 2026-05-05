@@ -23,6 +23,16 @@ export async function getRecentShouts() {
 export async function postShout(content) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Vui lòng đăng nhập để chat." };
+  
+  // Kiểm tra khóa chat
+  const chatPaused = await prisma.globalSetting.findUnique({ where: { key: 'chat_paused' } });
+  const isPaused = chatPaused?.value === 'true';
+  const isAdminOrMod = session.user.isAdmin || session.user.isMod;
+  
+  if (isPaused && !isAdminOrMod) {
+    return { error: "Kênh chat hiện đang bị tạm khóa." };
+  }
+
   if (!content || typeof content !== 'string' || content.trim() === '') return { error: "Tin nhắn không hợp lệ." };
   if (content.length > 500) return { error: "Tin nhắn quá dài (tối đa 500 ký tự)." };
 
@@ -150,5 +160,35 @@ export async function toggleShoutboxReaction(messageId, type) {
   } catch (error) {
     console.error(error);
     throw new Error("Lỗi hệ thống khi thả cảm xúc");
+  }
+}
+
+export async function toggleChatPause() {
+  const session = await auth();
+  if (!session?.user?.id || (!session.user.isAdmin && !session.user.isMod)) {
+    return { error: "Không có quyền thực hiện." };
+  }
+
+  const setting = await prisma.globalSetting.findUnique({ where: { key: 'chat_paused' } });
+  const currentStatus = setting?.value === 'true';
+  const newStatus = !currentStatus;
+
+  await prisma.globalSetting.upsert({
+    where: { key: 'chat_paused' },
+    update: { value: newStatus ? 'true' : 'false' },
+    create: { key: 'chat_paused', value: newStatus ? 'true' : 'false' }
+  });
+
+  await pusherServer.trigger('global-chat', 'chat-lock', { isPaused: newStatus });
+
+  return { success: true, isPaused: newStatus };
+}
+
+export async function getChatPauseState() {
+  try {
+    const setting = await prisma.globalSetting.findUnique({ where: { key: 'chat_paused' } });
+    return { success: true, isPaused: setting?.value === 'true' };
+  } catch (e) {
+    return { success: true, isPaused: false };
   }
 }
