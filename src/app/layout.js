@@ -57,6 +57,18 @@ export default async function RootLayout({ children }) {
     }
   }
 
+  // Đếm số tin nhắn cá nhân chưa đọc (notification type pm hoặc pm_reply)
+  let unreadPmCount = 0;
+  if (session?.user?.id && !bannedUser) {
+    unreadPmCount = await prisma.notification.count({
+      where: { 
+        userId: session.user.id, 
+        isRead: false,
+        type: { in: ['pm', 'pm_reply'] }
+      }
+    });
+  }
+
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
@@ -75,7 +87,7 @@ export default async function RootLayout({ children }) {
             />
           ) : (
             <>
-              <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} />
+              <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} unreadPmCount={unreadPmCount} />
               <main className="max-w-[1240px] px-2 md:px-4 mx-auto w-full flex-1 py-4 md:py-6">
                 {children}
               </main>

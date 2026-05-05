@@ -13,7 +13,7 @@ import SearchDropdown from '@/components/layout/SearchDropdown';
 import Pusher from 'pusher-js';
 import { SUPER_ADMIN_EMAILS } from '@/lib/adminConfig';
 
-const Header = ({ session, notifications = [], unreadCount = 0 }) => {
+const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 0 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [modalType, setModalType] = useState('login'); // 'login' or 'register'
@@ -21,13 +21,15 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
 
   const [liveNotifications, setLiveNotifications] = useState(notifications);
   const [liveUnreadCount, setLiveUnreadCount] = useState(unreadCount);
+  const [liveUnreadPmCount, setLiveUnreadPmCount] = useState(unreadPmCount);
   const user = session?.user;
 
   // Sync state with props when user changes (e.g. login/logout)
   useEffect(() => {
     setLiveNotifications(notifications);
     setLiveUnreadCount(unreadCount);
-  }, [notifications, unreadCount, user?.id]);
+    setLiveUnreadPmCount(unreadPmCount);
+  }, [notifications, unreadCount, unreadPmCount, user?.id]);
 
   // Lắng nghe event open-auth-modal từ các component khác (ThreadReplyBox, GlobalChatbox, ...)
   useEffect(() => {
@@ -54,7 +56,11 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
     const channel = pusher.subscribe(`user-${user.id}`);
     channel.bind('new-notification', (data) => {
       setLiveUnreadCount(prev => prev + 1);
-      setLiveNotifications(prev => [data, ...prev].slice(0, 10)); // Giữ 10 thông báo mới nhất
+      setLiveNotifications(prev => [data, ...prev].slice(0, 10));
+      // Nếu là PM thì cộng thêm số PM chưa đọc
+      if (data.type === 'pm' || data.type === 'pm_reply') {
+        setLiveUnreadPmCount(prev => prev + 1);
+      }
     });
 
     return () => {
@@ -146,8 +152,11 @@ const Header = ({ session, notifications = [], unreadCount = 0 }) => {
                       </div>
                     </Dropdown>
 
-                    <Link href="/conversations" className="text-white/80 hover:text-white h-full px-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer flex items-center">
+                    <Link href="/conversations" className="text-white/80 hover:text-white h-full px-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer flex items-center relative">
                       <Mail size={18} />
+                      {liveUnreadPmCount > 0 && (
+                        <span className="absolute top-[12px] right-[4px] w-2 h-2 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] rounded-full border border-[var(--voz-blue-dark)]"></span>
+                      )}
                     </Link>
 
                     <Dropdown
