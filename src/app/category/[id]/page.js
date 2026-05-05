@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PenSquare, MessageCircle } from 'lucide-react';
+import { PenSquare, MessageCircle, Clock } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import Pagination from '@/components/ui/Pagination';
 import { auth } from '@/auth';
@@ -34,8 +34,12 @@ export default async function CategoryPage({ params, searchParams }) {
   const threadsPerPage = 20;
   const skip = (page - 1) * threadsPerPage;
 
+  const session = await auth();
+  const isAdminOrMod = session?.user?.isAdmin || session?.user?.isMod;
+  const userCachePrefix = isAdminOrMod ? 'admin' : (session?.user?.id || 'anon');
+
   // Dùng bộ nhớ Cache siêu tốc để tiết kiệm RAM Database
-  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix || 'none'}_sb_${sp.startedBy || 'none'}_lu_${sp.lastUpdated || 'none'}_sort_${sp.sortBy || 'updatedAt'}_${sp.sortOrder || 'desc'}`;
+  const cacheKey = `voz_node_${id}_page_${page}_prefix_${sp.prefix || 'none'}_sb_${sp.startedBy || 'none'}_lu_${sp.lastUpdated || 'none'}_sort_${sp.sortBy || 'updatedAt'}_${sp.sortOrder || 'desc'}_u_${userCachePrefix}`;
   let cachedData = await getCache(cacheKey);
 
   // Gọi CSDL nếu chưa có Cache
@@ -206,7 +210,21 @@ export default async function CategoryPage({ params, searchParams }) {
   const sortBy = sp.sortBy || 'updatedAt';
   const sortOrder = sp.sortOrder || 'desc';
 
-  const whereCondition = { nodeId: id, isApproved: true };
+  let whereCondition;
+  if (isAdminOrMod) {
+    whereCondition = { nodeId: id };
+  } else if (session?.user?.id) {
+    whereCondition = { 
+      nodeId: id,
+      OR: [
+        { isApproved: true },
+        { authorId: session.user.id, isApproved: false }
+      ]
+    };
+  } else {
+    whereCondition = { nodeId: id, isApproved: true };
+  }
+
   if (prefixId) whereCondition.prefixId = prefixId;
 
   // Filter: started by username
@@ -238,7 +256,6 @@ export default async function CategoryPage({ params, searchParams }) {
   const totalThreads = await prisma.thread.count({ where: whereCondition });
   const totalPages = Math.ceil(totalThreads / threadsPerPage) || 1;
 
-  const session = await auth();
   let isWatchingNode = false;
   if (session?.user?.id) {
     const bookmark = await prisma.bookmark.findFirst({
@@ -396,6 +413,7 @@ export default async function CategoryPage({ params, searchParams }) {
                       )}
                       <Link href={`/thread/${thread.id}`} style={{ color: thread.isPinned ? '#c84448' : undefined }} className={`text-[16px] leading-snug ${thread.isPinned ? "font-bold" : "font-bold hover:underline"}`}>
                         {thread.isPinned && <span className="mr-1">📌</span>}
+                        {!thread.isApproved && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-500 text-[11px] font-bold px-2 py-0.5 rounded mr-2 align-middle"><Clock size={11} /> Chờ duyệt</span>}
                         <span className={thread.isPinned ? "" : "thread-title-link"}>{thread.title}</span>
                       </Link>
                     </div>
