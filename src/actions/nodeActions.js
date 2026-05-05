@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { isSuperAdmin } from '@/lib/adminConfig';
 
-async function requireAdmin() {
+async function requireAdminOrMod() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Chưa đăng nhập");
   
@@ -17,14 +17,15 @@ async function requireAdmin() {
   });
   
   const isAdmin = superAdmin || user?.userGroups.some(g => g.name === 'Admin');
+  const isMod = user?.userGroups.some(g => g.name === 'Moderator');
   
-  if (!isAdmin) throw new Error("Chỉ Admin mới có quyền thực hiện hành động này");
+  if (!isAdmin && !isMod) throw new Error("Chỉ Admin hoặc Mod mới có quyền thực hiện hành động này");
   return { session, user };
 }
 
 // 1. Tạo mới một Node
 export async function createNode(formData) {
-  await requireAdmin();
+  await requireAdminOrMod();
   const title = formData.get("title");
   const description = formData.get("description") || "";
   const nodeType = formData.get("nodeType") || "Forum";
@@ -51,7 +52,7 @@ export async function createNode(formData) {
 
 // 2. Cập nhật một Node
 export async function updateNode(id, formData) {
-  await requireAdmin();
+  await requireAdminOrMod();
   const title = formData.get("title");
   const description = formData.get("description") || "";
   const displayOrder = parseInt(formData.get("displayOrder") || "10", 10);
@@ -73,7 +74,7 @@ export async function updateNode(id, formData) {
 
 // 3. Xoá hoàn toàn một Node. Rất nguy hiểm vì nó xoá sạch mọi dữ liệu con!
 export async function deleteNode(id) {
-  await requireAdmin();
+  await requireAdminOrMod();
   if (!id) return;
   
   // Do giới hạn của SQLite môi trường dev, ta sẽ sử dụng Prisma Transaction 
@@ -126,7 +127,7 @@ export async function deleteNode(id) {
 
 // 4. Di chuyển Forum sang Category khác
 export async function moveNode(nodeId, newParentId) {
-  await requireAdmin();
+  await requireAdminOrMod();
   if (!nodeId || !newParentId) throw new Error("Thiếu thông tin");
   
   await prisma.node.update({
@@ -140,7 +141,7 @@ export async function moveNode(nodeId, newParentId) {
 
 // 5. Cập nhật thứ tự hiển thị của Forum
 export async function updateNodeOrder(nodeId, newOrder) {
-  await requireAdmin();
+  await requireAdminOrMod();
   if (!nodeId || typeof newOrder !== 'number') throw new Error("Thiếu thông tin");
   
   await prisma.node.update({
@@ -158,7 +159,7 @@ export async function updateNodeOrder(nodeId, newOrder) {
 
 // 6. Đổi tên Node (Category hoặc Forum)
 export async function renameNode(nodeId, newTitle) {
-  await requireAdmin();
+  await requireAdminOrMod();
   if (!nodeId || !newTitle?.trim()) throw new Error("Thiếu thông tin");
   
   await prisma.node.update({
