@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import ConversationReplyBox from '@/components/conversations/ConversationReplyBox';
-import ConversationMessageActions from '@/components/conversations/ConversationMessageActions';
+import ConversationMessageContent from '@/components/conversations/ConversationMessageContent';
 import AutoRefresh from '@/components/ui/AutoRefresh';
-import HtmlWithLightbox from '@/components/ui/HtmlWithLightbox';
 import { markPmNotificationsAsRead } from '@/actions/notificationActions';
 
 export default async function ConversationDetailPage({ params }) {
@@ -71,17 +70,12 @@ export default async function ConversationDetailPage({ params }) {
               </div>
 
               {/* Content Block */}
-              <div className="flex-1 bg-[var(--voz-surface)] flex flex-col min-w-0">
-                 <div className="flex justify-between items-center text-[11px] text-[var(--voz-text-muted)] px-4 py-2 border-b border-[var(--voz-border-light)]">
-                    <span>{new Date(message.createdAt).toLocaleString('vi-VN')}</span>
-                    <ConversationMessageActions
-                      messageId={message.id}
-                      content={message.content}
-                      isOwner={isOwner}
-                    />
-                 </div>
-                 <HtmlWithLightbox className="p-4 text-[15px] leading-relaxed flex-1 post-content" html={message.content} />
-              </div>
+              <ConversationMessageContent 
+                messageId={message.id}
+                content={message.content}
+                createdAt={message.createdAt}
+                isOwner={isOwner}
+              />
             </div>
           );
         })}
