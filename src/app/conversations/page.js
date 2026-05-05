@@ -74,7 +74,9 @@ export default async function ConversationsPage() {
                         <Link href={`/conversations/${conv.id}`} className="hover:underline text-[var(--voz-link)]">{conv.title}</Link>
                       </div>
                       <div className="text-[12px] text-[var(--voz-text-muted)]">
-                        Người tham gia: {participantNames || 'Không có ai'}
+                        Người tham gia: {otherParticipants.length > 0 ? otherParticipants.map((p, i) => (
+                          <span key={p.id}>{i > 0 && ', '}<Link href={`/profile/${p.username}`} className="text-[var(--voz-link)] hover:underline">{p.username}</Link></span>
+                        )) : 'Không có ai'}
                       </div>
                     </div>
 
@@ -82,7 +84,7 @@ export default async function ConversationsPage() {
                        {lastMsg ? (
                          <>
                            <div className="text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(lastMsg.createdAt).toLocaleString('vi-VN')}</div>
-                           <div className="text-[var(--voz-text-muted)] whitespace-nowrap">{lastMsg.author.username}</div>
+                           <div className="text-[var(--voz-text-muted)] whitespace-nowrap"><Link href={`/profile/${lastMsg.author.username}`} className="hover:underline">{lastMsg.author.username}</Link></div>
                          </>
                        ) : (
                          <span className="text-gray-400">Trống</span>

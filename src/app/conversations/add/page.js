@@ -74,7 +74,7 @@ export default function NewConversationPage() {
               value={toUsername}
               onChange={e => setToUsername(e.target.value)}
               className="flex-1 border border-[var(--voz-border)] rounded-[2px] p-2 focus:border-[var(--voz-link)] outline-none" 
-              placeholder="Nhập chính xác Username người nhận (VD: Kuang2)..." 
+              placeholder="Nhập chính xác Username người nhận..." 
             />
          </div>
          

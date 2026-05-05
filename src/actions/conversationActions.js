@@ -128,3 +128,51 @@ export async function replyToConversation(conversationId, formData) {
 
   return { success: true };
 }
+
+/**
+ * Tìm hoặc tạo cuộc trò chuyện 1v1 nhanh giữa user hiện tại và targetUserId.
+ * Nếu đã có conversation chỉ gồm 2 người này thì trả về ID đó.
+ * Nếu chưa có thì tạo mới với title tự động.
+ */
+export async function findOrCreateDirectConversation(targetUserId) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Chưa đăng nhập");
+  if (targetUserId === session.user.id) throw new Error("Không thể nhắn tin cho chính mình");
+
+  const targetUser = await prisma.user.findUnique({ where: { id: targetUserId }, select: { id: true, username: true } });
+  if (!targetUser) throw new Error("Không tìm thấy người dùng");
+
+  // Tìm conversation đã tồn tại giữa 2 người (chỉ gồm đúng 2 participants)
+  const existingConversations = await prisma.conversation.findMany({
+    where: {
+      AND: [
+        { participants: { some: { id: session.user.id } } },
+        { participants: { some: { id: targetUserId } } },
+      ]
+    },
+    include: { participants: { select: { id: true } } }
+  });
+
+  // Lọc ra conversation chỉ gồm đúng 2 người
+  const directConv = existingConversations.find(c => c.participants.length === 2);
+
+  if (directConv) {
+    return { success: true, conversationId: directConv.id };
+  }
+
+  // Tạo mới conversation
+  const senderName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
+  const receiverName = targetUser.username.replace(/[<>"'&]/g, '');
+
+  const conversation = await prisma.conversation.create({
+    data: {
+      title: `${senderName} và ${receiverName}`,
+      participants: {
+        connect: [{ id: session.user.id }, { id: targetUserId }]
+      }
+    }
+  });
+
+  revalidatePath('/conversations');
+  return { success: true, conversationId: conversation.id, isNew: true };
+}

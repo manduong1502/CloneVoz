@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import EditProfileModal from '@/components/profile/EditProfileModal';
 import FollowButton from '@/components/profile/FollowButton';
+import InboxButton from '@/components/profile/InboxButton';
 import RankBadge from '@/components/ui/RankBadge';
 import { getRankInfo } from '@/lib/rank';
 import { checkIsFollowing } from '@/actions/followActions';
@@ -85,11 +86,14 @@ export default async function ProfilePage({ params, searchParams }) {
                   {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
                   <RankBadge points={targetUser.points} size="lg" showProgress />
                 </h1>
-                <div className="flex justify-center md:justify-end shrink-0">
+                <div className="flex justify-center md:justify-end shrink-0 gap-2">
                   {isOwner ? (
                     <EditProfileModal user={targetUser} />
                   ) : (
-                    <FollowButton targetUserId={targetUser.id} initialIsFollowing={isFollowing} />
+                    <>
+                      {session?.user && <InboxButton targetUserId={targetUser.id} />}
+                      <FollowButton targetUserId={targetUser.id} initialIsFollowing={isFollowing} />
+                    </>
                   )}
                 </div>
               </div>
