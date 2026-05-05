@@ -2,6 +2,7 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
+import { notifyAdmins } from '@/lib/adminNotify';
 
 export async function submitReport({ reason, postId, threadId, shoutboxMessageId }) {
   const session = await auth();
@@ -32,6 +33,17 @@ export async function submitReport({ reason, postId, threadId, shoutboxMessageId
       threadId: threadId || null,
       shoutboxMessageId: shoutboxMessageId || null
     }
+  });
+
+  // Thông báo Admin/Mod có report mới
+  const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
+  const safeReason = (reason || '').substring(0, 50).replace(/[<>"'&]/g, '');
+  await notifyAdmins({
+    type: 'admin_report',
+    content: `🚨 <strong>${safeName}</strong> vừa gửi một báo cáo vi phạm: "${safeReason}"`,
+    link: '/admin/reports',
+    senderId: session.user.id,
+    excludeUserId: session.user.id,
   });
 
   return { success: true };

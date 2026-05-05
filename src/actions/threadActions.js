@@ -7,6 +7,7 @@ import { pusherServer } from '@/lib/pusher.server';
 import { deleteCache } from '@/lib/redis';
 import { checkNodePermission } from '@/lib/permissions';
 import { checkRateLimit, verifyTurnstile } from '@/lib/antispam';
+import { notifyAdmins } from '@/lib/adminNotify';
 
 export async function createThread(nodeId, formData) {
   const session = await auth();
@@ -128,6 +129,18 @@ export async function createThread(nodeId, formData) {
       }
   }
 
+  // Thông báo Admin/Mod nếu bài viết cần duyệt
+  if (!autoApprove) {
+    const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
+    await notifyAdmins({
+      type: 'admin_pending',
+      content: `📝 <strong>${safeName}</strong> vừa đăng bài mới "<em>${(title || '').replace(/[<>"'&]/g, '')}</em>" cần được duyệt.`,
+      link: '/admin/pending',
+      senderId: session.user.id,
+      excludeUserId: session.user.id,
+    });
+  }
+
   // Dọn Redis Cache
   await deleteCache('voz_homepage_data');
   await deleteCache(`voz_node_${nodeId}_page_1_prefix_none`);
@@ -179,6 +192,18 @@ export async function editThread(threadId, formData) {
     await prisma.post.update({
       where: { id: thread.posts[0].id },
       data: { content }
+    });
+  }
+
+  // Thông báo Admin/Mod nếu bài sửa cần duyệt lại
+  if (!autoApprove) {
+    const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
+    await notifyAdmins({
+      type: 'admin_pending',
+      content: `✏️ <strong>${safeName}</strong> vừa chỉnh sửa bài "<em>${(title || '').replace(/[<>"'&]/g, '')}</em>" và cần duyệt lại.`,
+      link: '/admin/pending',
+      senderId: session.user.id,
+      excludeUserId: session.user.id,
     });
   }
 
