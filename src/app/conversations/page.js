@@ -22,10 +22,17 @@ export default async function ConversationsPage() {
     },
     include: {
       participants: { select: { id: true, username: true, avatar: true } },
-      messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { createdAt: true, author: { select: { username: true } } } }
+      messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { content: true, createdAt: true, author: { select: { username: true } } } }
     },
     orderBy: { updatedAt: 'desc' },
   });
+
+  // Helper: strip HTML tags và cắt ngắn
+  function getPreview(html, maxLen = 80) {
+    if (!html) return '';
+    const text = html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
+    return text.length > maxLen ? text.substring(0, maxLen) + '...' : text;
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[200px_1fr] gap-4 w-full">
@@ -60,8 +67,8 @@ export default async function ConversationsPage() {
               
               {conversations.map(conv => {
                 const otherParticipants = conv.participants.filter(p => p.id !== session.user.id);
-                const participantNames = otherParticipants.map(p => p.username).join(', ');
                 const lastMsg = conv.messages[0];
+                const preview = lastMsg ? getPreview(lastMsg.content) : '';
 
                 return (
                   <div key={conv.id} className="flex p-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] transition-colors">
@@ -77,7 +84,12 @@ export default async function ConversationsPage() {
                       <div className="text-[15px] font-semibold mb-[2px]">
                         <Link href={`/conversations/${conv.id}`} className="hover:underline text-[var(--voz-link)]">{conv.title}</Link>
                       </div>
-                      <div className="text-[12px] text-[var(--voz-text-muted)]">
+                      {lastMsg && preview && (
+                        <div className="text-[12px] text-[var(--voz-text-muted)] line-clamp-1 mb-[2px]">
+                          <span className="font-medium text-[var(--voz-text)]">{lastMsg.author.username}:</span> {preview}
+                        </div>
+                      )}
+                      <div className="text-[11px] text-[var(--voz-text-muted)]">
                         Người tham gia: {otherParticipants.length > 0 ? otherParticipants.map((p, i) => (
                           <span key={p.id}>{i > 0 && ', '}<Link href={`/profile/${p.username}`} className="text-[var(--voz-link)] hover:underline">{p.username}</Link></span>
                         )) : 'Không có ai'}
