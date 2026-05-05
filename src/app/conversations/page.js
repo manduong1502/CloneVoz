@@ -2,12 +2,16 @@ import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { Mail } from 'lucide-react';
+import { markPmNotificationsAsRead } from '@/actions/notificationActions';
 
 export default async function ConversationsPage() {
   const session = await auth();
   if (!session?.user) {
     return <div className="p-8 text-center text-red-500 font-bold">Vui lòng đăng nhập để xem hộp thư.</div>;
   }
+
+  // Đánh dấu tất cả thông báo PM là đã đọc khi vào trang hộp thư
+  await markPmNotificationsAsRead();
 
   // Lấy các đoạn hội thoại mà user tham gia
   const conversations = await prisma.conversation.findMany({

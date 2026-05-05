@@ -4,6 +4,7 @@ import { auth } from '@/auth';
 import ConversationReplyBox from '@/components/conversations/ConversationReplyBox';
 import AutoRefresh from '@/components/ui/AutoRefresh';
 import HtmlWithLightbox from '@/components/ui/HtmlWithLightbox';
+import { markPmNotificationsAsRead } from '@/actions/notificationActions';
 
 export default async function ConversationDetailPage({ params }) {
   const { id } = await params;
@@ -12,6 +13,9 @@ export default async function ConversationDetailPage({ params }) {
   if (!session?.user) {
     return <div className="p-8 text-center text-red-500 font-bold">Truy cập bị từ chối.</div>;
   }
+
+  // Đánh dấu tất cả thông báo PM là đã đọc
+  await markPmNotificationsAsRead();
 
   const conversation = await prisma.conversation.findUnique({
     where: { id },

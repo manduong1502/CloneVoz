@@ -36,3 +36,17 @@ export async function deleteReadNotifications() {
 
   return { success: true, deletedCount: result.count };
 }
+
+export async function markPmNotificationsAsRead() {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  await prisma.notification.updateMany({
+    where: { 
+      userId: session.user.id, 
+      isRead: false,
+      type: { in: ['pm', 'pm_reply'] }
+    },
+    data: { isRead: true }
+  });
+}
