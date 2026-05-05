@@ -110,7 +110,7 @@ export default async function CategoryPage({ params, searchParams }) {
                 <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
               ) : node.children.map((child, i) => (
                 <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length - 1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
-                  <div className="flex-1 flex items-center min-w-0 pr-4">
+                  <div className="flex-1 flex items-center min-w-0 pr-2 sm:pr-4">
                     <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[#BFE3FF]">
                       <MessageCircle strokeWidth={1.5} size={32} />
                     </div>
@@ -134,6 +134,15 @@ export default async function CategoryPage({ params, searchParams }) {
                         )}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Mobile Last Post Avatar */}
+                  <div className="sm:hidden flex items-center shrink-0 pl-2">
+                    {child.threads && child.threads.length > 0 && (
+                      <Link href={`/thread/${child.threads[0].id}`}>
+                        <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-[var(--voz-border-light)]" />
+                      </Link>
+                    )}
                   </div>
                   <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
                     <div className="flex flex-col items-center">

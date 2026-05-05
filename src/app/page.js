@@ -126,7 +126,7 @@ export default async function Home() {
                 <div key={node.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== Math.min(category.children.length, 4) - 1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
 
                   {/* Icon & Title */}
-                  <div className="flex-1 flex items-center min-w-0 pr-4">
+                  <div className="flex-1 flex items-center min-w-0 pr-2 sm:pr-4">
                     <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[var(--voz-link)]">
                       <MessageCircle strokeWidth={1.5} size={32} />
                     </div>
@@ -150,6 +150,15 @@ export default async function Home() {
                         )}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Mobile Last Post Avatar */}
+                  <div className="sm:hidden flex items-center shrink-0 pl-2">
+                    {node.threads && node.threads.length > 0 && (
+                      <Link href={`/thread/${node.threads[0].id}`}>
+                        <img src={node.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${node.threads[0].author.username}&background=random`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-[var(--voz-border-light)]" />
+                      </Link>
+                    )}
                   </div>
 
                   {/* Stats */}
