@@ -29,7 +29,7 @@ export default async function SearchPage({ searchParams }) {
 
     results = await prisma.thread.findMany({
       where: whereCondition,
-      orderBy: { lastPostAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       take: 50,
       include: {
         author: { select: { username: true, avatar: true } },
