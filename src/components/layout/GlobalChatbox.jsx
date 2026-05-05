@@ -579,6 +579,7 @@ export default function GlobalChatbox({ session }) {
           slides={[{ src: lightboxImage }]}
           plugins={[Zoom]}
           carousel={{ finite: true }}
+          styles={{ root: { '--yarl__portal_zindex': 999999 } }}
           render={{
             buttonPrev: () => null,
             buttonNext: () => null,
