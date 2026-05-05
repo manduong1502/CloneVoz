@@ -281,7 +281,17 @@ export default function GlobalChatbox({ session }) {
       }
       parts.push(
         <div key={match.index} className="w-full">
-          <img src={match[1]} alt="Attached image" className="max-w-full rounded-2xl cursor-zoom-in hover:opacity-90 max-h-[300px] object-cover" onClick={() => setLightboxImage(match[1])} />
+          <img 
+            src={match[1]} 
+            alt="Attached image" 
+            className="max-w-full rounded-2xl cursor-zoom-in hover:opacity-90 max-h-[300px] object-cover" 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("Mở Lightbox cho ảnh:", match[1]);
+              setLightboxImage(match[1]);
+            }} 
+          />
         </div>
       );
       lastIndex = regex.lastIndex;

@@ -355,6 +355,11 @@ blockquote:not(.voz-quote) strong {
   }
 }
 
+/* Lightbox z-index override */
+.yarl__portal {
+  z-index: 999999 !important;
+}
+
 /* ========================================
    RICH TEXT EDITOR & POST CONTENT STYLING
    Khôi phục lại style cơ bản cho p, ul, ol bị Tailwind xoá mất
