@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ThumbsUp, Flag, MessageSquareQuote } from 'lucide-react';
+import { ThumbsUp, Flag, MessageSquareQuote, Clock } from 'lucide-react';
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
@@ -9,6 +9,7 @@ import QuoteButton from '@/components/thread/QuoteButton';
 import WatchButton from '@/components/thread/WatchButton';
 import ReportModal from '@/components/thread/ReportModal';
 import DeletePostButton from '@/components/thread/DeletePostButton';
+import EditThreadButton from '@/components/thread/EditThreadButton';
 import LikeButton from '@/components/thread/LikeButton';
 import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
@@ -91,6 +92,13 @@ export default async function ThreadPage({ params, searchParams }) {
     return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: Thread not found.</div>;
   }
 
+  // Bài viết chưa duyệt: chỉ cho tác giả và admin/mod xem
+  const isAuthor = session?.user?.id === thread.authorId;
+  const isAdminOrMod = session?.user?.isAdmin || session?.user?.isMod;
+  if (!thread.isApproved && !isAuthor && !isAdminOrMod) {
+    return <div className="p-8 text-center text-[var(--voz-text-muted)] text-lg">Bài viết này đang chờ duyệt và không thể xem.</div>;
+  }
+
   // ==== KÍCH HOẠT RÀO CHẮN ======
   const perm = await checkNodePermission(thread.nodeId);
   if (!perm.granted) {
@@ -136,9 +144,21 @@ export default async function ThreadPage({ params, searchParams }) {
         <Link href={`/category/${thread.node.id}`} className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">{thread.node.title}</Link>
       </div>
 
+      {/* Pending Banner */}
+      {!thread.isApproved && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-4 py-3 mb-4 flex items-center gap-3">
+          <Clock size={20} className="text-amber-500 shrink-0" />
+          <div>
+            <div className="text-[14px] font-semibold text-amber-600">Bài viết đang chờ duyệt</div>
+            <div className="text-[12px] text-amber-500/80">Bài viết này chỉ hiển thị với bạn cho đến khi được quản trị viên phê duyệt.</div>
+          </div>
+        </div>
+      )}
+
       <div className="mb-4">
         <h1 className="text-[22px] font-normal leading-tight text-[var(--voz-text-strong)] mb-[2px]">
           {thread.isPinned && <span className="text-amber-500 mr-1.5" title="Bài ghim">📌</span>}
+          {!thread.isApproved && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-500 text-[11px] font-bold px-2 py-0.5 rounded mr-2 align-middle"><Clock size={11} /> Chờ duyệt</span>}
           {thread.title}
         </h1>
         <div className="text-[12px] text-[var(--voz-text-muted)] flex gap-1 items-center">
@@ -208,6 +228,7 @@ export default async function ThreadPage({ params, searchParams }) {
                   />
                  
                  <div className="flex gap-3 text-[12px] text-[var(--voz-text-muted)]">
+                    {post.position === 1 && session?.user?.id === thread.authorId && <EditThreadButton threadId={id} currentTitle={thread.title} currentContent={post.content} />}
                     {(session?.user?.isAdmin || session?.user?.isMod || session?.user?.id === post.author.id) && <DeletePostButton postId={post.id} threadId={id} isFirstPost={post.position === 1} />}
                     {session?.user && <ReportModal postId={post.id} threadId={id} />}
                     <QuoteButton username={post.author.username} content={post.content} />

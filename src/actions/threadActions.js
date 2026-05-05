@@ -137,3 +137,58 @@ export async function createThread(nodeId, formData) {
 
   redirect(`/thread/${newThread.id}`);
 }
+
+export async function editThread(threadId, formData) {
+  const session = await auth();
+  if (!session?.user) throw new Error("Chưa đăng nhập");
+
+  const thread = await prisma.thread.findUnique({
+    where: { id: threadId },
+    include: { 
+      posts: { where: { position: 1 }, take: 1 },
+      author: { include: { userGroups: true } }
+    }
+  });
+
+  if (!thread) throw new Error("Bài viết không tồn tại");
+  if (thread.authorId !== session.user.id) throw new Error("Bạn không có quyền sửa bài viết này");
+
+  const title = formData.get("title");
+  const content = formData.get("content");
+  if (!title || !content) throw new Error("Vui lòng nhập đủ Tiêu đề và Nội dung");
+
+  // Admin/Mod không cần duyệt lại
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    include: { userGroups: true }
+  });
+  const autoApprove = currentUser?.userGroups.some(g => g.name === 'Admin' || g.name === 'Moderator' || g.canApprove) || false;
+
+  // Cập nhật thread title + đặt lại trạng thái duyệt
+  await prisma.thread.update({
+    where: { id: threadId },
+    data: { 
+      title,
+      isApproved: autoApprove,
+      updatedAt: new Date()
+    }
+  });
+
+  // Cập nhật nội dung post đầu tiên
+  if (thread.posts[0]) {
+    await prisma.post.update({
+      where: { id: thread.posts[0].id },
+      data: { content }
+    });
+  }
+
+  // Dọn Cache
+  await deleteCache('voz_homepage_data');
+  await deleteCache(`voz_node_${thread.nodeId}_page_1_prefix_none`);
+
+  revalidatePath(`/thread/${threadId}`);
+  revalidatePath(`/category/${thread.nodeId}`);
+  revalidatePath(`/`);
+
+  return { success: true, needsApproval: !autoApprove };
+}
