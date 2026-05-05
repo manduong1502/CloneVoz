@@ -277,7 +277,7 @@ export async function handleReaction(postId, path, reactionType) {
 
   // Chặn tự like/dislike chính mình
   if (post.authorId === userId) {
-    return { error: "Bạn không thể tự Ưng hoặc Gạch bài viết của chính mình." };
+    return { error: "Bạn không thể tự Like hoặc Dislike bài viết của chính mình." };
   }
 
   const existingReaction = await prisma.reaction.findFirst({
@@ -359,7 +359,7 @@ export async function handleReaction(postId, path, reactionType) {
              userId: post.authorId,
              senderId: session.user.id,
              type: "reaction",
-             content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã thả Ưng ${label} của bạn.`,
+             content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã Like ${label} của bạn.`,
              link: `/thread/${postData.thread.id}#post-${postId}`
            },
            include: { sender: { select: { username: true, avatar: true } } }

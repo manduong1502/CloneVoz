@@ -67,10 +67,10 @@ export default function LikeButton({ postId, initialLikeCount, initialDislikeCou
            <div className={`rounded-full p-[2px] ${myReaction === 'Like' ? 'bg-[#2574A9] text-white' : 'bg-transparent border border-gray-400 text-gray-400 group-hover:border-[#2574A9] group-hover:bg-[#2574A9] group-hover:text-white'}`}>
               <ThumbsUp size={12}/>
            </div>
-           <span>Ưng ({likeCount})</span>
+           <span>Like ({likeCount})</span>
         </div>
 
-        {/* Nút Gạch (Dislike) */}
+        {/* Nút Dislike */}
         <div 
           onClick={() => toggleAction('Dislike')}
           className={`text-[12px] flex items-center gap-1 group ${isOwnPost ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer hover:underline'} ${myReaction === 'Dislike' ? 'text-red-500 font-semibold' : 'text-[var(--voz-text-muted)] hover:text-red-500'}`}
@@ -78,7 +78,7 @@ export default function LikeButton({ postId, initialLikeCount, initialDislikeCou
            <div className={`rounded-full p-[2px] ${myReaction === 'Dislike' ? 'bg-red-500 text-white' : 'bg-transparent border border-gray-400 text-gray-400 group-hover:border-red-500 group-hover:bg-red-500 group-hover:text-white'}`}>
               <ThumbsDown size={12}/>
            </div>
-           <span>Gạch ({dislikeCount})</span>
+           <span>Dislike ({dislikeCount})</span>
         </div>
     </div>
   );

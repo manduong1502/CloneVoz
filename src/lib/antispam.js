@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 
-// Voice clone: Mặc định chờ 30 giây giữa 2 bài post/thread (Có thể chỉnh lại)
-const RATE_LIMIT_SECONDS = 30;
+// Voice clone: Mặc định chờ 15 giây giữa 2 bài post/thread (Có thể chỉnh lại)
+const RATE_LIMIT_SECONDS = 15;
 
 export async function checkRateLimit() {
   const session = await auth();
