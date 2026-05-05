@@ -98,8 +98,8 @@ export async function GET(request) {
     const secret = searchParams.get('secret');
     const mode = searchParams.get('mode'); // 'interval' hoặc mặc định = 'daily'
 
-    const cronSecret = process.env.CRON_SECRET || 'voz_cron_secret_2026';
-    if (secret !== cronSecret) {
+    const cronSecret = process.env.CRON_SECRET;
+    if (!cronSecret || secret !== cronSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

@@ -195,7 +195,7 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
               {/* Delete */}
               <form action={`/admin/nodes`} onSubmit={async (e) => {
                 e.preventDefault();
-                if (!confirm(`Xóa forum "${forum.title}"?`)) return;
+                if (!confirm(`CẢNH BÁO NGUY HIỂM: Bạn có chắc chắn muốn xóa phòng "${forum.title}" cùng TOÀN BỘ bài viết bên trong không?`)) return;
                 const { deleteNode } = await import('@/actions/nodeActions');
                 await deleteNode(forum.id);
                 setItems(prev => prev.filter(f => f.id !== forum.id));

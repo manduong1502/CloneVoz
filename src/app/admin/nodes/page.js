@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import DraggableForumList from './DraggableForumList';
 import RenameButton from './RenameButton';
+import DeleteCategoryButton from './DeleteCategoryButton';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -42,14 +43,7 @@ export default async function AdminNodesPage() {
                        
                        <div className="flex gap-2 items-center">
                           <RenameButton nodeId={category.id} currentTitle={category.title} />
-                          <form action={async () => {
-                             "use server";
-                             await deleteNode(category.id);
-                          }}>
-                             <button type="submit" className="p-1.5 text-[var(--voz-text-muted)] hover:text-red-500 hover:bg-[var(--voz-hover)] rounded transition" title="Xóa danh mục">
-                                <Trash2 size={16} />
-                             </button>
-                          </form>
+                          <DeleteCategoryButton nodeId={category.id} title={category.title} />
                        </div>
                     </div>
 
@@ -84,9 +78,7 @@ export default async function AdminNodesPage() {
                                 <div className="font-semibold text-[14px]">{forum.title}</div>
                               </div>
                            </div>
-                           <form action={async () => { "use server"; await deleteNode(forum.id); }}>
-                              <button className="p-1.5 text-red-400 hover:text-red-600 transition"><Trash2 size={15} /></button>
-                           </form>
+                           <DeleteCategoryButton nodeId={forum.id} title={forum.title} />
                         </div>
                     ))}
                  </div>
