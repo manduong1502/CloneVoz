@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Activity, MessageSquare, ThumbsUp, Medal, Clock } from 'lucide-react';
+import { Shield, Activity, MessageSquare, ThumbsUp, Medal, Clock, Users } from 'lucide-react';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
@@ -42,9 +42,10 @@ export default async function ProfilePage({ params, searchParams }) {
   // Check follow status
   const isFollowing = !isOwner ? await checkIsFollowing(targetUser.id) : false;
 
-  // Calculate actual stats (Fallback if the model doesn't have it built-in properly)
+  // Calculate actual stats
   const postsCount = await prisma.post.count({ where: { authorId: targetUser.id } });
   const threadsCount = await prisma.thread.count({ where: { authorId: targetUser.id } });
+  const followerCount = await prisma.userFollow.count({ where: { followingId: targetUser.id } });
 
   // Kéo dữ liệu Hoạt động gần đây (Recent Posts) với giới hạn 10 và phân trang
   const recentPosts = await prisma.post.findMany({
@@ -126,9 +127,13 @@ export default async function ProfilePage({ params, searchParams }) {
                 <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Medal size={16}/> Chủ đề:</span> 
                 <span className="font-semibold">{threadsCount}</span>
               </div>
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center border-b border-[var(--voz-border-light)] pb-2">
                 <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><ThumbsUp size={16}/> Công đức:</span> 
                 <span className="font-semibold">{targetUser.points}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="flex items-center gap-2 text-[var(--voz-text-muted)]"><Users size={16}/> Người theo dõi:</span> 
+                <span className="font-semibold">{followerCount}</span>
               </div>
             </div>
           </div>

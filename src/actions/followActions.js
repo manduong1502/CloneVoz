@@ -29,6 +29,31 @@ export async function toggleFollow(targetUserId) {
         followingId: targetUserId
       }
     });
+
+    // Gửi thông báo cho người được theo dõi
+    const safeName = (session.user.name || '').replace(/[<>"'&]/g, '');
+    const notification = await prisma.notification.create({
+      data: {
+        userId: targetUserId,
+        senderId: session.user.id,
+        type: "follow",
+        content: `<strong>${safeName}</strong> đã theo dõi bạn.`,
+        link: `/profile/${encodeURIComponent(session.user.username || session.user.name)}`
+      }
+    });
+
+    try {
+      const { pusherServer } = await import('@/lib/pusher');
+      if (pusherServer) {
+        pusherServer.trigger(`user-${targetUserId}`, 'new-notification', {
+          ...notification,
+          id: notification.id,
+          createdAt: new Date().toISOString(),
+          sender: { username: session.user.username || session.user.name, avatar: session.user.image || null }
+        }).catch(() => {});
+      }
+    } catch (e) {}
+
     return { success: true, isFollowing: true };
   }
 }
