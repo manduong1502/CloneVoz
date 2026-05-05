@@ -354,16 +354,23 @@ export async function handleReaction(postId, path, reactionType) {
       try {
         const postData = await prisma.post.findUnique({ where: { id: postId }, select: { position: true, thread: true } });
         const label = postData.position === 1 ? 'bài viết' : 'bình luận';
-        await prisma.notification.create({
+        const newNotif = await prisma.notification.create({
            data: {
              userId: post.authorId,
              senderId: session.user.id,
              type: "reaction",
              content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã thả Ưng ${label} của bạn.`,
              link: `/thread/${postData.thread.id}#post-${postId}`
-           }
+           },
+           include: { sender: { select: { username: true, avatar: true } } }
         });
-        pusherServer.trigger(`user-${post.authorId}`, 'new-notification', { type: 'reaction' }).catch(() => {});
+        
+        if (pusherServer) {
+          pusherServer.trigger(`user-${post.authorId}`, 'new-notification', {
+            ...newNotif,
+            createdAt: newNotif.createdAt.toISOString()
+          }).catch(() => {});
+        }
       } catch (err) {}
     }
   }
