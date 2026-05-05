@@ -67,43 +67,38 @@ export default async function ProfilePage({ params, searchParams }) {
         {/* Cover Photo / Top Bar */}
         <div className="h-[120px] bg-gradient-to-r from-[#183254] to-[#2574A9] relative"></div>
         
-        <div className="bg-[var(--voz-surface)] px-6 pb-6 pt-0 relative flex flex-col md:flex-row md:items-end gap-6 justify-between">
+        <div className="bg-[var(--voz-surface)] px-6 pb-6 pt-0 relative">
           
           {/* Avatar and Info Block */}
-          <div className="flex flex-col md:flex-row items-center md:items-end gap-4 mt-[-40px] md:mt-[-60px] relative z-10 w-full md:w-auto text-center md:text-left">
-            <div className="bg-[var(--voz-surface)] p-1 rounded-full border border-[var(--voz-border)] shadow-sm">
+          <div className="flex flex-col md:flex-row items-center md:items-end gap-4 mt-[-40px] md:mt-[-60px] relative z-10 text-center md:text-left">
+            <div className="bg-[var(--voz-surface)] p-1 rounded-full border border-[var(--voz-border)] shadow-sm shrink-0">
               <img 
                 src={targetUser.avatar || `https://ui-avatars.com/api/?name=${targetUser.username.charAt(0)}&background=random&size=150`} 
                 className="w-[100px] h-[100px] md:w-[150px] md:h-[150px] rounded-full object-cover" 
               />
             </div>
             
-            <div className="flex flex-col md:mb-2">
-              <h1 className="text-[28px] font-semibold text-[var(--voz-text)] flex flex-wrap items-center justify-center md:justify-start gap-3 leading-none mb-2">
-                {targetUser.username}
-                {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
-                <RankBadge points={targetUser.points} size="lg" showProgress />
-              </h1>
+            <div className="flex-1 min-w-0 md:mb-2 w-full">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-2">
+                <h1 className="text-[28px] font-semibold text-[var(--voz-text)] flex flex-wrap items-center justify-center md:justify-start gap-3 leading-none">
+                  {targetUser.username}
+                  {targetUser.customTitle === 'Quản trị viên' && <Shield size={20} className="text-red-600" />}
+                  <RankBadge points={targetUser.points} size="lg" showProgress />
+                </h1>
+                <div className="flex justify-center md:justify-end shrink-0">
+                  {isOwner ? (
+                    <EditProfileModal user={targetUser} />
+                  ) : (
+                    <FollowButton targetUserId={targetUser.id} initialIsFollowing={isFollowing} />
+                  )}
+                </div>
+              </div>
               
               <div className="text-[14px] text-[var(--voz-text-muted)] mb-2">{targetUser.customTitle || "Thành viên"}</div>
               <div className="text-[12px] text-[var(--voz-text-muted)] flex items-center justify-center md:justify-start gap-1">
                 <Clock size={12}/> Đã tham gia: {new Date(targetUser.createdAt).toLocaleDateString('vi-VN')}
               </div>
             </div>
-          </div>
-          
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2 justify-center md:justify-end mb-2 w-full md:w-auto">
-             {isOwner ? (
-                <EditProfileModal user={targetUser} />
-             ) : (
-                <>
-                   <FollowButton targetUserId={targetUser.id} initialIsFollowing={isFollowing} />
-                   <button className="bg-[var(--voz-surface)] hover:bg-[var(--voz-accent)] text-[var(--voz-text-strong)] px-4 py-2 font-medium text-[13px] rounded flex items-center gap-2 border border-[#ccc] transition-all">
-                     Bỏ qua
-                   </button>
-                </>
-             )}
           </div>
         </div>
       </div>
