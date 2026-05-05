@@ -26,9 +26,9 @@ export default async function AdminLayout({ children }) {
     ...(isAdmin ? [{ href: '/admin', icon: 'Home', label: 'Bảng điều khiển' }] : []),
     { href: '/admin/pending', icon: 'CheckCircle', label: 'Duyệt bài', badge: pendingCount },
     { href: '/admin/reports', icon: 'Flag', label: 'Báo cáo vi phạm' },
+    { href: '/admin/users', icon: 'Users', label: 'Quản lý thành viên' },
     ...(isAdmin ? [
       { href: '/admin/nodes', icon: 'LayoutList', label: 'Quản lý chuyên mục' },
-      { href: '/admin/users', icon: 'Users', label: 'Quản lý thành viên' },
       { href: '/admin/settings', icon: 'Settings', label: 'Cài đặt' },
     ] : []),
   ];
