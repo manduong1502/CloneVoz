@@ -279,17 +279,17 @@ export default function GlobalChatbox({ session }) {
       if (match.index > lastIndex) {
         parts.push(<span key={lastIndex} className="whitespace-pre-wrap">{msgContent.substring(lastIndex, match.index)}</span>);
       }
+      const imgUrl = match[1]; // Capture URL trước khi closure đóng lại
       parts.push(
         <div key={match.index} className="w-full">
           <img 
-            src={match[1]} 
+            src={imgUrl} 
             alt="Attached image" 
             className="max-w-full rounded-2xl cursor-zoom-in hover:opacity-90 max-h-[300px] object-cover" 
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              console.log("Mở Lightbox cho ảnh:", match[1]);
-              setLightboxImage(match[1]);
+              setLightboxImage(imgUrl);
             }} 
           />
         </div>
