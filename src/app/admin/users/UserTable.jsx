@@ -115,8 +115,11 @@ export default function UserTable({ users }) {
               const joinDate = new Date(u.createdAt).toLocaleDateString('vi-VN');
               const rowNumber = startIndex + index + 1;
 
+              const isBanExpired = u.banExpiresAt ? new Date(u.banExpiresAt).getTime() <= Date.now() : false;
+              const isActuallyBanned = u.isBanned && !isBanExpired;
+
               return (
-                <tr key={u.id} className={`hover:bg-[var(--voz-hover)] transition-colors ${u.isBanned ? 'bg-red-500/5' : ''}`}>
+                <tr key={u.id} className={`hover:bg-[var(--voz-hover)] transition-colors ${isActuallyBanned ? 'bg-red-500/5' : ''}`}>
                   {/* Row number */}
                   <td className="px-2 py-3 text-center text-[12px] text-[var(--voz-text-muted)] font-medium">{rowNumber}</td>
 
@@ -163,7 +166,7 @@ export default function UserTable({ users }) {
 
                   {/* Status */}
                   <td className="px-3 py-3 text-center">
-                    {u.isBanned ? (
+                    {isActuallyBanned ? (
                       <div className="flex flex-col items-center gap-0.5">
                         <span className="inline-flex items-center gap-1 bg-red-600 text-white px-2 py-0.5 rounded text-[10px] font-bold">
                           <Ban size={10} /> BAN
@@ -179,7 +182,7 @@ export default function UserTable({ users }) {
 
                   {/* Actions */}
                   <td className="px-4 py-3">
-                    <UserRoleActions userId={u.id} username={u.username} currentRole={roleName} isBanned={u.isBanned} />
+                    <UserRoleActions userId={u.id} username={u.username} currentRole={roleName} isBanned={isActuallyBanned} />
                   </td>
                 </tr>
               );
@@ -223,10 +226,16 @@ export default function UserTable({ users }) {
       )}
 
       {/* Ban reason tooltip row */}
-      {filteredUsers.some(u => u.isBanned && u.banReason) && (
+      {filteredUsers.some(u => {
+        const isBanExpired = u.banExpiresAt ? new Date(u.banExpiresAt).getTime() <= Date.now() : false;
+        return u.isBanned && !isBanExpired && u.banReason;
+      }) && (
         <div className="border-t border-[var(--voz-border)] bg-red-500/5 px-4 py-2.5">
           <div className="text-[11px] text-red-400 font-semibold mb-1">Chi tiết ban:</div>
-          {filteredUsers.filter(u => u.isBanned).map(u => (
+          {filteredUsers.filter(u => {
+            const isBanExpired = u.banExpiresAt ? new Date(u.banExpiresAt).getTime() <= Date.now() : false;
+            return u.isBanned && !isBanExpired;
+          }).map(u => (
             <div key={u.id} className="text-[12px] text-[var(--voz-text-muted)] flex gap-2 py-0.5">
               <Link href={`/profile/${u.username}`} className="font-semibold text-[var(--voz-link)] hover:underline">{u.username}:</Link>
               <span>{u.banReason || '—'}</span>

@@ -171,7 +171,10 @@ export async function banUser(userId, duration, reason) {
   if (!user) throw new Error("User không tồn tại");
   
   // Nếu đang bị ban → Gỡ ban
-  if (user.isBanned) {
+  const isBanExpired = user.banExpiresAt ? new Date(user.banExpiresAt).getTime() <= Date.now() : false;
+  const isActuallyBanned = user.isBanned && !isBanExpired;
+
+  if (isActuallyBanned) {
     await prisma.user.update({
       where: { id: userId },
       data: { 
