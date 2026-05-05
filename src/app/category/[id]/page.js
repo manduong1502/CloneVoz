@@ -119,6 +119,20 @@ export default async function CategoryPage({ params, searchParams }) {
                         {child.title}
                       </Link>
                       {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
+                      
+                      {/* Mobile Stats & Last Post (Hidden on larger screens) */}
+                      <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
+                        <div className="text-[11px] text-[var(--voz-text-muted)]">
+                          Chủ đề: <span className="font-medium text-[var(--voz-text)]">{child.threadsCount || 0}</span> <span className="mx-1">·</span> 
+                          Bình luận: <span className="font-medium text-[var(--voz-text)]">{child.postsCount || 0}</span>
+                        </div>
+                        {child.threads && child.threads.length > 0 && (
+                          <div className="text-[11px] text-[var(--voz-text-muted)] truncate">
+                            {formatRelativeTime(child.threads[0].createdAt)} <span className="mx-1">·</span> 
+                            <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)] font-medium">{child.threads[0].author.username}</Link>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">

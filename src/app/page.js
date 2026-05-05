@@ -135,6 +135,20 @@ export default async function Home() {
                         {node.title}
                       </Link>
                       {node.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{node.description}</div>}
+                      
+                      {/* Mobile Stats & Last Post (Hidden on larger screens) */}
+                      <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
+                        <div className="text-[11px] text-[var(--voz-text-muted)]">
+                          Chủ đề: <span className="font-medium text-[var(--voz-text)]">{formatNumber(node.threadsCount)}</span> <span className="mx-1">·</span> 
+                          Bình luận: <span className="font-medium text-[var(--voz-text)]">{formatNumber(node.postsCount)}</span>
+                        </div>
+                        {node.threads && node.threads.length > 0 && (
+                          <div className="text-[11px] text-[var(--voz-text-muted)] truncate">
+                            {formatRelativeTime(node.threads[0].createdAt)} <span className="mx-1">·</span> 
+                            <Link href={`/profile/${node.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)] font-medium">{node.threads[0].author.username}</Link>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
