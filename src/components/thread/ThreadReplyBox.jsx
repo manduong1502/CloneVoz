@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useTransition } from 'react';
 import { X } from 'lucide-react';
 import { RichTextEditor } from '@/components/ui/RichTextEditor';
 import { createReply } from '@/actions/postActions';
+import { useRouter } from 'next/navigation';
 
 export default function ThreadReplyBox({ session, threadId }) {
   const [content, setContent] = useState('');
@@ -12,6 +13,7 @@ export default function ThreadReplyBox({ session, threadId }) {
   const [isPending, startTransition] = useTransition();
   const [quotingUser, setQuotingUser] = useState(null); // Tên user đang được trích dẫn
   const editorRef = useRef(null);
+  const router = useRouter();
 
   // Lắng nghe Event gài Quote
   useEffect(() => {
@@ -84,6 +86,13 @@ export default function ThreadReplyBox({ session, threadId }) {
             setContent('');
           }
           setQuotingUser(null);
+          
+          if (result.post && result.post.position) {
+            const pageNumber = Math.ceil(result.post.position / 15);
+            const pageParam = pageNumber > 1 ? `?page=${pageNumber}` : '';
+            router.push(`/thread/${threadId}${pageParam}#post-${result.post.id}`);
+            router.refresh();
+          }
         } else if (result?.error) {
           alert(result.error);
         }
