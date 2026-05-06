@@ -7,7 +7,7 @@ export default async function AdminUsers() {
       userGroups: true,
       _count: { select: { threads: true, posts: true, reactions: true } }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { createdAt: 'asc' }
   });
 
   // Serialize dates cho client component

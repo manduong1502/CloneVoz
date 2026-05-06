@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from 'react';
-import { Search, Ban, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Ban, ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 import UserRoleActions from './UserRoleActions';
 
@@ -11,6 +11,11 @@ export default function UserTable({ users }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState('join_asc');
+
+  // Map: userId -> số thứ tự tham gia (dựa vào thứ tự gốc từ server, đã sắp xếp createdAt asc)
+  const joinOrderMap = {};
+  users.forEach((u, i) => { joinOrderMap[u.id] = i + 1; });
 
   const filteredUsers = users.filter(u => {
     const isAdmin = u.userGroups.some(g => g.name === 'Admin');
@@ -25,10 +30,22 @@ export default function UserTable({ users }) {
     return matchesSearch && matchesRole;
   });
 
+  // Sort logic
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    switch (sortBy) {
+      case 'join_asc': return new Date(a.createdAt) - new Date(b.createdAt);
+      case 'join_desc': return new Date(b.createdAt) - new Date(a.createdAt);
+      case 'name_asc': return (a.username || '').localeCompare(b.username || '');
+      case 'posts_desc': return ((b._count?.posts ?? 0) + (b._count?.threads ?? 0)) - ((a._count?.posts ?? 0) + (a._count?.threads ?? 0));
+      case 'points_desc': return (b.points ?? 0) - (a.points ?? 0);
+      default: return 0;
+    }
+  });
+
   // Pagination
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedUsers = sortedUsers.slice(startIndex, startIndex + ITEMS_PER_PAGE);
 
   // Reset page when filter/search changes
   const handleSearchChange = (e) => {
@@ -37,6 +54,10 @@ export default function UserTable({ users }) {
   };
   const handleFilterChange = (key) => {
     setFilterRole(key);
+    setCurrentPage(1);
+  };
+  const handleSortChange = (e) => {
+    setSortBy(e.target.value);
     setCurrentPage(1);
   };
 
@@ -54,19 +75,32 @@ export default function UserTable({ users }) {
             />
             <Search className="absolute left-2.5 top-[8px] text-[var(--voz-text-muted)]" size={14} />
          </div>
-         <div className="flex gap-1.5 items-center text-[11px]">
-           {[
-             { key: 'all', label: `Tất cả (${users.length})`, bg: 'bg-blue-600' },
-             { key: 'Admin', label: 'Admin', bg: 'bg-red-500' },
-             { key: 'Moderator', label: 'Moderator', bg: 'bg-blue-500' },
-             { key: 'Member', label: 'Member', bg: 'bg-gray-500' },
-           ].map(f => (
-             <button 
-               key={f.key}
-               onClick={() => handleFilterChange(f.key)}
-               className={`px-2.5 py-1 rounded border transition font-medium ${filterRole === f.key ? `${f.bg} text-white border-transparent` : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-hover)]'}`}
-             >{f.label}</button>
-           ))}
+         <div className="flex gap-2 items-center">
+           <div className="flex gap-1.5 items-center text-[11px]">
+             {[
+               { key: 'all', label: `Tất cả (${users.length})`, bg: 'bg-blue-600' },
+               { key: 'Admin', label: 'Admin', bg: 'bg-red-500' },
+               { key: 'Moderator', label: 'Moderator', bg: 'bg-blue-500' },
+               { key: 'Member', label: 'Member', bg: 'bg-gray-500' },
+             ].map(f => (
+               <button 
+                 key={f.key}
+                 onClick={() => handleFilterChange(f.key)}
+                 className={`px-2.5 py-1 rounded border transition font-medium ${filterRole === f.key ? `${f.bg} text-white border-transparent` : 'border-[var(--voz-border)] text-[var(--voz-text-muted)] hover:bg-[var(--voz-hover)]'}`}
+               >{f.label}</button>
+             ))}
+           </div>
+           <select 
+             value={sortBy} 
+             onChange={handleSortChange}
+             className="text-[11px] px-2 py-1 rounded border border-[var(--voz-border)] bg-[var(--voz-surface)] text-[var(--voz-text)] outline-none cursor-pointer"
+           >
+             <option value="join_asc">Cũ nhất</option>
+             <option value="join_desc">Mới nhất</option>
+             <option value="name_asc">Tên A-Z</option>
+             <option value="posts_desc">Nhiều bài nhất</option>
+             <option value="points_desc">Nhiều điểm nhất</option>
+           </select>
          </div>
       </div>
 
@@ -120,8 +154,8 @@ export default function UserTable({ users }) {
 
               return (
                 <tr key={u.id} className={`hover:bg-[var(--voz-hover)] transition-colors ${isActuallyBanned ? 'bg-red-500/5' : ''}`}>
-                  {/* Row number */}
-                  <td className="px-2 py-3 text-center text-[12px] text-[var(--voz-text-muted)] font-medium">{rowNumber}</td>
+                  {/* Row number = số thứ tự tham gia cố định */}
+                  <td className="px-2 py-3 text-center text-[12px] text-[var(--voz-text-muted)] font-medium">#{joinOrderMap[u.id]}</td>
 
                   {/* User info */}
                   <td className="px-4 py-3">
@@ -195,7 +229,7 @@ export default function UserTable({ users }) {
       {totalPages > 1 && (
         <div className="border-t border-[var(--voz-border)] bg-[var(--voz-accent)] px-4 py-2.5 flex justify-between items-center">
           <span className="text-[12px] text-[var(--voz-text-muted)]">
-            Hiển thị {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredUsers.length)} / {filteredUsers.length} thành viên
+            Hiển thị {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, sortedUsers.length)} / {sortedUsers.length} thành viên
           </span>
           <div className="flex items-center gap-1">
             <button 

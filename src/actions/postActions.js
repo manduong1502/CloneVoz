@@ -189,9 +189,11 @@ export async function createReply(threadId, formData) {
         const safeTitle = (thread.title || '').replace(/[<>"'&]/g, '');
 
         // Ưu tiên thấp → cao (text cuối cùng ghi đè)
-        if (participants.some(p => p.authorId === uid)) {
+        // 1. Participant (đã từng comment) - ưu tiên thấp nhất
+        if (participants.some(p => p.authorId === uid) && uid !== thread.authorId) {
             text = `<strong>${safeName}</strong> đã trả lời bình luận của bạn tại bài viết "<em>${safeTitle}</em>".`;
         }
+        // 2. Thread owner - ưu tiên cao hơn
         if (uid === thread.authorId) {
             text = `<strong>${safeName}</strong> đã bình luận vào bài viết của bạn "<em>${safeTitle}</em>".`;
         }

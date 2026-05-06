@@ -271,6 +271,10 @@ model ShoutboxMessage {
   authorId  String
   author    User     @relation("UserShouts", fields: [authorId], references: [id])
 
+  replyToId String?
+  replyTo   ShoutboxMessage?  @relation("ShoutReplies", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies   ShoutboxMessage[] @relation("ShoutReplies")
+
   reports   Report[] @relation("ReportedShouts")
   reactions ShoutboxReaction[] @relation("ShoutReactions")
 

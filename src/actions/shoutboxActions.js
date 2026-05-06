@@ -10,7 +10,8 @@ export async function getRecentShouts() {
       take: 50,
       orderBy: { createdAt: 'desc' },
       include: { 
-        author: { select: { id: true, username: true, avatar: true, customTitle: true } },
+        author: { select: { id: true, username: true, avatar: true, customTitle: true, userGroups: { select: { name: true } } } },
+        replyTo: { select: { id: true, content: true, author: { select: { username: true } } } },
         reactions: true
       }
     });
@@ -20,7 +21,7 @@ export async function getRecentShouts() {
   }
 }
 
-export async function postShout(content) {
+export async function postShout(content, replyToId = null) {
   const session = await auth();
   if (!session?.user?.id) return { error: "Vui lòng đăng nhập để chat." };
   
@@ -59,9 +60,13 @@ export async function postShout(content) {
     const newShout = await prisma.shoutboxMessage.create({
       data: {
         content: content.trim(),
-        authorId: session.user.id
+        authorId: session.user.id,
+        ...(replyToId && { replyToId })
       },
-      include: { author: { select: { id: true, username: true, avatar: true, customTitle: true } } }
+      include: {
+        author: { select: { id: true, username: true, avatar: true, customTitle: true, userGroups: { select: { name: true } } } },
+        replyTo: { select: { id: true, content: true, author: { select: { username: true } } } }
+      }
     });
 
     // Kích nổ Pusher để bắn tin nhắn cho toàn cõi server

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { getPusherClient } from '@/lib/pusher.client';
 import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout, getChatPauseState, toggleChatPause } from '@/actions/shoutboxActions';
-import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock } from 'lucide-react';
+import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock, Reply } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -11,30 +11,37 @@ import { submitReport } from '@/actions/reportActions';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
-function ChatHint() {
-  const [show, setShow] = useState(false);
+function ChatHint({ unreadCount }) {
+  const [dismissed, setDismissed] = useState(false);
+  const [showInitial, setShowInitial] = useState(false);
 
+  // Hiện lại khi có tin nhắn mới chưa đọc
   useEffect(() => {
-    // Chỉ hiển thị gợi ý nếu user chưa từng đóng
-    const dismissed = localStorage.getItem('chat_hint_dismissed');
-    if (!dismissed) {
-      setShow(true);
-      // Tự ẩn sau 8 giây
-      const timer = setTimeout(() => setShow(false), 8000);
+    if (unreadCount > 0) {
+      setDismissed(false);
+    }
+  }, [unreadCount]);
+
+  // Lần đầu vào trang, hiện gợi ý 1 lần
+  useEffect(() => {
+    const seen = localStorage.getItem('chat_hint_dismissed');
+    if (!seen) {
+      setShowInitial(true);
+      const timer = setTimeout(() => { setShowInitial(false); localStorage.setItem('chat_hint_dismissed', '1'); }, 8000);
       return () => clearTimeout(timer);
     }
   }, []);
 
   const dismiss = () => {
-    setShow(false);
-    localStorage.setItem('chat_hint_dismissed', '1');
+    setDismissed(true);
   };
 
-  if (!show) return null;
+  const shouldShow = !dismissed && (showInitial || unreadCount > 0);
+  if (!shouldShow) return null;
 
   return (
-    <div className="bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg shadow-lg px-3 py-2 text-[12px] text-[var(--voz-text)] flex items-center gap-2 animate-fade-in max-w-[200px]">
-      <span>💬 Tham gia trò chuyện cùng mọi người!</span>
+    <div className="bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg shadow-lg px-3 py-2 text-[12px] text-[var(--voz-text)] flex items-center gap-2 animate-fade-in max-w-[220px]">
+      <span>💬 {unreadCount > 0 ? `Có ${unreadCount > 99 ? '99+' : unreadCount} tin nhắn mới!` : 'Tham gia trò chuyện cùng mọi người!'}</span>
       <button onClick={dismiss} className="text-[var(--voz-text-muted)] hover:text-[var(--voz-text)] shrink-0 text-[14px] leading-none">✕</button>
     </div>
   );
@@ -54,6 +61,7 @@ export default function GlobalChatbox({ session }) {
   const textareaRef = useRef(null);
   const [toast, setToast] = useState(null);
   const [isChatPaused, setIsChatPaused] = useState(false);
+  const [replyingTo, setReplyingTo] = useState(null); // { id, content, author: { username } }
 
   const showToast = (message, type = 'error') => {
     setToast({ message, type });
@@ -216,13 +224,18 @@ export default function GlobalChatbox({ session }) {
     const msgContent = content;
     setContent('');
 
+    const replyId = replyingTo?.id || null;
+    setReplyingTo(null);
+
     startTransition(async () => {
       try {
-        const res = await postShout(msgContent);
+        const res = await postShout(msgContent, replyId);
         if (res.error) {
            showToast(res.error, 'error');
            setContent(msgContent);
         }
+        // Giữ focus vào ô nhập sau khi gửi
+        setTimeout(() => textareaRef.current?.focus(), 50);
       } catch (err) {
         showToast(err.message || 'Lỗi máy chủ', 'error');
         setContent(msgContent); // Revert input if error
@@ -448,10 +461,16 @@ export default function GlobalChatbox({ session }) {
 
                     {/* Tên người gửi (chỉ xuất hiện ở tin đầu của nhóm) */}
                     {showName && (
-                      <div className="text-[11px] mb-[2px] ml-[36px] flex justify-start">
+                      <div className="text-[11px] mb-[2px] ml-[36px] flex items-center gap-1 justify-start">
                         <Link href={`/profile/${msg.author.username}`} className="font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
                           {msg.author.username}
                         </Link>
+                        {msg.author.userGroups?.some(g => g.name === 'Admin') && (
+                          <span className="text-[9px] font-bold bg-red-500 text-white px-1.5 py-[1px] rounded">ADMIN</span>
+                        )}
+                        {msg.author.userGroups?.some(g => g.name === 'Moderator') && !msg.author.userGroups?.some(g => g.name === 'Admin') && (
+                          <span className="text-[9px] font-bold bg-blue-500 text-white px-1.5 py-[1px] rounded">MOD</span>
+                        )}
                       </div>
                     )}
 
@@ -472,6 +491,15 @@ export default function GlobalChatbox({ session }) {
 
                         {/* Bóng Chat và Badge (Không chứa tên) */}
                         <div className="relative w-fit max-w-[260px] md:max-w-[300px]">
+                          {/* Reply context */}
+                          {msg.replyTo && (
+                            <div className={`text-[11px] mb-1 px-3 py-1.5 rounded-xl ${isMine ? 'bg-[#3a4abd] text-white/60' : 'bg-[#e0e0e0] dark:bg-[#1e1e1e] text-gray-500 dark:text-gray-400'}`}>
+                              <div className="font-semibold text-[10px] mb-0.5">
+                                {isMine ? 'Bạn' : msg.author.username} đã trả lời {msg.replyTo.author?.username === session?.user?.username ? 'bạn' : msg.replyTo.author?.username || '...'}
+                              </div>
+                              <div className="truncate max-w-[200px] opacity-80">{msg.replyTo.content?.replace(/\[IMG\].*?\[\/IMG\]/g, '[Hình ảnh]').substring(0, 60)}</div>
+                            </div>
+                          )}
                           <div className={`text-[15px] font-[400] leading-tight ${isOnlyImage(msg.content) ? 'p-0 bg-transparent' : `px-[14px] py-[8px] ${isMine ? 'bg-[#4e5dff] text-white rounded-[20px]' : 'bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
                             {renderMessageContent(msg.content)}
                           </div>
@@ -533,6 +561,15 @@ export default function GlobalChatbox({ session }) {
                               </button>
                             )}
 
+                            {/* Nút Reply */}
+                            <button
+                              onClick={() => { setReplyingTo({ id: msg.id, content: msg.content, author: msg.author }); textareaRef.current?.focus(); }}
+                              className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                              title="Trả lời"
+                            >
+                              <Reply size={14} />
+                            </button>
+
                             {/* Nút Xóa (Cho Owner, Admin, Mod) */}
                             {(isMine || session?.user?.isAdmin || session?.user?.isMod) && (
                               <button
@@ -559,6 +596,18 @@ export default function GlobalChatbox({ session }) {
           {/* Input Area (Instagram Style) */}
           <div className="p-3 bg-[var(--voz-surface)] border-t border-[var(--voz-border)] relative" style={{ paddingRight: '22px' }}>
 
+            {/* Reply Preview Bar */}
+            {replyingTo && (
+              <div className="flex items-center justify-between bg-[#f0f0f0] dark:bg-[#1e1e1e] rounded-xl px-3 py-2 mb-2 text-[12px] border-l-[3px] border-blue-500">
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-blue-500 text-[11px]">Đang trả lời {replyingTo.author?.username}</div>
+                  <div className="text-gray-500 dark:text-gray-400 truncate">{replyingTo.content?.replace(/\[IMG\].*?\[\/IMG\]/g, '[Hình ảnh]').substring(0, 80)}</div>
+                </div>
+                <button onClick={() => setReplyingTo(null)} className="ml-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0">
+                  <X size={16} />
+                </button>
+              </div>
+            )}
             {/* Bảng Emoji Full (emoji-picker-react) */}
             {showEmojiPicker && (
               <div className="absolute bottom-full left-0 mb-2 z-[9999] shadow-2xl">
@@ -653,7 +702,7 @@ export default function GlobalChatbox({ session }) {
       {!isOpen && (
         <div className="flex items-center gap-2">
           {/* Tooltip gợi ý */}
-          <ChatHint />
+          <ChatHint unreadCount={unreadCount} />
           
           <button
             onClick={() => setIsOpen(true)}
@@ -666,7 +715,7 @@ export default function GlobalChatbox({ session }) {
             <MessageCircle size={22} className="relative z-10" />
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold px-[6px] py-[2px] rounded-full animate-bounce z-20">
-                {unreadCount > 9 ? '9+' : unreadCount}
+                {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
           </button>
