@@ -35,14 +35,16 @@ export async function postShout(content, replyToId = null) {
   }
 
   if (!content || typeof content !== 'string' || content.trim() === '') return { error: "Tin nhắn không hợp lệ." };
-  if (content.length > 500) return { error: "Tin nhắn quá dài (tối đa 500 ký tự)." };
+  if (content.length > 1500) return { error: "Tin nhắn quá dài (tối đa 1500 ký tự)." };
 
   // Xóa giới hạn spam chat theo yêu cầu của Sếp (không giới hạn thời gian chat)
   // const spamCheck = await checkRateLimit(); // Tắt Spam Check
   
   // Chống spam: không cho chèn link bậy (block mọi URL để an toàn)
+  // Bỏ qua các thẻ [IMG] do hệ thống sinh ra khi upload ảnh
+  const contentWithoutImages = content.replace(/\[IMG\].*?\[\/IMG\]/gi, '');
   const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/|\b))/i;
-  if (urlRegex.test(content)) {
+  if (urlRegex.test(contentWithoutImages)) {
     return { error: "Không được chèn link vào kênh chat chung." };
   }
 
