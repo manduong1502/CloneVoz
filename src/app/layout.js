@@ -74,7 +74,7 @@ export default async function RootLayout({ children }) {
     const isAdminOrMod = session.user.isAdmin || session.user.isMod || SUPER_ADMIN_EMAILS.includes(session.user.email);
     if (isAdminOrMod) {
       const pendingThreads = await prisma.thread.count({ where: { isApproved: false } });
-      const pendingReports = await prisma.report.count({ where: { status: 'PENDING' } });
+      const pendingReports = await prisma.report.count({ where: { status: 'pending' } });
       adminPendingCount = pendingThreads + pendingReports;
     }
   }
