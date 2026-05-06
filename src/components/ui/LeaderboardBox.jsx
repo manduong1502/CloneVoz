@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { getRankInfo } from '@/lib/rank';
 import { Trophy, Crown, Medal, Award } from 'lucide-react';
+import UserBadge from '@/components/ui/UserBadge';
 
 const POSITION_STYLES = [
   { icon: '🥇', color: '#FFD700', bg: 'rgba(255,215,0,0.1)' },
@@ -73,9 +74,12 @@ export default function LeaderboardBox({ topUsersTotal, topUsersMonth }) {
               
               {/* Name + Rank */}
               <div className="flex-1 min-w-0">
-                <Link href={`/profile/${user.username}`} className="text-[13px] font-semibold text-[var(--voz-link)] hover:underline block truncate">
-                  {user.username}
-                </Link>
+                <div className="flex items-center flex-wrap">
+                  <Link href={`/profile/${user.username}`} className="text-[13px] font-semibold text-[var(--voz-link)] hover:underline block truncate">
+                    {user.username}
+                  </Link>
+                  <UserBadge userGroups={user.userGroups} />
+                </div>
                 <span 
                   className={`text-[9px] px-1 py-[0px] rounded-sm font-bold ${rank.isMax ? 'rank-epic' : ''}`}
                   style={{ color: rank.color, backgroundColor: rank.bg, border: `1px solid ${rank.color}30` }}

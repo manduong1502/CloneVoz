@@ -4,6 +4,7 @@ import { getRankInfo } from '@/lib/rank';
 import RankBadge from '@/components/ui/RankBadge';
 import { Trophy, Medal, Crown } from 'lucide-react';
 import Pagination from '@/components/ui/Pagination';
+import UserBadge from '@/components/ui/UserBadge';
 
 export const metadata = {
   title: 'Bảng xếp hạng | DanOngThongMinh',
@@ -26,7 +27,7 @@ export default async function LeaderboardPage(props) {
     orderBy: { points: 'desc' },
     take,
     skip: (pageTotal - 1) * take,
-    select: { id: true, username: true, avatar: true, points: true, createdAt: true }
+    select: { id: true, username: true, avatar: true, points: true, createdAt: true, userGroups: { select: { name: true } } }
   });
 
   // --- Xếp hạng tháng ---
@@ -41,7 +42,7 @@ export default async function LeaderboardPage(props) {
     orderBy: { monthlyPoints: 'desc' },
     take,
     skip: (pageMonth - 1) * take,
-    select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, createdAt: true }
+    select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, createdAt: true, userGroups: { select: { name: true } } }
   });
 
   const POSITION_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'];
@@ -91,9 +92,12 @@ export default async function LeaderboardPage(props) {
                   />
                 </Link>
                 <div className="min-w-0">
-                  <Link href={`/profile/${user.username}`} className="text-[14px] font-semibold text-[var(--voz-link)] hover:underline block truncate">
-                    {user.username}
-                  </Link>
+                  <div className="flex items-center flex-wrap">
+                    <Link href={`/profile/${user.username}`} className="text-[14px] font-semibold text-[var(--voz-link)] hover:underline block truncate">
+                      {user.username}
+                    </Link>
+                    <UserBadge userGroups={user.userGroups} />
+                  </div>
                   <RankBadge points={user.points} />
                 </div>
               </div>

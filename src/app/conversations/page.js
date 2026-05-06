@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/auth';
 import { Mail } from 'lucide-react';
 import { markPmNotificationsAsRead } from '@/actions/notificationActions';
+import UserBadge from '@/components/ui/UserBadge';
 
 export default async function ConversationsPage() {
   const session = await auth();
@@ -21,8 +22,8 @@ export default async function ConversationsPage() {
       }
     },
     include: {
-      participants: { select: { id: true, username: true, avatar: true } },
-      messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { content: true, createdAt: true, author: { select: { username: true } } } }
+      participants: { select: { id: true, username: true, avatar: true, userGroups: { select: { name: true } } } },
+      messages: { orderBy: { createdAt: 'desc' }, take: 1, select: { content: true, createdAt: true, author: { select: { username: true, userGroups: { select: { name: true } } } } } }
     },
     orderBy: { updatedAt: 'desc' },
   });
@@ -91,7 +92,7 @@ export default async function ConversationsPage() {
                       )}
                       <div className="text-[11px] text-[var(--voz-text-muted)]">
                         Người tham gia: {otherParticipants.length > 0 ? otherParticipants.map((p, i) => (
-                          <span key={p.id}>{i > 0 && ', '}<Link href={`/profile/${p.username}`} className="text-[var(--voz-link)] hover:underline">{p.username}</Link></span>
+                          <span key={p.id}>{i > 0 && ', '}<Link href={`/profile/${p.username}`} className="text-[var(--voz-link)] hover:underline">{p.username}</Link><UserBadge userGroups={p.userGroups} /></span>
                         )) : 'Không có ai'}
                       </div>
                     </div>
@@ -100,7 +101,7 @@ export default async function ConversationsPage() {
                        {lastMsg ? (
                          <>
                            <div className="text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(lastMsg.createdAt).toLocaleString('vi-VN')}</div>
-                           <div className="text-[var(--voz-text-muted)] whitespace-nowrap"><Link href={`/profile/${lastMsg.author.username}`} className="hover:underline">{lastMsg.author.username}</Link></div>
+                           <div className="text-[var(--voz-text-muted)] whitespace-nowrap"><Link href={`/profile/${lastMsg.author.username}`} className="hover:underline">{lastMsg.author.username}</Link><UserBadge userGroups={lastMsg.author.userGroups} /></div>
                          </>
                        ) : (
                          <span className="text-gray-400">Trống</span>

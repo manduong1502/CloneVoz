@@ -14,6 +14,7 @@ import LikeButton from '@/components/thread/LikeButton';
 import PostContentWithPreview from '@/components/thread/PostContentWithPreview';
 import Pagination from '@/components/ui/Pagination';
 import RankBadge from '@/components/ui/RankBadge';
+import UserBadge from '@/components/ui/UserBadge';
 import { formatRelativeTime } from '@/lib/formatTime';
 
 export async function generateMetadata({ params }) {
@@ -69,13 +70,20 @@ export default async function ThreadPage({ params, searchParams }) {
   const thread = await prisma.thread.findUnique({
     where: { id },
     include: {
-      author: true,
+      author: {
+        include: { userGroups: { select: { name: true } } }
+      },
       node: { include: { parent: true } },
       posts: {
         orderBy: { position: 'asc' },
         skip: skip,
         take: postsPerPage,
-        include: { author: true, reactions: true }
+        include: { 
+          author: {
+            include: { userGroups: { select: { name: true } } }
+          }, 
+          reactions: true 
+        }
       }
     }
   });
@@ -161,9 +169,10 @@ export default async function ThreadPage({ params, searchParams }) {
           {!thread.isApproved && <span className="inline-flex items-center gap-1 bg-amber-500/20 text-amber-500 text-[11px] font-bold px-2 py-0.5 rounded mr-2 align-middle"><Clock size={11} /> Chờ duyệt</span>}
           {thread.title}
         </h1>
-        <div className="text-[12px] text-[var(--voz-text-muted)] flex gap-1 items-center">
+        <div className="text-[12px] text-[var(--voz-text-muted)] flex gap-1 items-center flex-wrap">
            <img src={thread.author.avatar || `https://ui-avatars.com/api/?name=${thread.author.username.charAt(0)}&background=random`} className="w-[16px] h-[16px] rounded-sm" />
            <Link href={`/profile/${thread.author.username}`} className="text-[var(--voz-text)] hover:underline hover:text-[var(--voz-link)] font-medium">{thread.author.username}</Link>
+           <UserBadge userGroups={thread.author.userGroups} />
            <span>·</span>
            <span>{formatRelativeTime(thread.createdAt)}</span>
         </div>
@@ -187,9 +196,12 @@ export default async function ThreadPage({ params, searchParams }) {
                  <img src={post.author.avatar || `https://ui-avatars.com/api/?name=${post.author.username}&background=random`} className="w-[48px] h-[48px] md:w-full md:h-full rounded-sm border border-black/10 object-cover" />
                </Link>
                <div className="flex-1 text-left md:text-center w-full">
-                  <Link href={`/profile/${post.author.username}`} className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words block pb-1">
-                    {post.author.username}
-                  </Link>
+                  <div className="pb-1">
+                    <Link href={`/profile/${post.author.username}`} className="font-semibold text-[#c84448] text-[15px] hover:underline cursor-pointer break-words">
+                      {post.author.username}
+                    </Link>
+                  </div>
+                  <UserBadge userGroups={post.author.userGroups} />
                   <RankBadge points={post.author.points} />
                   
                   <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px] mt-2">

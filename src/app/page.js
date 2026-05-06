@@ -67,7 +67,7 @@ export default async function Home() {
       where: { points: { gt: 0 } },
       orderBy: { points: 'desc' },
       take: 5,
-      select: { id: true, username: true, avatar: true, points: true }
+      select: { id: true, username: true, avatar: true, points: true, userGroups: { select: { name: true } } }
     });
 
     // 4. Xếp hạng tháng (dùng monthlyPoints trực tiếp)
@@ -75,7 +75,7 @@ export default async function Home() {
       where: { monthlyPoints: { not: 0 } },
       orderBy: { monthlyPoints: 'desc' },
       take: 5,
-      select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true }
+      select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, userGroups: { select: { name: true } } }
     });
 
     // 5. Kéo Forum Statistics
