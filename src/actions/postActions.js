@@ -209,12 +209,15 @@ export async function createReply(threadId, formData) {
             text = `<strong>${safeName}</strong> đã nhắc đến bạn trong một bài viết.`;
         }
         
+        const pageNumber = Math.ceil(newPost.position / 15);
+        const pageParam = pageNumber > 1 ? `?page=${pageNumber}` : '';
+
         notificationsData.push({
            userId: uid,
            senderId: session.user.id,
            type,
            content: text,
-           link: `/thread/${threadId}#post-${newPost.id}`
+           link: `/thread/${threadId}${pageParam}#post-${newPost.id}`
         });
     }
 
@@ -354,13 +357,16 @@ export async function handleReaction(postId, path, reactionType) {
       try {
         const postData = await prisma.post.findUnique({ where: { id: postId }, select: { position: true, thread: true } });
         const label = postData.position === 1 ? 'bài viết' : 'bình luận';
+        const pageNumber = Math.ceil(postData.position / 15);
+        const pageParam = pageNumber > 1 ? `?page=${pageNumber}` : '';
+
         const newNotif = await prisma.notification.create({
            data: {
              userId: post.authorId,
              senderId: session.user.id,
              type: "reaction",
              content: `<strong>${(session.user.name || '').replace(/[<>"'&]/g, '')}</strong> đã Like ${label} của bạn.`,
-             link: `/thread/${postData.thread.id}#post-${postId}`
+             link: `/thread/${postData.thread.id}${pageParam}#post-${postId}`
            },
            include: { sender: { select: { username: true, avatar: true } } }
         });
