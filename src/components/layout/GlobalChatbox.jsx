@@ -557,25 +557,11 @@ export default function GlobalChatbox({ session }) {
                                   })}
                                   {/* Dấu + mở full Emoji */}
                                   <button
-                                    onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); }}
+                                    onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); setActiveReactMsgId(null); }}
                                     className={`w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus ${reactEmojiPickerMsgId === msg.id ? 'bg-gray-300 dark:bg-gray-500' : ''}`}
                                   >
                                     <Plus size={16} className="text-gray-600 dark:text-gray-300 group-hover/plus:text-gray-900 dark:group-hover/plus:text-white" />
                                   </button>
-                                </div>
-                              )}
-                              
-                              {/* Bảng Emoji Full cho Reaction */}
-                              {reactEmojiPickerMsgId === msg.id && (
-                                <div className="absolute bottom-full right-0 mb-10 z-[9999] shadow-2xl" onClick={e => e.stopPropagation()}>
-                                  <EmojiPicker
-                                    onEmojiClick={onReactEmojiClick}
-                                    theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
-                                    searchDisabled={false}
-                                    skinTonesDisabled={true}
-                                    width={320}
-                                    height={350}
-                                  />
                                 </div>
                               )}
                             </div>
@@ -724,6 +710,22 @@ export default function GlobalChatbox({ session }) {
               </div>
             )}
           </div>
+
+          {/* Reaction Emoji Picker Overlay */}
+          {reactEmojiPickerMsgId && (
+            <div className="absolute inset-0 z-[9999] bg-black/10 dark:bg-black/40 flex items-center justify-center rounded-lg backdrop-blur-[1px]" onClick={() => setReactEmojiPickerMsgId(null)}>
+              <div onClick={e => e.stopPropagation()} className="shadow-2xl rounded-lg overflow-hidden animate-fade-in scale-in">
+                <EmojiPicker
+                  onEmojiClick={onReactEmojiClick}
+                  theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+                  searchDisabled={false}
+                  skinTonesDisabled={true}
+                  width={320}
+                  height={350}
+                />
+              </div>
+            </div>
+          )}
 
         </div>
       )}
