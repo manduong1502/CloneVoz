@@ -201,8 +201,10 @@ export default async function ThreadPage({ params, searchParams }) {
                       {post.author.username}
                     </Link>
                   </div>
-                  <UserBadge userGroups={post.author.userGroups} />
-                  <RankBadge points={post.author.points} />
+                  <div className="flex items-center md:justify-center gap-[4px] flex-wrap">
+                    <UserBadge userGroups={post.author.userGroups} />
+                    <RankBadge points={post.author.points} />
+                  </div>
                   
                   <div className="hidden md:flex flex-col items-center md:items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px] mt-2">
                      <div className="flex justify-between w-full"><span>Tham gia:</span> <span className="font-medium text-[var(--voz-text-strong)] whitespace-nowrap">{new Date(post.author.createdAt).toLocaleDateString('vi-VN')}</span></div>

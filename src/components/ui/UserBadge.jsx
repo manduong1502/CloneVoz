@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function UserBadge({ userGroups }) {
+export default function UserBadge({ userGroups, className = '' }) {
   if (!userGroups || !Array.isArray(userGroups) || userGroups.length === 0) return null;
   
   const isAdmin = userGroups.some(g => g.name === 'Admin');
@@ -8,7 +8,7 @@ export default function UserBadge({ userGroups }) {
   
   if (isAdmin) {
     return (
-      <span className="inline-block text-[9px] font-bold bg-red-500 text-white px-1.5 py-[1px] rounded ml-1 align-text-bottom leading-tight" title="Quản trị viên">
+      <span className={`inline-flex items-center justify-center text-[10px] font-bold bg-red-500 text-white px-2 py-[1.5px] rounded-sm shadow-sm border border-transparent select-none leading-none h-[22px] ${className}`} title="Quản trị viên">
         ADMIN
       </span>
     );
@@ -16,7 +16,7 @@ export default function UserBadge({ userGroups }) {
   
   if (isMod) {
     return (
-      <span className="inline-block text-[9px] font-bold bg-blue-500 text-white px-1.5 py-[1px] rounded ml-1 align-text-bottom leading-tight" title="Điều hành viên">
+      <span className={`inline-flex items-center justify-center text-[10px] font-bold bg-blue-500 text-white px-2 py-[1.5px] rounded-sm shadow-sm border border-transparent select-none leading-none h-[22px] ${className}`} title="Điều hành viên">
         MOD
       </span>
     );

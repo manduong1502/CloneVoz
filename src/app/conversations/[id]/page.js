@@ -69,8 +69,10 @@ export default async function ConversationDetailPage({ params }) {
                     <div className="pb-1">
                        <Link href={`/profile/${message.author.username}`} className="font-semibold text-[#c84448] text-[15px] hover:underline break-words">{message.author.username}</Link>
                     </div>
-                    <UserBadge userGroups={message.author.userGroups} />
-                    <div className="text-[11px] text-[#2574A9] md:mb-2">{message.author.customTitle || 'Member'}</div>
+                    <div className="flex items-center md:justify-center gap-[4px] flex-wrap md:mb-2">
+                      <UserBadge userGroups={message.author.userGroups} />
+                      <div className="text-[11px] text-[#2574A9]">{message.author.customTitle || 'Member'}</div>
+                    </div>
                     <div className="hidden md:flex flex-col items-start w-full text-[11px] text-[var(--voz-text-muted)] gap-[2px]">
                        <div className="flex justify-between w-full"><span>Joined</span> <span className="font-medium text-[var(--voz-text-strong)]">{new Date(message.author.createdAt).toLocaleDateString('vi-VN')}</span></div>
                     </div>
