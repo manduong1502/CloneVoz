@@ -255,7 +255,10 @@ export default async function ThreadPage({ params, searchParams }) {
       </div>
       </div>
 
-      {/* Reply Box */}
+      <div className="flex justify-start items-center mb-4 mt-2">
+        <Pagination basePath={`/thread/${id}`} currentPage={page} totalPages={totalPages} />
+      </div>
+
       {/* Reply Box */}
       <ThreadReplyBox session={session} threadId={id} />
     </div>
