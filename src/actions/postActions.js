@@ -148,9 +148,13 @@ export async function createReply(threadId, formData) {
       usersToNotify.forEach(u => mentionedUserIds.push(u.id));
     }
 
-    // Phân tích Quote: tìm username trong voz-quote-header ("username đã viết:")
-    // Regex mở rộng để match cả class="..." và class='...' và các biến thể HTML
-    const quotedUsernames = [...content.matchAll(/voz-quote-header[^>]*>([^<]+?)\s+đã viết:/g)].map(m => m[1].trim());
+    // Phân tích Quote: tìm username trong nội dung trích dẫn
+    // TipTap output: <blockquote...><p>username đã viết:</p>...
+    // Template gốc: <div class="voz-quote-header">username đã viết:</div>
+    const quotedUsernames = [
+      ...content.matchAll(/voz-quote-header[^>]*>([^<]+?)\s+đã viết:/g),
+      ...content.matchAll(/<blockquote[^>]*>\s*<p>([^<]+?)\s+đã viết:<\/p>/g)
+    ].map(m => m[1].trim());
     const uniqueQuotedNames = [...new Set(quotedUsernames)].filter(name => name !== session.user.username && name !== (session.user.name || ''));
     console.log('[QUOTE DEBUG] content snippet:', content.substring(0, 300));
     console.log('[QUOTE DEBUG] quotedUsernames:', quotedUsernames, '| uniqueQuotedNames:', uniqueQuotedNames);
