@@ -298,30 +298,44 @@ export async function togglePinThread(threadId) {
 export async function deleteUser(userId) {
   await requireAdmin();
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ 
+    where: { id: userId },
+    include: { conversations: true }
+  });
   if (!user) throw new Error("User không tồn tại");
 
   // Xóa tất cả dữ liệu liên quan trước khi xóa user
   await prisma.$transaction(async (tx) => {
     // Xóa shoutbox reactions
     await tx.shoutboxReaction.deleteMany({ where: { userId } });
-    // Xóa shoutbox messages
+    // Xóa shoutbox messages  
     await tx.shoutboxMessage.deleteMany({ where: { authorId: userId } });
     // Xóa reactions trên posts
     await tx.reaction.deleteMany({ where: { userId } });
-    // Xóa reports
+    // Xóa reports (cả filed và assigned)
     await tx.report.deleteMany({ where: { reporterId: userId } });
+    await tx.report.updateMany({ where: { assignedToId: userId }, data: { assignedToId: null } });
+    // Xóa warnings (cả nhận và phạt)
+    await tx.warning.deleteMany({ where: { userId } });
+    await tx.warning.deleteMany({ where: { issuerId: userId } });
     // Xóa notifications
-    await tx.notification.deleteMany({ where: { OR: [{ userId }, { senderId: userId }] } });
-    // Xóa follows
-    await tx.follow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
+    await tx.notification.deleteMany({ where: { userId } });
+    await tx.notification.deleteMany({ where: { senderId: userId } });
+    // Xóa follows (UserFollow)
+    await tx.userFollow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
     // Xóa bookmarks
     await tx.bookmark.deleteMany({ where: { userId } });
-    // Xóa conversation participants & messages
-    await tx.conversationMessage.deleteMany({ where: { senderId: userId } });
-    await tx.conversationParticipant.deleteMany({ where: { userId } });
-    // Xóa poll votes
-    await tx.pollVote.deleteMany({ where: { userId } });
+    // Xóa conversation messages
+    await tx.conversationMessage.deleteMany({ where: { authorId: userId } });
+    // Disconnect user from conversations (many-to-many)
+    for (const conv of user.conversations) {
+      await tx.conversation.update({
+        where: { id: conv.id },
+        data: { participants: { disconnect: { id: userId } } }
+      });
+    }
+    // Xóa point logs
+    await tx.pointLog.deleteMany({ where: { userId } });
     // Xóa posts (bình luận)
     await tx.post.deleteMany({ where: { authorId: userId } });
     // Xóa threads
