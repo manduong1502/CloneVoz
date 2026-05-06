@@ -291,3 +291,48 @@ export async function togglePinThread(threadId) {
   revalidatePath('/');
   return { success: true, isPinned: newPinned };
 }
+
+// =============================================
+// XÓA USER (Chỉ Admin)
+// =============================================
+export async function deleteUser(userId) {
+  await requireAdmin();
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user) throw new Error("User không tồn tại");
+
+  // Xóa tất cả dữ liệu liên quan trước khi xóa user
+  await prisma.$transaction(async (tx) => {
+    // Xóa shoutbox reactions
+    await tx.shoutboxReaction.deleteMany({ where: { userId } });
+    // Xóa shoutbox messages
+    await tx.shoutboxMessage.deleteMany({ where: { authorId: userId } });
+    // Xóa reactions trên posts
+    await tx.reaction.deleteMany({ where: { userId } });
+    // Xóa reports
+    await tx.report.deleteMany({ where: { reporterId: userId } });
+    // Xóa notifications
+    await tx.notification.deleteMany({ where: { OR: [{ userId }, { senderId: userId }] } });
+    // Xóa follows
+    await tx.follow.deleteMany({ where: { OR: [{ followerId: userId }, { followingId: userId }] } });
+    // Xóa bookmarks
+    await tx.bookmark.deleteMany({ where: { userId } });
+    // Xóa conversation participants & messages
+    await tx.conversationMessage.deleteMany({ where: { senderId: userId } });
+    await tx.conversationParticipant.deleteMany({ where: { userId } });
+    // Xóa poll votes
+    await tx.pollVote.deleteMany({ where: { userId } });
+    // Xóa posts (bình luận)
+    await tx.post.deleteMany({ where: { authorId: userId } });
+    // Xóa threads
+    await tx.thread.deleteMany({ where: { authorId: userId } });
+    // Xóa accounts & sessions (NextAuth)
+    await tx.account.deleteMany({ where: { userId } });
+    await tx.session.deleteMany({ where: { userId } });
+    // Cuối cùng xóa user
+    await tx.user.delete({ where: { id: userId } });
+  });
+
+  revalidatePath('/admin/users');
+  return { success: true, message: `Đã xóa user ${user.username}` };
+}

@@ -1,8 +1,8 @@
 "use client";
 
 import { useTransition, useState } from 'react';
-import { Shield, ShieldCheck, User, Ban, ChevronDown } from 'lucide-react';
-import { setUserRole, banUser } from '@/actions/adminActions';
+import { Shield, ShieldCheck, User, Ban, ChevronDown, Trash2 } from 'lucide-react';
+import { setUserRole, banUser, deleteUser } from '@/actions/adminActions';
 
 export default function UserRoleActions({ userId, username, currentRole, isBanned }) {
   const [isPending, startTransition] = useTransition();
@@ -42,6 +42,23 @@ export default function UserRoleActions({ userId, username, currentRole, isBanne
         setBanned(true);
         setShowBanDialog(false);
         setBanReason('');
+      }
+    });
+  };
+
+  const handleDelete = () => {
+    if (!confirm(`⚠️ Bạn có chắc muốn XÓA VĨNH VIỄN user "${username}"?\n\nToàn bộ bài viết, bình luận, tin nhắn của user sẽ bị xóa và KHÔNG thể khôi phục.`)) return;
+    if (!confirm(`⚠️⚠️ XÁC NHẬN LẦN CUỐI: Xóa "${username}" vĩnh viễn?`)) return;
+    
+    startTransition(async () => {
+      try {
+        const res = await deleteUser(userId);
+        if (res.success) {
+          alert(`Đã xóa user ${username} thành công.`);
+          window.location.reload();
+        }
+      } catch (err) {
+        alert('Lỗi: ' + (err.message || 'Không thể xóa user'));
       }
     });
   };
@@ -92,6 +109,16 @@ export default function UserRoleActions({ userId, username, currentRole, isBanne
           }`}
         >
           <Ban size={14} /> {banned ? 'Gỡ ban' : 'Ban'}
+        </button>
+
+        {/* Delete Button */}
+        <button
+          onClick={handleDelete}
+          disabled={isPending}
+          className="flex items-center justify-center p-[6px] text-xs border border-red-300 text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-md transition"
+          title="Xóa user vĩnh viễn"
+        >
+          <Trash2 size={14} />
         </button>
       </div>
 
