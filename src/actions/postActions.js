@@ -329,18 +329,13 @@ export async function handleReaction(postId, path, reactionType) {
       startOfToday.setHours(0, 0, 0, 0);
       
       if (existingReaction.createdAt < startOfToday) {
-        // Like từ trước hôm nay → chắc chắn đã qua daily cron
+        // Like từ trước hôm nay → chắc chắn đã qua daily cron (chỉ tính hôm qua, không tính trong interval hôm nay)
         likeWasProcessed = true;
-      } else {
-        // Like hôm nay → check xem interval cron đã xử lý chưa
-        const intervalRun = await prisma.dailyCronStatus.findFirst({
-          where: { 
-            date: { startsWith: 'interval_' },
-            processedAt: { gt: existingReaction.createdAt }
-          }
-        });
-        if (intervalRun) likeWasProcessed = true;
       }
+      // BỎ QUA check interval cron hôm nay: vì interval cron (cron 5 phút) có tính chất stateful.
+      // Nó so sánh newTotals (tính mới từ đầu ngày) với prevApplied (đã cộng). 
+      // Nếu Like bị xóa, newTotals sẽ tụt, sinh ra delta âm, và tự động trừ điểm. 
+      // Nếu ta trừ ở đây nữa thì sẽ bị trừ 2 lần (double deduction).
     }
 
     await prisma.user.update({
