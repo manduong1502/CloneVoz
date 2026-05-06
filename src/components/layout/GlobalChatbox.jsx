@@ -11,6 +11,65 @@ import { submitReport } from '@/actions/reportActions';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/styles.css';
+
+const MAX_IMAGES = 4;
+
+const compressImage = (file, maxWidth = 1200, maxHeight = 1200, quality = 0.7) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = event => {
+      const img = new window.Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        canvas.toBlob(
+          blob => {
+            if (!blob) {
+              reject(new Error('Canvas is empty'));
+              return;
+            }
+            const newFile = new File([blob], file.name, {
+              type: file.type || 'image/jpeg',
+              lastModified: Date.now(),
+            });
+            resolve({
+              file: newFile,
+              previewUrl: URL.createObjectURL(blob),
+              id: Math.random().toString(36).substring(7)
+            });
+          },
+          file.type || 'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = error => reject(error);
+    };
+    reader.onerror = error => reject(error);
+  });
+};
+
 function ChatHint({ unreadCount }) {
   const [dismissed, setDismissed] = useState(false);
   const [showInitial, setShowInitial] = useState(false);
@@ -63,6 +122,9 @@ export default function GlobalChatbox({ session }) {
   const [toast, setToast] = useState(null);
   const [isChatPaused, setIsChatPaused] = useState(false);
   const [replyingTo, setReplyingTo] = useState(null); // { id, content, author: { username } }
+
+  const [pendingImages, setPendingImages] = useState([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   const showToast = (message, type = 'error') => {
     setToast({ message, type });
@@ -220,26 +282,54 @@ export default function GlobalChatbox({ session }) {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() && pendingImages.length === 0) return;
 
     const msgContent = content;
+    const currentPendingImages = [...pendingImages];
     setContent('');
+    setPendingImages([]);
 
     const replyId = replyingTo?.id || null;
     setReplyingTo(null);
 
     startTransition(async () => {
       try {
-        const res = await postShout(msgContent, replyId);
+        let finalContent = msgContent;
+
+        if (currentPendingImages.length > 0) {
+          setIsUploadingImages(true);
+          const uploadPromises = currentPendingImages.map(async (imgObj) => {
+            const formData = new FormData();
+            formData.append('file', imgObj.file);
+            const res = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData
+            });
+            const data = await res.json();
+            if (!data.url) throw new Error("Upload thất bại.");
+            return data.url;
+          });
+
+          const urls = await Promise.all(uploadPromises);
+          urls.forEach(url => {
+            finalContent += `\n[IMG]${url}[/IMG]`;
+          });
+          setIsUploadingImages(false);
+        }
+
+        const res = await postShout(finalContent.trim(), replyId);
         if (res.error) {
            showToast(res.error, 'error');
            setContent(msgContent);
+           setPendingImages(currentPendingImages);
         }
         // Giữ focus vào ô nhập sau khi gửi
         setTimeout(() => textareaRef.current?.focus(), 50);
       } catch (err) {
         showToast(err.message || 'Lỗi máy chủ', 'error');
         setContent(msgContent); // Revert input if error
+        setPendingImages(currentPendingImages);
+        setIsUploadingImages(false);
       }
     });
   };
@@ -284,7 +374,7 @@ export default function GlobalChatbox({ session }) {
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!isSending && content.trim()) {
+      if (!isSending && !isUploadingImages && (content.trim() || pendingImages.length > 0)) {
         handleSend(e);
       }
     }
@@ -317,34 +407,64 @@ export default function GlobalChatbox({ session }) {
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    startTransition(async () => {
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        
-        if (!data.url) throw new Error("Upload thất bại.");
-
-        const postRes = await postShout(`[IMG]${data.url}[/IMG]`);
-        if (postRes.error) {
-          showToast(postRes.error, 'error');
-        }
-        
-      } catch (err) {
-        showToast('Lỗi gửi ảnh: ' + err.message, 'error');
-      }
-    });
-
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    
+    processFiles(files);
+    
     // reset file input
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const processFiles = async (files) => {
+    // Only process images
+    const imageFiles = files.filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+
+    setPendingImages(prev => {
+      const currentCount = prev.length;
+      const allowedCount = MAX_IMAGES - currentCount;
+      if (allowedCount <= 0) {
+        showToast(`Bạn chỉ được đính kèm tối đa ${MAX_IMAGES} ảnh.`);
+        return prev;
+      }
+      
+      const filesToProcess = imageFiles.slice(0, allowedCount);
+      if (imageFiles.length > allowedCount) {
+        showToast(`Chỉ có thể thêm ${allowedCount} ảnh nữa.`);
+      }
+
+      // We process compression asynchronously and update state later,
+      // but to prevent race conditions during rapid pasting, we could manage state carefully.
+      // For simplicity, we just trigger compression here.
+      filesToProcess.forEach(f => {
+        compressImage(f).then(compressed => {
+          setPendingImages(current => [...current, compressed]);
+        }).catch(e => {
+          showToast('Lỗi nén ảnh.', 'error');
+        });
+      });
+      
+      return prev;
+    });
+  };
+
+  const handlePaste = (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+
+    const files = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const file = items[i].getAsFile();
+        if (file) files.push(file);
+      }
+    }
+    
+    if (files.length > 0) {
+      e.preventDefault(); // Ngăn paste dạng text URL ảnh nếu trình duyệt hỗ trợ cả 2
+      processFiles(files);
+    }
   };
 
   const renderMessageContent = (msgContent) => {
@@ -624,6 +744,24 @@ export default function GlobalChatbox({ session }) {
                 </button>
               </div>
             )}
+
+            {/* Pending Images Preview */}
+            {pendingImages.length > 0 && (
+              <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-1 hide-scrollbar">
+                {pendingImages.map(img => (
+                  <div key={img.id} className="relative shrink-0 animate-fade-in">
+                    <img src={img.previewUrl} className="w-[50px] h-[50px] object-cover rounded-[10px] border border-gray-300 dark:border-[#3a3b3c]" alt="preview" />
+                    <button 
+                      type="button"
+                      onClick={() => setPendingImages(prev => prev.filter(p => p.id !== img.id))}
+                      className="absolute -top-1.5 -right-1.5 bg-gray-600 hover:bg-red-500 text-white rounded-full p-[2px] transition-colors shadow-sm"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             {/* Bảng Emoji Full (emoji-picker-react) */}
             {showEmojiPicker && (
               <div className="absolute bottom-full left-0 mb-2 z-[9999] shadow-2xl">
@@ -642,6 +780,7 @@ export default function GlobalChatbox({ session }) {
             <input
               type="file"
               accept="image/*"
+              multiple
               ref={fileInputRef}
               onChange={handleImageUpload}
               style={{ display: 'none' }}
@@ -666,17 +805,18 @@ export default function GlobalChatbox({ session }) {
                     value={content}
                     onChange={handleInputText}
                     onKeyDown={handleKeyDown}
-                    disabled={isSending}
+                    onPaste={handlePaste}
+                    disabled={isSending || isUploadingImages}
                     maxLength={1000}
-                    placeholder={isSending ? "Đang xử lý..." : "Nhắn tin..."}
+                    placeholder={isUploadingImages ? "Đang tải ảnh lên..." : isSending ? "Đang xử lý..." : "Nhắn tin..."}
                     className="flex-1 bg-transparent px-1 py-[6px] outline-none text-[15px] text-[var(--voz-text)] min-w-0 font-sans disabled:opacity-70 resize-none overflow-y-auto"
                     style={{ minHeight: '34px', maxHeight: '120px' }}
                   />
 
                   {/* Suffix Icons */}
                   <div className="flex items-center mb-[2px] text-gray-800 dark:text-gray-300 gap-[2px]">
-                    {content.trim() ? (
-                      <button type="submit" disabled={isSending} className="text-[#4e5dff] font-bold text-[15px] px-3 mr-1 hover:text-[#4250e0] disabled:opacity-50 shrink-0">
+                    {(content.trim() || pendingImages.length > 0) ? (
+                      <button type="submit" disabled={isSending || isUploadingImages} className="text-[#4e5dff] font-bold text-[15px] px-3 mr-1 hover:text-[#4250e0] disabled:opacity-50 shrink-0">
                         Gửi
                       </button>
                     ) : (
