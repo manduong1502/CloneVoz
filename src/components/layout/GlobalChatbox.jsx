@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { getPusherClient } from '@/lib/pusher.client';
 import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout, getChatPauseState, toggleChatPause } from '@/actions/shoutboxActions';
-import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock, Reply } from 'lucide-react';
+import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock, Reply, Plus } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -56,6 +56,7 @@ export default function GlobalChatbox({ session }) {
   const messagesEndRef = useRef(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [activeReactMsgId, setActiveReactMsgId] = useState(null);
+  const [reactEmojiPickerMsgId, setReactEmojiPickerMsgId] = useState(null);
   const { resolvedTheme } = useTheme();
   const fileInputRef = useRef(null);
   const textareaRef = useRef(null);
@@ -307,6 +308,14 @@ export default function GlobalChatbox({ session }) {
     setContent(prev => prev + emojiObject.emoji);
   };
 
+  const onReactEmojiClick = (emojiObject) => {
+    if (reactEmojiPickerMsgId) {
+      toggleShoutboxReaction(reactEmojiPickerMsgId, emojiObject.emoji);
+      setReactEmojiPickerMsgId(null);
+      setActiveReactMsgId(null);
+    }
+  };
+
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -424,7 +433,7 @@ export default function GlobalChatbox({ session }) {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 flex flex-col bg-[var(--voz-accent)] text-[13px] relative" onClick={() => setShowEmojiPicker(false)}>
+          <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 flex flex-col bg-[var(--voz-accent)] text-[13px] relative" onClick={() => { setShowEmojiPicker(false); setReactEmojiPickerMsgId(null); setActiveReactMsgId(null); }}>
             {loading ? (
               <div className="text-center text-gray-500 py-4">Đang tải...</div>
             ) : messages.length === 0 ? (
@@ -533,19 +542,40 @@ export default function GlobalChatbox({ session }) {
                               </button>
                               {/* Bảng chọn Cảm xúc nổi (lên trên) - Hiện bằng click */}
                               {activeReactMsgId === msg.id && (
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 flex bg-white dark:bg-[#262626] shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-full px-2 py-1 gap-1 border border-gray-200 dark:border-[#3a3b3c] z-50">
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 flex items-center bg-white dark:bg-[#262626] shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-full px-2 py-1 gap-1 border border-gray-200 dark:border-[#3a3b3c] z-50">
                                   {['👍', '❤️', '😂', '😡', '😭'].map(emo => {
                                     const hasReacted = msg.reactions?.some(r => r.userId === session?.user?.id && r.type === emo);
                                     return (
                                       <button
                                         key={emo}
-                                        onClick={() => { toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); }}
+                                        onClick={(e) => { e.stopPropagation(); toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); }}
                                         className={`text-[18px] transition-all outline-none rounded-lg p-[4px] ${hasReacted ? 'bg-[#e5e5e5] dark:bg-[#3a3b3c] scale-[1.15]' : 'hover:scale-125 hover:-translate-y-1'}`}
                                       >
                                         {emo}
                                       </button>
                                     )
                                   })}
+                                  {/* Dấu + mở full Emoji */}
+                                  <button
+                                    onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); }}
+                                    className="w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus"
+                                  >
+                                    <Plus size={16} className="text-gray-600 dark:text-gray-300 group-hover/plus:text-gray-900 dark:group-hover/plus:text-white" />
+                                  </button>
+                                </div>
+                              )}
+                              
+                              {/* Bảng Emoji Full cho Reaction */}
+                              {reactEmojiPickerMsgId === msg.id && (
+                                <div className="absolute bottom-full right-0 mb-10 z-[9999] shadow-2xl" onClick={e => e.stopPropagation()}>
+                                  <EmojiPicker
+                                    onEmojiClick={onReactEmojiClick}
+                                    theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+                                    searchDisabled={false}
+                                    skinTonesDisabled={true}
+                                    width={320}
+                                    height={350}
+                                  />
                                 </div>
                               )}
                             </div>
