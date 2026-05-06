@@ -13,7 +13,7 @@ import SearchDropdown from '@/components/layout/SearchDropdown';
 import Pusher from 'pusher-js';
 import { SUPER_ADMIN_EMAILS } from '@/lib/adminConfig';
 
-const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 0 }) => {
+const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 0, adminPendingCount = 0 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [modalType, setModalType] = useState('login'); // 'login' or 'register'
@@ -135,16 +135,24 @@ const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 
                       align="right"
                       width="250px"
                       trigger={(isOpen) => (
-                        <div className={`flex items-center h-full px-2 gap-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer ${isOpen ? 'bg-[var(--voz-surface)]/10' : ''}`}>
+                        <div className={`flex items-center h-full px-2 gap-2 hover:bg-[var(--voz-surface)]/10 transition cursor-pointer relative ${isOpen ? 'bg-[var(--voz-surface)]/10' : ''}`}>
                           <img src={user.image || `https://ui-avatars.com/api/?name=${user.name}&background=random`} className="w-6 h-6 rounded-sm" />
                           <span className="text-white/90 text-[13px] hidden md:inline font-medium">{user.name}</span>
+                          {adminPendingCount > 0 && (
+                            <span className="absolute top-[12px] right-[4px] w-2 h-2 bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] rounded-full border border-[var(--voz-blue-dark)]"></span>
+                          )}
                         </div>
                       )}
                     >
                       <div className="flex flex-col text-[14px] text-[var(--voz-text)] p-2">
                         <Link href={`/profile/${user.name}`} className="px-3 py-2 hover:bg-[var(--voz-accent)] border-b border-[var(--voz-border-light)]">Trang hồ sơ của bạn</Link>
                         {(user.isAdmin || user.isMod || SUPER_ADMIN_EMAILS.includes(user.email)) && (
-                          <Link href="/admin/pending" className="px-3 py-2 hover:bg-[var(--voz-accent)] text-red-600 font-bold">Vào trang Quản Trị (Admin)</Link>
+                          <Link href="/admin/pending" className="px-3 py-2 hover:bg-[var(--voz-accent)] text-red-600 font-bold flex justify-between items-center">
+                            <span>Vào trang Quản Trị (Admin)</span>
+                            {adminPendingCount > 0 && (
+                              <span className="w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)]"></span>
+                            )}
+                          </Link>
                         )}
                         <form action={handleLogOut}>
                           <button type="submit" className="text-left w-full px-3 py-2 hover:bg-[var(--voz-accent)] text-[var(--voz-link)] border-t border-[var(--voz-border-light)] mt-1">Đăng xuất</button>

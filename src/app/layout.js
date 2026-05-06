@@ -7,6 +7,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import BannedOverlay from "@/components/ui/BannedOverlay";
+import { SUPER_ADMIN_EMAILS } from '@/lib/adminConfig';
 
 const inter = Inter({ subsets: ["latin"], display: 'swap' });
 
@@ -59,6 +60,8 @@ export default async function RootLayout({ children }) {
 
   // Đếm số tin nhắn cá nhân chưa đọc (notification type pm hoặc pm_reply)
   let unreadPmCount = 0;
+  let adminPendingCount = 0;
+
   if (session?.user?.id && !bannedUser) {
     unreadPmCount = await prisma.notification.count({
       where: { 
@@ -67,6 +70,13 @@ export default async function RootLayout({ children }) {
         type: { in: ['pm', 'pm_reply'] }
       }
     });
+
+    const isAdminOrMod = session.user.isAdmin || session.user.isMod || SUPER_ADMIN_EMAILS.includes(session.user.email);
+    if (isAdminOrMod) {
+      const pendingThreads = await prisma.thread.count({ where: { isApproved: false } });
+      const pendingReports = await prisma.report.count({ where: { status: 'PENDING' } });
+      adminPendingCount = pendingThreads + pendingReports;
+    }
   }
 
   return (
@@ -87,7 +97,7 @@ export default async function RootLayout({ children }) {
             />
           ) : (
             <>
-              <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} unreadPmCount={unreadPmCount} />
+              <Header session={session} notifications={notifications} unreadCount={unreadNotificationsCount} unreadPmCount={unreadPmCount} adminPendingCount={adminPendingCount} />
               <main className="max-w-[1240px] px-2 md:px-4 mx-auto w-full flex-1 py-4 md:py-6">
                 {children}
               </main>

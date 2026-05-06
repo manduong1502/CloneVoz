@@ -129,17 +129,7 @@ export async function createThread(nodeId, formData) {
       }
   }
 
-  // Thông báo Admin/Mod nếu bài viết cần duyệt
-  if (!autoApprove) {
-    const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
-    await notifyAdmins({
-      type: 'admin_pending',
-      content: `📝 <strong>${safeName}</strong> vừa đăng bài mới "<em>${(title || '').replace(/[<>"'&]/g, '')}</em>" cần được duyệt.`,
-      link: '/admin/pending',
-      senderId: session.user.id,
-      excludeUserId: session.user.id,
-    });
-  }
+
 
   // Dọn Redis Cache
   await deleteCache('voz_homepage_data');
@@ -195,17 +185,7 @@ export async function editThread(threadId, formData) {
     });
   }
 
-  // Thông báo Admin/Mod nếu bài sửa cần duyệt lại
-  if (!autoApprove) {
-    const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
-    await notifyAdmins({
-      type: 'admin_pending',
-      content: `✏️ <strong>${safeName}</strong> vừa chỉnh sửa bài "<em>${(title || '').replace(/[<>"'&]/g, '')}</em>" và cần duyệt lại.`,
-      link: '/admin/pending',
-      senderId: session.user.id,
-      excludeUserId: session.user.id,
-    });
-  }
+
 
   // Dọn Cache
   await deleteCache('voz_homepage_data');

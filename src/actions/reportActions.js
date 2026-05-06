@@ -35,16 +35,7 @@ export async function submitReport({ reason, postId, threadId, shoutboxMessageId
     }
   });
 
-  // Thông báo Admin/Mod có report mới
-  const safeName = (session.user.name || session.user.username || '').replace(/[<>"'&]/g, '');
-  const safeReason = (reason || '').substring(0, 50).replace(/[<>"'&]/g, '');
-  await notifyAdmins({
-    type: 'admin_report',
-    content: `🚨 <strong>${safeName}</strong> vừa gửi một báo cáo vi phạm: "${safeReason}"`,
-    link: '/admin/reports',
-    senderId: session.user.id,
-    excludeUserId: session.user.id,
-  });
+
 
   return { success: true };
 }
