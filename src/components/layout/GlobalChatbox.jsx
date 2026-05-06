@@ -467,43 +467,18 @@ export default function GlobalChatbox({ session }) {
     }
   };
 
-  const renderMessageContent = (msgContent) => {
+  const parseMessageContent = (msgContent) => {
     const regex = /\[IMG\](.*?)\[\/IMG\]/g;
-    const parts = [];
-    let lastIndex = 0;
+    const images = [];
     let match;
 
     while ((match = regex.exec(msgContent)) !== null) {
-      if (match.index > lastIndex) {
-        parts.push(<span key={lastIndex} className="whitespace-pre-wrap">{msgContent.substring(lastIndex, match.index)}</span>);
-      }
-      const imgUrl = match[1]; // Capture URL trước khi closure đóng lại
-      parts.push(
-        <div key={match.index} className="w-full">
-          <img 
-            src={imgUrl} 
-            alt="Attached image" 
-            className="max-w-full rounded-2xl cursor-zoom-in hover:opacity-90 max-h-[300px] object-cover" 
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setLightboxImage(imgUrl);
-            }} 
-          />
-        </div>
-      );
-      lastIndex = regex.lastIndex;
+      images.push(match[1]);
     }
-
-    if (lastIndex < msgContent.length) {
-      parts.push(<span key={lastIndex} className="whitespace-pre-wrap">{msgContent.substring(lastIndex)}</span>);
-    }
-
-    return parts.length > 0 ? parts : <span className="whitespace-pre-wrap">{msgContent}</span>;
-  };
-
-  const isOnlyImage = (content) => {
-    return /^\[IMG\].*?\[\/IMG\]$/.test(content.trim());
+    
+    const textContent = msgContent.replace(/\[IMG\].*?\[\/IMG\]/g, '').trim();
+    
+    return { textContent, images };
   };
 
   return (
@@ -629,9 +604,35 @@ export default function GlobalChatbox({ session }) {
                               <div className="truncate max-w-[200px] opacity-80">{msg.replyTo.content?.replace(/\[IMG\].*?\[\/IMG\]/g, '[Hình ảnh]').substring(0, 60)}</div>
                             </div>
                           )}
-                          <div className={`text-[15px] font-[400] leading-tight ${isOnlyImage(msg.content) ? 'p-0 bg-transparent' : `px-[14px] py-[8px] ${isMine ? 'bg-[#4e5dff] text-white rounded-[20px]' : 'bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
-                            {renderMessageContent(msg.content)}
-                          </div>
+                          {/* Parse Content */}
+                          {(() => {
+                             const { textContent, images } = parseMessageContent(msg.content);
+                             return (
+                               <div className="flex flex-col gap-[4px]">
+                                 {/* Images Area (Above text) */}
+                                 {images.length > 0 && (
+                                   <div className={`flex flex-wrap gap-[4px] ${isMine ? 'justify-end' : 'justify-start'}`}>
+                                     {images.map((imgUrl, i) => (
+                                       <img 
+                                         key={i} 
+                                         src={imgUrl} 
+                                         alt="Attached image" 
+                                         className="max-w-full rounded-[14px] cursor-zoom-in hover:opacity-90 max-h-[250px] object-cover border border-black/5 dark:border-white/5" 
+                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxImage(imgUrl); }} 
+                                       />
+                                     ))}
+                                   </div>
+                                 )}
+
+                                 {/* Text Area */}
+                                 {textContent && (
+                                   <div className={`text-[15px] font-[400] leading-tight px-[14px] py-[8px] w-fit ${isMine ? 'ml-auto bg-[#4e5dff] text-white rounded-[20px]' : 'mr-auto bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
+                                     <span className="whitespace-pre-wrap">{textContent}</span>
+                                   </div>
+                                 )}
+                               </div>
+                             );
+                          })()}
 
                           {/* Reaction Badges (Từng icon kèm số riêng biệt) */}
                           {totalReactions > 0 && (
