@@ -149,8 +149,11 @@ export async function createReply(threadId, formData) {
     }
 
     // Phân tích Quote: tìm username trong voz-quote-header ("username đã viết:")
-    const quotedUsernames = [...content.matchAll(/class="voz-quote-header">([^<]+)\s+đã viết:/g)].map(m => m[1].trim());
-    const uniqueQuotedNames = [...new Set(quotedUsernames)].filter(name => name !== session.user.username);
+    // Regex mở rộng để match cả class="..." và class='...' và các biến thể HTML
+    const quotedUsernames = [...content.matchAll(/voz-quote-header[^>]*>([^<]+?)\s+đã viết:/g)].map(m => m[1].trim());
+    const uniqueQuotedNames = [...new Set(quotedUsernames)].filter(name => name !== session.user.username && name !== (session.user.name || ''));
+    console.log('[QUOTE DEBUG] content snippet:', content.substring(0, 300));
+    console.log('[QUOTE DEBUG] quotedUsernames:', quotedUsernames, '| uniqueQuotedNames:', uniqueQuotedNames);
     
     const quotedUserIds = [];
     if (uniqueQuotedNames.length > 0) {
