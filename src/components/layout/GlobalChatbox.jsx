@@ -537,7 +537,7 @@ export default function GlobalChatbox({ session }) {
                           <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 p-[2px] rounded-full shrink-0 relative ${activeReactMsgId === msg.id ? '!opacity-100' : ''}`}>
                             {/* Nút Thả Cảm Xúc */}
                             <div className="relative flex items-center">
-                              <button onClick={() => setActiveReactMsgId(activeReactMsgId === msg.id ? null : msg.id)} className="p-1 text-gray-400 hover:text-yellow-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800">
+                              <button onClick={(e) => { e.stopPropagation(); setActiveReactMsgId(activeReactMsgId === msg.id ? null : msg.id); setReactEmojiPickerMsgId(null); }} className={`p-1 text-gray-400 hover:text-yellow-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${activeReactMsgId === msg.id ? 'text-yellow-500 bg-gray-100 dark:bg-gray-800' : ''}`}>
                                 <SmilePlus size={14} />
                               </button>
                               {/* Bảng chọn Cảm xúc nổi (lên trên) - Hiện bằng click */}
@@ -548,7 +548,7 @@ export default function GlobalChatbox({ session }) {
                                     return (
                                       <button
                                         key={emo}
-                                        onClick={(e) => { e.stopPropagation(); toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); }}
+                                        onClick={(e) => { e.stopPropagation(); toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); setReactEmojiPickerMsgId(null); }}
                                         className={`text-[18px] transition-all outline-none rounded-lg p-[4px] ${hasReacted ? 'bg-[#e5e5e5] dark:bg-[#3a3b3c] scale-[1.15]' : 'hover:scale-125 hover:-translate-y-1'}`}
                                       >
                                         {emo}
@@ -558,7 +558,7 @@ export default function GlobalChatbox({ session }) {
                                   {/* Dấu + mở full Emoji */}
                                   <button
                                     onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); }}
-                                    className="w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus"
+                                    className={`w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus ${reactEmojiPickerMsgId === msg.id ? 'bg-gray-300 dark:bg-gray-500' : ''}`}
                                   >
                                     <Plus size={16} className="text-gray-600 dark:text-gray-300 group-hover/plus:text-gray-900 dark:group-hover/plus:text-white" />
                                   </button>
@@ -583,7 +583,7 @@ export default function GlobalChatbox({ session }) {
                             {/* Nút Report */}
                             {!isMine && (
                               <button
-                                onClick={() => handleReport(msg.id)}
+                                onClick={(e) => { e.stopPropagation(); handleReport(msg.id); }}
                                 className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                                 title="Báo cáo vi phạm"
                               >
@@ -593,7 +593,7 @@ export default function GlobalChatbox({ session }) {
 
                             {/* Nút Reply */}
                             <button
-                              onClick={() => { setReplyingTo({ id: msg.id, content: msg.content, author: msg.author }); textareaRef.current?.focus(); }}
+                              onClick={(e) => { e.stopPropagation(); setReplyingTo({ id: msg.id, content: msg.content, author: msg.author }); textareaRef.current?.focus(); }}
                               className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                               title="Trả lời"
                             >
@@ -603,7 +603,7 @@ export default function GlobalChatbox({ session }) {
                             {/* Nút Xóa (Cho Owner, Admin, Mod) */}
                             {(isMine || session?.user?.isAdmin || session?.user?.isMod) && (
                               <button
-                                onClick={() => handleDelete(msg.id)}
+                                onClick={(e) => { e.stopPropagation(); handleDelete(msg.id); }}
                                 className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                                 title="Xóa tin nhắn"
                               >
