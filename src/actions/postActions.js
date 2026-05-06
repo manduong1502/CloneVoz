@@ -172,7 +172,7 @@ export async function createReply(threadId, formData) {
     mentionedUserIds.forEach(id => userIdsToNotify.add(id));
     quotedUserIds.forEach(id => userIdsToNotify.add(id));
     if (thread.authorId) userIdsToNotify.add(thread.authorId);
-    participants.forEach(p => userIdsToNotify.add(p.authorId));
+    // Không thêm participants (người từng bình luận) để tránh spam thông báo
     watchers.forEach(w => userIdsToNotify.add(w.userId));
     
     // Xóa chính mình ra khỏi danh sách nhận
