@@ -817,7 +817,7 @@ export default function GlobalChatbox({ session }) {
                   {/* Suffix Icons */}
                   <div className="flex items-center mb-[2px] text-gray-800 dark:text-gray-300 gap-[2px]">
                     {(content.trim() || pendingImages.length > 0) ? (
-                      <button type="submit" disabled={isSending || isUploadingImages} className="text-[#4e5dff] font-bold text-[15px] px-3 mr-1 hover:text-[#4250e0] disabled:opacity-50 shrink-0">
+                      <button type="submit" disabled={isSending || isUploadingImages} className="text-[#4e5dff] font-bold text-[15px] px-3 mr-1 hover:text-[#4250e0] disabled:opacity-50 shrink-0 h-[36px] flex items-center justify-center">
                         Gửi
                       </button>
                     ) : (
