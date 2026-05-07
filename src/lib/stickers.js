@@ -38,16 +38,16 @@ export const STICKER_PACKS = [
     "name": "Ami Bụng Bự",
     "icon": "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/ami-bung-bu-5.png",
     "stickers": [
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45417.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45418.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45419.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45420.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45421.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45422.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45423.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45424.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45425.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45426.png"
+      "https://media.tenor.com/VNQ5WUq9KegAAAAC/duongcam1621-cat.gif",
+      "https://media.tenor.com/sErXAXOwUNUAAAAC/gato-pulgares-sonfys-gato-pulgares.gif",
+      "https://media.tenor.com/4sT1PY9ulKYAAAAC/duongcam1621-cat.gif",
+      "https://media.tenor.com/rXg-utnCghwAAAAC/ami-fat-cat-fgcat.gif",
+      "https://media.tenor.com/DmxPHrk8D28AAAAC/ami-fat-cat-fgcat.gif",
+      "https://media.tenor.com/8x-12c6Oh-QAAAAC/cat.gif",
+      "https://media.tenor.com/UV2658thNDsAAAAC/ami-fat-cat-fgcat.gif",
+      "https://media.tenor.com/M3zcskFjuMkAAAAC/prutt.gif",
+      "https://media.tenor.com/UHtDixeNbMAAAAAC/ami-fat-cat-fgcat.gif",
+      "https://media.tenor.com/Ct7dlJTDl5oAAAAC/ami-fat-cat-fgcat.gif"
     ]
   },
   {

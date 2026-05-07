@@ -886,7 +886,7 @@ export default function GlobalChatbox({ session }) {
                                     <button
                                       key={i}
                                       type="button"
-                                      onClick={() => handleSendSticker(url)}
+                                      onMouseDown={(e) => { e.preventDefault(); handleSendSticker(url); }}
                                       className="aspect-square bg-gray-50 dark:bg-[#18181b] rounded-xl hover:ring-2 hover:ring-[#4e5dff] transition-all p-1 flex items-center justify-center overflow-hidden hover:scale-105"
                                     >
                                       <img src={url} className="w-full h-full object-cover object-left drop-shadow-sm" alt="Sticker" loading="lazy" />
@@ -900,7 +900,7 @@ export default function GlobalChatbox({ session }) {
                                   <button
                                     key={pack.id}
                                     type="button"
-                                    onClick={() => setActiveStickerPack(pack.id)}
+                                    onMouseDown={(e) => { e.preventDefault(); setActiveStickerPack(pack.id); }}
                                     title={pack.name}
                                     className={`p-2 rounded-lg transition-all flex-shrink-0 opacity-60 hover:opacity-100 ${activeStickerPack === pack.id ? 'bg-white dark:bg-[#262626] opacity-100 shadow-sm border border-gray-200 dark:border-[#3a3b3c]' : ''}`}
                                   >

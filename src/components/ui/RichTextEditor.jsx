@@ -117,15 +117,17 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
           accept="image/jpeg,image/png,image/gif,image/webp"
           className="hidden"
           disabled={isUploading}
+          multiple
           onChange={async (e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              if (file.size > 10 * 1024 * 1024) {
-                alert('Ảnh quá lớn. Tối đa 10MB.');
-                e.target.value = '';
-                return;
+            const files = Array.from(e.target.files || []);
+            if (files.length > 0) {
+              for (const file of files) {
+                if (file.size > 10 * 1024 * 1024) {
+                  alert(`Ảnh ${file.name} quá lớn. Tối đa 10MB.`);
+                  continue;
+                }
+                await onUploadWithLoading(file);
               }
-              await onUploadWithLoading(file);
             }
             e.target.value = '';
           }}
@@ -160,7 +162,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
       <div className="relative" ref={stickerRef}>
         <button
           type="button"
-          onClick={() => setShowStickerPicker(!showStickerPicker)}
+          onMouseDown={() => setShowStickerPicker(!showStickerPicker)}
           className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${showStickerPicker ? 'bg-[var(--voz-surface)] shadow-sm' : ''}`}
           title="Nhãn dán Voz"
         >
@@ -175,7 +177,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
                   <button
                     key={i}
                     type="button"
-                    onClick={() => onStickerClick(url)}
+                    onMouseDown={(e) => { e.preventDefault(); onStickerClick(url); }}
                     className="aspect-square bg-[var(--voz-accent)] rounded-md hover:ring-2 hover:ring-[#c84448] transition-all p-1 flex items-center justify-center overflow-hidden"
                   >
                     <img src={url} className="w-full h-full object-cover object-left" alt="Sticker" loading="lazy" />
@@ -189,7 +191,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
                 <button
                   key={pack.id}
                   type="button"
-                  onClick={() => setActivePackId(pack.id)}
+                  onMouseDown={(e) => { e.preventDefault(); setActivePackId(pack.id); }}
                   title={pack.name}
                   className={`p-1.5 rounded-md transition-all flex-shrink-0 opacity-60 hover:opacity-100 ${activePackId === pack.id ? 'bg-[var(--voz-surface)] opacity-100 shadow-sm border border-[var(--voz-border)]' : ''}`}
                 >
