@@ -8,79 +8,9 @@ import { Bold, Italic, Strikethrough, List, ListOrdered, Quote, Image as ImageIc
 import { forwardRef, useImperativeHandle, useState, useCallback, useEffect, useRef } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
+import { STICKER_PACKS } from '@/lib/stickers';
 
-const STICKER_PACKS = [
-  {
-    id: "3d-emojis",
-    name: "3D",
-    icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Cat%20with%20Tears%20of%20Joy.png",
-    stickers: [
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Frog.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Cat%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Dog%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Monkey%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Alien.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Exploding%20Head.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20with%20Tears%20of%20Joy.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Loudly%20Crying%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Partying%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Pleading%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smirking%20Face.png",
-      "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Angry%20Face.png"
-    ]
-  },
-  {
-    id: "ami",
-    name: "Ami Bụng Bự",
-    icon: "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/ami-bung-bu-5.png",
-    stickers: [
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45417.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45418.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45419.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45420.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45421.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45422.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45423.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45424.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45425.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45426.png"
-    ]
-  },
-  {
-    id: "quynh-aka",
-    name: "Quỳnh Aka",
-    icon: "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/quynh-aka-nghi-le.png",
-    stickers: [
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23021.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23022.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23023.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23024.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23025.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23026.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23027.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23028.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23029.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23030.png"
-    ]
-  },
-  {
-    id: "moca-cho-dien",
-    name: "Chó Shiba",
-    icon: "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/moca-cho-dien.png",
-    stickers: [
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45897.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45898.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45899.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45900.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45901.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45902.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45903.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45904.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45905.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45906.png"
-    ]
-  }
-];
+
 
 const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);

@@ -7,6 +7,7 @@ import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, M
 import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
+import { STICKER_PACKS } from '@/lib/stickers';
 import { submitReport } from '@/actions/reportActions';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
@@ -183,6 +184,43 @@ export default function GlobalChatbox({ session }) {
 
   // Lightbox
   const [lightboxImage, setLightboxImage] = useState(null);
+
+  // Sticker Picker
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const [activeStickerPack, setActiveStickerPack] = useState(STICKER_PACKS[0].id);
+  const stickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (stickerRef.current && !stickerRef.current.contains(event.target)) {
+        setShowStickerPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSendSticker = async (url) => {
+    setShowStickerPicker(false);
+    if (isSending || isUploadingImages) return;
+    setIsSending(true);
+    try {
+      const res = await createShout({ content: "", images: [url] });
+      if (res.success) {
+        setTimeout(() => {
+          if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+          }
+        }, 100);
+      } else {
+        showToast(res.error || 'Có lỗi xảy ra', 'error');
+      }
+    } catch (error) {
+      showToast('Lỗi mạng', 'error');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   useEffect(() => {
     // Load initial messages and chat pause state
@@ -828,9 +866,51 @@ export default function GlobalChatbox({ session }) {
                         <button type="button" onClick={() => fileInputRef.current?.click()} className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors shrink-0 tooltip-trigger" title="Gửi ảnh">
                           <ImageIcon size={20} strokeWidth={1.5} />
                         </button>
-                        <button type="button" className="p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors mr-1 shrink-0 tooltip-trigger" title="Nhãn dán (Sắp ra mắt)">
-                          <Sticker size={20} strokeWidth={1.5} />
-                        </button>
+                        
+                        <div className="relative flex items-center" ref={stickerRef}>
+                          <button 
+                            type="button" 
+                            onClick={() => setShowStickerPicker(!showStickerPicker)}
+                            className={`p-2 hover:bg-black/5 dark:hover:bg-white/10 rounded-full transition-colors mr-1 shrink-0 tooltip-trigger ${showStickerPicker ? 'bg-black/5 dark:bg-white/10 text-[#4e5dff]' : ''}`} 
+                            title="Nhãn dán"
+                          >
+                            <Sticker size={20} strokeWidth={1.5} />
+                          </button>
+                          
+                          {showStickerPicker && (
+                            <div className="absolute bottom-full right-0 mb-2 shadow-2xl bg-white dark:bg-[#262626] border border-gray-200 dark:border-[#3a3b3c] rounded-xl flex flex-col z-[9999] w-[320px] overflow-hidden">
+                              {/* Sticker Grid */}
+                              <div className="p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
+                                <div className="grid grid-cols-4 gap-2">
+                                  {STICKER_PACKS.find(p => p.id === activeStickerPack)?.stickers.map((url, i) => (
+                                    <button
+                                      key={i}
+                                      type="button"
+                                      onClick={() => handleSendSticker(url)}
+                                      className="aspect-square bg-gray-50 dark:bg-[#18181b] rounded-xl hover:ring-2 hover:ring-[#4e5dff] transition-all p-1 flex items-center justify-center overflow-hidden hover:scale-105"
+                                    >
+                                      <img src={url} className="w-[45px] h-[45px] object-contain drop-shadow-sm" alt="Sticker" loading="lazy" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                              {/* Tab Bar */}
+                              <div className="bg-gray-50 dark:bg-[#18181b] border-t border-gray-200 dark:border-[#3a3b3c] px-2 py-2 flex gap-2 overflow-x-auto custom-scrollbar items-center hide-scrollbar">
+                                {STICKER_PACKS.map(pack => (
+                                  <button
+                                    key={pack.id}
+                                    type="button"
+                                    onClick={() => setActiveStickerPack(pack.id)}
+                                    title={pack.name}
+                                    className={`p-2 rounded-lg transition-all flex-shrink-0 opacity-60 hover:opacity-100 ${activeStickerPack === pack.id ? 'bg-white dark:bg-[#262626] opacity-100 shadow-sm border border-gray-200 dark:border-[#3a3b3c]' : ''}`}
+                                  >
+                                    <img src={pack.icon} alt={pack.name} className="w-6 h-6 object-contain" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </>
                     )}
                   </div>
