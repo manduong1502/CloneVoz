@@ -10,14 +10,14 @@ import EmojiPicker from 'emoji-picker-react';
 import { useTheme } from 'next-themes';
 
 const STICKERS = [
-  "https://media.tenor.com/yF9W9zB84c8AAAAi/pepe-frog.gif",
-  "https://media.tenor.com/FwFnt6oIeXgAAAAi/peepo-happy.gif",
-  "https://media.tenor.com/1G6676x2sQ8AAAAi/sad-pepe.gif",
-  "https://media.tenor.com/xOikH-uB-mAAAAAi/pepe-dance.gif",
-  "https://media.tenor.com/U1pI33jM9bEAAAAi/pepe-sweat.gif",
-  "https://media.tenor.com/1-11v2-T-LwAAAAi/pepe-leave.gif",
-  "https://media.tenor.com/Z47g4P8i-1QAAAAi/pepe-cry.gif",
-  "https://media.tenor.com/sSg18O1zXwEAAAAi/pepe-gun.gif",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Animals/Frog.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Cat%20with%20Tears%20of%20Joy.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Exploding%20Head.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Face%20with%20Tears%20of%20Joy.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Loudly%20Crying%20Face.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Partying%20Face.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Pleading%20Face.png",
+  "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Smirking%20Face.png",
 ];
 
 const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
@@ -175,7 +175,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
         </button>
         {showStickerPicker && (
           <div className="absolute bottom-full left-0 mb-1 shadow-2xl bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg p-3 z-50 w-[280px]">
-            <div className="text-[13px] font-bold text-[var(--voz-text-strong)] mb-2 px-1">Pepe Stickers</div>
+            <div className="text-[13px] font-bold text-[var(--voz-text-strong)] mb-2 px-1">3D Stickers</div>
             <div className="grid grid-cols-4 gap-2">
               {STICKERS.map((url, i) => (
                 <button
