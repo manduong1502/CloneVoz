@@ -210,6 +210,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
 export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, placeholder = 'Viết bình luận...' }, ref) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadCount, setUploadCount] = useState(0);
+  const editorInstanceRef = useRef(null);
 
   // Wrapper function that handles loading state
   const uploadWithLoading = useCallback(async (file) => {
@@ -218,10 +219,11 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
     setUploadCount(c => c + 1);
     try {
       const url = await onImageUpload(file);
-      if (url && editor) {
+      const ed = editorInstanceRef.current;
+      if (url && ed) {
         try {
           // Insert image + empty paragraph so cursor advances past the image
-          editor.chain().focus().insertContent([
+          ed.chain().focus().insertContent([
             { type: 'image', attrs: { src: url } },
             { type: 'paragraph' },
           ]).run();
@@ -240,7 +242,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
         return newCount;
       });
     }
-  }, [onImageUpload, editor]);
+  }, [onImageUpload]);
 
   const editor = useEditor({
     extensions: [
@@ -376,6 +378,9 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       onChange?.(editor.getHTML());
     },
   });
+
+  // Keep ref in sync so uploadWithLoading can access editor
+  editorInstanceRef.current = editor;
 
   useImperativeHandle(ref, () => ({
     getEditor: () => editor,
