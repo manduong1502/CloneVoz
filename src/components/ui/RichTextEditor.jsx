@@ -180,7 +180,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
                     onMouseDown={(e) => { e.preventDefault(); onStickerClick(url); }}
                     className="aspect-square bg-[var(--voz-accent)] rounded-md hover:ring-2 hover:ring-[#c84448] transition-all p-1 flex items-center justify-center overflow-hidden"
                   >
-                    <img src={url} className="w-full h-full object-cover object-left" alt="Sticker" loading="lazy" />
+                    <img src={url} className="w-full h-full object-contain" alt="Sticker" loading="lazy" />
                   </button>
                 ))}
               </div>
@@ -220,7 +220,11 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       const url = await onImageUpload(file);
       if (url && editor) {
         try {
-          editor.chain().focus().setImage({ src: url }).run();
+          // Insert image + empty paragraph so cursor advances past the image
+          editor.chain().focus().insertContent([
+            { type: 'image', attrs: { src: url } },
+            { type: 'paragraph' },
+          ]).run();
         } catch (err) {
           console.error('Image insert error:', err);
         }
@@ -236,7 +240,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
         return newCount;
       });
     }
-  }, [onImageUpload]);
+  }, [onImageUpload, editor]);
 
   const editor = useEditor({
     extensions: [

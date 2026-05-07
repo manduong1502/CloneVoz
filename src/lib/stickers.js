@@ -21,16 +21,18 @@ export const STICKER_PACKS = [
     "name": "Chó Shiba",
     "icon": "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/moca-cho-dien.png",
     "stickers": [
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45897.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45898.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45899.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45900.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45901.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45902.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45903.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45904.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45905.png",
-      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45906.png"
+      "https://media.tenor.com/VwNkC2ZJw5QAAAAM/cute.gif",
+      "https://media.tenor.com/Tjkaft9VkigAAAAM/shibe-hold.gif",
+      "https://media.tenor.com/ac_OaNzx2nIAAAAM/dog.gif",
+      "https://media.tenor.com/h9W7z3y5CPMAAAAM/shiba-shiba-inu.gif",
+      "https://media.tenor.com/dLjfvQAzKBIAAAAM/shiba-doge.gif",
+      "https://media.tenor.com/zrxr1tKqp4cAAAAM/shiba-shiba-inu.gif",
+      "https://media.tenor.com/hnggeRZPI5sAAAAM/yes-doge.gif",
+      "https://media.tenor.com/DBImmHZuzbIAAAAM/no.gif",
+      "https://media.tenor.com/474-dqlvldEAAAAM/shiba-shiba-inu.gif",
+      "https://media.tenor.com/dcxFmqgtyKIAAAAM/shiba-sleepy.gif",
+      "https://media.tenor.com/ZLppW5R3rtEAAAAM/shiba-inu-shina.gif",
+      "https://media.tenor.com/BdxqmajmANgAAAAM/shiba-inu-cute.gif"
     ]
   },
   {

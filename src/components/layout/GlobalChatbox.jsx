@@ -203,23 +203,22 @@ export default function GlobalChatbox({ session }) {
   const handleSendSticker = async (url) => {
     setShowStickerPicker(false);
     if (isSending || isUploadingImages) return;
-    setIsSending(true);
-    try {
-      const res = await postShout(`[IMG]${url}[/IMG]`);
-      if (res.success) {
-        setTimeout(() => {
-          if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-          }
-        }, 100);
-      } else {
-        showToast(res.error || 'Có lỗi xảy ra', 'error');
+    startTransition(async () => {
+      try {
+        const res = await postShout(`[IMG]${url}[/IMG]`);
+        if (res.success) {
+          setTimeout(() => {
+            if (messagesEndRef.current) {
+              messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+          }, 100);
+        } else {
+          showToast(res.error || 'Có lỗi xảy ra', 'error');
+        }
+      } catch (error) {
+        showToast('Lỗi mạng', 'error');
       }
-    } catch (error) {
-      showToast('Lỗi mạng', 'error');
-    } finally {
-      setIsSending(false);
-    }
+    });
   };
 
   useEffect(() => {
@@ -889,7 +888,7 @@ export default function GlobalChatbox({ session }) {
                                       onMouseDown={(e) => { e.preventDefault(); handleSendSticker(url); }}
                                       className="aspect-square bg-gray-50 dark:bg-[#18181b] rounded-xl hover:ring-2 hover:ring-[#4e5dff] transition-all p-1 flex items-center justify-center overflow-hidden hover:scale-105"
                                     >
-                                      <img src={url} className="w-full h-full object-cover object-left drop-shadow-sm" alt="Sticker" loading="lazy" />
+                                      <img src={url} className="w-full h-full object-contain drop-shadow-sm" alt="Sticker" loading="lazy" />
                                     </button>
                                   ))}
                                 </div>
