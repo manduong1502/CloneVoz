@@ -205,7 +205,7 @@ export default function GlobalChatbox({ session }) {
     if (isSending || isUploadingImages) return;
     setIsSending(true);
     try {
-      const res = await createShout({ content: "", images: [url] });
+      const res = await postShout(`[IMG]${url}[/IMG]`);
       if (res.success) {
         setTimeout(() => {
           if (messagesEndRef.current) {
@@ -889,7 +889,7 @@ export default function GlobalChatbox({ session }) {
                                       onClick={() => handleSendSticker(url)}
                                       className="aspect-square bg-gray-50 dark:bg-[#18181b] rounded-xl hover:ring-2 hover:ring-[#4e5dff] transition-all p-1 flex items-center justify-center overflow-hidden hover:scale-105"
                                     >
-                                      <img src={url} className="w-[45px] h-[45px] object-contain drop-shadow-sm" alt="Sticker" loading="lazy" />
+                                      <img src={url} className="w-full h-full object-cover object-left drop-shadow-sm" alt="Sticker" loading="lazy" />
                                     </button>
                                   ))}
                                 </div>

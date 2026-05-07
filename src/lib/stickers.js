@@ -1,5 +1,56 @@
 export const STICKER_PACKS = [
   {
+    "id": "quynh-aka",
+    "name": "Quỳnh Aka",
+    "icon": "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/quynh-aka-nghi-le.png",
+    "stickers": [
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23021.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23022.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23023.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23024.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23025.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23026.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23027.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23028.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23029.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/quynh-aka-nghi-le/23030.png"
+    ]
+  },
+  {
+    "id": "moca-cho-dien",
+    "name": "Chó Shiba",
+    "icon": "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/moca-cho-dien.png",
+    "stickers": [
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45897.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45898.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45899.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45900.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45901.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45902.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45903.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45904.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45905.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/moca-cho-dien/45906.png"
+    ]
+  },
+  {
+    "id": "ami",
+    "name": "Ami Bụng Bự",
+    "icon": "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/icons/ami-bung-bu-5.png",
+    "stickers": [
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45417.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45418.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45419.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45420.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45421.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45422.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45423.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45424.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45425.png",
+      "https://cdn.jsdelivr.net/gh/naptestdev/zalo-stickers/data/images/ami-bung-bu-5/45426.png"
+    ]
+  },
+  {
     "id": "smilies",
     "name": "Mặt cười",
     "icon": "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Grinning%20Face.png",

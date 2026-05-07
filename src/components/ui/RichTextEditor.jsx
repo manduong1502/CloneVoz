@@ -178,7 +178,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
                     onClick={() => onStickerClick(url)}
                     className="aspect-square bg-[var(--voz-accent)] rounded-md hover:ring-2 hover:ring-[#c84448] transition-all p-1 flex items-center justify-center overflow-hidden"
                   >
-                    <img src={url} className="w-full h-full object-contain" alt="Sticker" loading="lazy" />
+                    <img src={url} className="w-full h-full object-cover object-left" alt="Sticker" loading="lazy" />
                   </button>
                 ))}
               </div>
