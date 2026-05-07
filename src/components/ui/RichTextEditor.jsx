@@ -4,16 +4,58 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { Bold, Italic, Strikethrough, List, ListOrdered, Quote, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { forwardRef, useImperativeHandle, useState, useCallback } from 'react';
+import { Bold, Italic, Strikethrough, List, ListOrdered, Quote, Image as ImageIcon, Loader2, SmilePlus, Sticker } from 'lucide-react';
+import { forwardRef, useImperativeHandle, useState, useCallback, useEffect, useRef } from 'react';
+import EmojiPicker from 'emoji-picker-react';
+import { useTheme } from 'next-themes';
+
+const STICKERS = [
+  "https://i.imgur.com/vHq0L5d.gif", // Pepe happy
+  "https://i.imgur.com/gK2T3W2.gif", // Pepe dance
+  "https://i.imgur.com/kO1e7Zt.png", // Pepe sad
+  "https://i.imgur.com/Fw8V0fT.png", // Pepe popocorn
+  "https://i.imgur.com/PZ7mZ3e.png", // Pepe gun
+  "https://i.imgur.com/9v4M3V4.gif", // Pepe typing
+  "https://i.imgur.com/Z4O8a1x.png", // Pepe hmm
+  "https://i.imgur.com/V7R9bZq.png", // Pepe clown
+];
 
 const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showStickerPicker, setShowStickerPicker] = useState(false);
+  const { resolvedTheme } = useTheme();
+  const emojiRef = useRef(null);
+  const stickerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (emojiRef.current && !emojiRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
+      }
+      if (stickerRef.current && !stickerRef.current.contains(event.target)) {
+        setShowStickerPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!editor) {
     return null;
   }
 
+  const onEmojiClick = (emojiData) => {
+    editor.chain().focus().insertContent(emojiData.emoji).run();
+    setShowEmojiPicker(false);
+  };
+
+  const onStickerClick = (url) => {
+    editor.chain().focus().setImage({ src: url }).run();
+    setShowStickerPicker(false);
+  };
+
   return (
-    <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[var(--voz-text)]">
+    <div className="flex flex-wrap items-center gap-1 p-2 bg-[var(--voz-accent)] border-b border-[var(--voz-border)] text-[var(--voz-text)] relative z-10">
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -71,8 +113,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
 
       <div className="w-[1px] h-4 bg-[var(--voz-border)] mx-1" />
 
-      {/* Nút upload ảnh: dùng label + hidden input thay vì createElement 
-           để tương thích tốt hơn với mobile iOS/Android */}
+      {/* Nút upload ảnh */}
       <label
         className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors cursor-pointer ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
         title="Tải ảnh lên"
@@ -86,7 +127,6 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (file) {
-              // Kiểm tra dung lượng file (max 10MB)
               if (file.size > 10 * 1024 * 1024) {
                 alert('Ảnh quá lớn. Tối đa 10MB.');
                 e.target.value = '';
@@ -94,11 +134,64 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
               }
               await onUploadWithLoading(file);
             }
-            // Reset input để có thể chọn lại cùng file
             e.target.value = '';
           }}
         />
       </label>
+
+      {/* Emoji Button */}
+      <div className="relative" ref={emojiRef}>
+        <button
+          type="button"
+          onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+          className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${showEmojiPicker ? 'bg-[var(--voz-surface)] shadow-sm' : ''}`}
+          title="Biểu tượng cảm xúc"
+        >
+          <SmilePlus size={16} />
+        </button>
+        {showEmojiPicker && (
+          <div className="absolute top-full left-0 mt-1 shadow-2xl rounded-lg overflow-hidden border border-[var(--voz-border)] z-50">
+            <EmojiPicker
+              onEmojiClick={onEmojiClick}
+              theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
+              searchDisabled={false}
+              skinTonesDisabled={true}
+              width={320}
+              height={350}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Sticker Button */}
+      <div className="relative" ref={stickerRef}>
+        <button
+          type="button"
+          onClick={() => setShowStickerPicker(!showStickerPicker)}
+          className={`p-1.5 rounded hover:bg-[var(--voz-surface)] hover:text-[var(--voz-text)] transition-colors ${showStickerPicker ? 'bg-[var(--voz-surface)] shadow-sm' : ''}`}
+          title="Nhãn dán Voz"
+        >
+          <Sticker size={16} />
+        </button>
+        {showStickerPicker && (
+          <div className="absolute top-full left-0 mt-1 shadow-2xl bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg p-3 z-50 w-[280px]">
+            <div className="text-[13px] font-bold text-[var(--voz-text-strong)] mb-2 px-1">Pepe Stickers</div>
+            <div className="grid grid-cols-4 gap-2">
+              {STICKERS.map((url, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => onStickerClick(url)}
+                  className="aspect-square bg-[var(--voz-accent)] rounded-md hover:ring-2 hover:ring-[#c84448] transition-all p-1 flex items-center justify-center overflow-hidden"
+                >
+                  <img src={url} className="w-full h-full object-contain" alt="Sticker" loading="lazy" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
     </div>
   );
 };
