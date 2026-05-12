@@ -93,6 +93,34 @@ export default async function CategoryPage({ params, searchParams }) {
 
   // ========== CATEGORY VIEW ==========
   if (node.nodeType === 'Category') {
+    const catPage = parseInt(sp.page) || 1;
+    const catPerPage = 20;
+
+    // Query threads trực tiếp thuộc Category
+    const directThreadCount = await prisma.thread.count({
+      where: { nodeId: id, isApproved: true }
+    });
+    const catTotalPages = Math.ceil(directThreadCount / catPerPage) || 1;
+    const catSkip = (catPage - 1) * catPerPage;
+
+    const directThreads = await prisma.thread.findMany({
+      where: { nodeId: id, isApproved: true },
+      orderBy: { updatedAt: 'desc' },
+      skip: catSkip,
+      take: catPerPage,
+      include: {
+        author: true,
+        posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } }
+      }
+    });
+
+    const formatCount = (n) => {
+      if (n >= 1000) return (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace('.0', '') + 'K';
+      return n.toString();
+    };
+
+    const catPagination = <Pagination basePath={`/category/${id}`} currentPage={catPage} totalPages={catTotalPages} />;
+
     return (
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
         <div className="flex flex-col">
@@ -102,83 +130,135 @@ export default async function CategoryPage({ params, searchParams }) {
             <span className="mx-1">›</span>
           </div>
 
-          <h1 className="text-[26px] tracking-tight font-bold text-[var(--voz-text)] mb-4">{node.title}</h1>
+          <div className="flex items-center justify-between mb-4 gap-4">
+            <h1 className="text-[26px] tracking-tight font-bold text-[var(--voz-text)]">{node.title}</h1>
+            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px] shrink-0">
+              <PenSquare size={14} /> Đăng bài
+            </Link>
+          </div>
 
-          <div className="voz-card overflow-hidden">
-            <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
-              <h2 className="text-[16px] font-bold m-0">{node.title}</h2>
-            </div>
-
-            <div className="flex flex-col bg-[var(--voz-surface)]">
-              {(!node.children || node.children.length === 0) ? (
-                <div className="p-4 text-sm text-[var(--voz-text-muted)] text-center">Chưa có box con nào được tạo.</div>
-              ) : node.children.map((child, i) => (
-                <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length - 1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
-                  <div className="flex-1 flex items-center min-w-0 pr-2 sm:pr-4">
-                    <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[#BFE3FF]">
-                      <MessageCircle strokeWidth={1.5} size={32} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <Link href={`/category/${child.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
-                        {child.title}
-                      </Link>
-                      {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
-                      
-                      {/* Mobile Stats & Last Post (Hidden on larger screens) */}
-                      <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
-                        <div className="text-[11px] text-[var(--voz-text-muted)]">
-                          Chủ đề: <span className="font-medium text-[var(--voz-text)]">{child.threadsCount || 0}</span> <span className="mx-1">·</span> 
-                          Bình luận: <span className="font-medium text-[var(--voz-text)]">{child.postsCount || 0}</span>
-                        </div>
-                        {child.threads && child.threads.length > 0 && (
-                          <div className="text-[11px] text-[var(--voz-text-muted)] truncate">
-                            {formatRelativeTime(child.threads[0].createdAt)} <span className="mx-1">·</span> 
-                            <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)] font-medium">{child.threads[0].author.username}</Link>
+          {/* Child Forums */}
+          {node.children && node.children.length > 0 && (
+            <div className="voz-card overflow-hidden mb-4">
+              <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
+                <h2 className="text-[16px] font-bold m-0">Phòng ban</h2>
+              </div>
+              <div className="flex flex-col bg-[var(--voz-surface)]">
+                {node.children.map((child, i) => (
+                  <div key={child.id} className={`flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors ${i !== node.children.length - 1 ? 'border-b border-[var(--voz-border-light)]' : ''}`}>
+                    <div className="flex-1 flex items-center min-w-0 pr-2 sm:pr-4">
+                      <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[var(--voz-link)]">
+                        <MessageCircle strokeWidth={1.5} size={32} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <Link href={`/category/${child.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">
+                          {child.title}
+                        </Link>
+                        {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
+                        <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
+                          <div className="text-[11px] text-[var(--voz-text-muted)]">
+                            Chủ đề: <span className="font-medium text-[var(--voz-text)]">{child.threadsCount || 0}</span> <span className="mx-1">·</span> 
+                            Bình luận: <span className="font-medium text-[var(--voz-text)]">{child.postsCount || 0}</span>
                           </div>
-                        )}
+                        </div>
                       </div>
                     </div>
+                    <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
+                      <div className="flex flex-col items-center">
+                        <div>Chủ đề</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <div>Bình luận</div>
+                        <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
+                      </div>
+                    </div>
+                    <div className="hidden sm:flex items-center w-[260px] shrink-0 pl-4 min-w-0">
+                      {child.threads && child.threads.length > 0 ? (
+                        <>
+                          <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover bg-gray-100" />
+                          <div className="flex-1 min-w-0 text-[12px] ml-3 flex flex-col justify-center">
+                            <Link href={`/thread/${child.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
+                              {child.threads[0].title}
+                            </Link>
+                            <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
+                              {formatRelativeTime(child.threads[0].createdAt)} · <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{child.threads[0].author.username}</Link>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex-1 text-[12px] text-[var(--voz-text-muted)] italic">Chưa có bài viết</div>
+                      )}
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+          )}
 
-                  {/* Mobile Last Post Avatar */}
-                  <div className="sm:hidden flex items-center shrink-0 pl-2">
-                    {child.threads && child.threads.length > 0 && (
-                      <Link href={`/thread/${child.threads[0].id}`}>
-                        <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-8 h-8 rounded-full object-cover shadow-sm border border-[var(--voz-border-light)]" />
-                      </Link>
-                    )}
-                  </div>
-                  <div className="hidden md:flex flex-row justify-center items-center w-[140px] shrink-0 text-[11px] text-[var(--voz-text-muted)] gap-5">
-                    <div className="flex flex-col items-center">
-                      <div>Chủ đề</div>
-                      <div className="text-[var(--voz-text-strong)] text-[13px]">{child.threadsCount || 0}</div>
-                    </div>
-                    <div className="flex flex-col items-center">
-                      <div>Bình luận</div>
-                      <div className="text-[var(--voz-text-strong)] text-[13px]">{child.postsCount || 0}</div>
-                    </div>
-                  </div>
-                  <div className="hidden sm:flex items-center w-[260px] shrink-0 pl-4 min-w-0">
-                    {child.threads && child.threads.length > 0 ? (
-                      <>
-                        <img src={child.threads[0].author.avatar || `https://ui-avatars.com/api/?name=${child.threads[0].author.username}&background=random`} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover bg-gray-100" />
-                        <div className="flex-1 min-w-0 text-[12px] ml-3 flex flex-col justify-center">
-                          <Link href={`/thread/${child.threads[0].id}`} className="text-[var(--voz-link)] hover:underline truncate font-medium">
-                            {child.threads[0].title}
-                          </Link>
-                          <div className="text-[var(--voz-text-muted)] truncate mt-[2px]">
-                            {formatRelativeTime(child.threads[0].createdAt)} · <Link href={`/profile/${child.threads[0].author.username}`} className="hover:underline hover:text-[var(--voz-link)]">{child.threads[0].author.username}</Link>
+          {/* Threads trực tiếp thuộc Category */}
+          {directThreadCount > 0 && (
+            <>
+              <div className="mb-2">{catPagination}</div>
+              <div className="voz-card overflow-hidden">
+                <div className="bg-[var(--voz-accent)] border-b border-[var(--voz-border)] px-3 py-2 text-[var(--voz-link)]">
+                  <h2 className="text-[16px] font-bold m-0">Bài viết</h2>
+                </div>
+                <div className="bg-[var(--voz-surface)]">
+                  {directThreads.map((thread) => {
+                    const lastPoster = thread.posts[0] ? thread.posts[0].author : thread.author;
+                    const lastPosterAvatar = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
+                    return (
+                      <div key={thread.id} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-start">
+                        <div className="shrink-0 mr-3">
+                          <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[42px] h-[42px] rounded-full object-cover" />
+                        </div>
+                        <div className="flex-1 flex flex-col min-w-0 pr-2 md:pr-4">
+                          <div className="leading-snug mb-[4px]">
+                            <Link href={`/thread/${thread.id}`} className="text-[16px] leading-snug font-bold hover:underline thread-title-link">
+                              {thread.title}
+                            </Link>
+                          </div>
+                          <div className="text-[13px] flex items-center gap-1" style={{ color: '#8c9197' }}>
+                            <Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link>
+                          </div>
+                          <div className="md:hidden text-[12px] mt-[2px] flex items-center gap-1" style={{ color: '#8c9197' }}>
+                            Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}
                           </div>
                         </div>
-                      </>
-                    ) : (
-                      <div className="flex-1 text-[12px] text-[var(--voz-text-muted)] italic">Chưa có bài viết</div>
-                    )}
-                  </div>
+                        <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[13px] text-[var(--voz-text-muted)] w-[130px]">
+                          <div className="flex items-center gap-1.5">
+                            <span>Trả lời:</span>
+                            <span className="text-[var(--voz-text-strong)] font-medium min-w-[30px] text-right">{thread.replyCount}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span>Lượt xem:</span>
+                            <span className="text-[var(--voz-text-strong)] min-w-[30px] text-right">{formatCount(thread.viewCount)}</span>
+                          </div>
+                        </div>
+                        <div className="hidden sm:flex items-center gap-2.5 w-[200px] shrink-0 min-w-0 justify-end">
+                          <div className="flex-1 min-w-0 text-right text-[13px]">
+                            <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(thread.updatedAt)}</div>
+                            <Link href={`/profile/${lastPoster.username}`} className="hover:underline truncate inline-block max-w-full" style={{ color: '#8c9197' }}>
+                              {lastPoster.username}
+                            </Link>
+                          </div>
+                          <img src={lastPosterAvatar} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover" />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              </div>
+              <div className="mt-2">{catPagination}</div>
+            </>
+          )}
+
+          {node.children?.length === 0 && directThreadCount === 0 && (
+            <div className="voz-card overflow-hidden p-8 text-center text-sm text-[var(--voz-text-muted)]">
+              Chưa có nội dung nào trong danh mục này.
             </div>
-          </div>
+          )}
         </div>
         <div className="hidden lg:block"></div>
       </div>
