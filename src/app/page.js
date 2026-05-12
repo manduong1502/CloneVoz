@@ -7,7 +7,7 @@ import { getRankInfo } from '@/lib/rank';
 import LeaderboardBox from '@/components/ui/LeaderboardBox';
 import Pagination from '@/components/ui/Pagination';
 
-const ITEMS_PER_CATEGORY = 5;
+const ITEMS_PER_CATEGORY = 20;
 
 export default async function Home({ searchParams }) {
   const sp = await searchParams;
