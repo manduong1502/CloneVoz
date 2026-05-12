@@ -97,6 +97,12 @@ export default async function CategoryPage({ params, searchParams }) {
     const catPerPage = 20;
     const catSkip = (catPage - 1) * catPerPage;
 
+    let isWatchingCategory = false;
+    if (session?.user?.id) {
+      const bookmark = await prisma.bookmark.findFirst({ where: { userId: session.user.id, nodeId: id } });
+      if (bookmark) isWatchingCategory = true;
+    }
+
     // Filter logic (same as Forum view)
     const sortBy = sp.sortBy || 'updatedAt';
     const sortOrder = sp.sortOrder || 'desc';
@@ -137,9 +143,12 @@ export default async function CategoryPage({ params, searchParams }) {
           </div>
           <div className="flex items-center justify-between mb-4 gap-4">
             <h1 className="text-[26px] tracking-tight font-bold text-[var(--voz-text)]">{node.title}</h1>
-            <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px] shrink-0">
-              <PenSquare size={14} /> Đăng bài
-            </Link>
+            <div className="flex gap-2 items-center shrink-0">
+              {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingCategory} />}
+              <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-sm px-4 py-[6px] font-medium text-[13px] flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[30px]">
+                <PenSquare size={14} /> Đăng bài
+              </Link>
+            </div>
           </div>
 
           <div className="mb-2">{catPagination}</div>
