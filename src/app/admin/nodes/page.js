@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma';
 import { createNode, updateNode, deleteNode } from '@/actions/nodeActions';
-import { Trash2, FolderPlus, Plus, AlertTriangle } from 'lucide-react';
+import { Trash2, FolderPlus, Plus, AlertTriangle, Eye } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import DraggableForumList from './DraggableForumList';
@@ -39,7 +39,12 @@ export default async function AdminNodesPage() {
               return (
                  <div key={category.id} className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
                     <div className="bg-[var(--voz-accent)] px-4 py-3 border-b border-[var(--voz-border)] flex justify-between items-center">
-                       <h3 className="font-bold text-[15px]">{category.title} <span className="text-xs font-normal text-[var(--voz-text-muted)] ml-2">(Group)</span></h3>
+                       <div className="flex items-center gap-2">
+                         <h3 className="font-bold text-[15px]">{category.title} <span className="text-xs font-normal text-[var(--voz-text-muted)] ml-2">(Group)</span></h3>
+                         <Link href={`/admin/nodes/${category.id}`} className="text-[12px] text-blue-500 hover:underline flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+                           <Eye size={12} /> {category._count?.threads || 0} bài viết
+                         </Link>
+                       </div>
                        
                        <div className="flex gap-2 items-center">
                           <RenameButton nodeId={category.id} currentTitle={category.title} />

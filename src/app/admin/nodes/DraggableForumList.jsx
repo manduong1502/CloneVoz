@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useTransition } from 'react';
-import { GripVertical, ArrowRightLeft, Trash2, LayoutList, Pencil } from 'lucide-react';
+import { GripVertical, ArrowRightLeft, Trash2, LayoutList, Pencil, Pin } from 'lucide-react';
 import Link from 'next/link';
 import { updateNodeOrder } from '@/actions/nodeActions';
 import { moveNode, renameNode } from '@/actions/nodeActions';
@@ -160,6 +160,28 @@ export default function DraggableForumList({ forums, categories, categoryId }) {
             </Link>
 
             <div className="flex gap-1 items-center">
+              {/* Pin Button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startTransition(async () => {
+                    const isPinned = forum.displayOrder <= 0;
+                    const newOrder = isPinned ? (idx + 1) * 10 : 0;
+                    await updateNodeOrder(forum.id, newOrder);
+                    const newItems = items.map(it => it.id === forum.id ? { ...it, displayOrder: newOrder } : it);
+                    setItems(newItems.sort((a,b) => a.displayOrder - b.displayOrder));
+                  });
+                }}
+                className={`p-1.5 rounded border border-transparent transition ${
+                  forum.displayOrder <= 0 
+                    ? 'text-red-500 bg-red-50 dark:bg-red-900/20' 
+                    : 'text-[var(--voz-text-muted)] hover:text-red-500 hover:border-[var(--voz-border)]'
+                }`}
+                title={forum.displayOrder <= 0 ? "Bỏ ghim" : "Ghim lên đầu"}
+              >
+                <Pin size={14} className={forum.displayOrder <= 0 ? 'fill-current' : ''} />
+              </button>
+
               {/* Rename Button */}
               <button
                 onClick={(e) => { e.stopPropagation(); setRenameForumId(forum.id); setRenameValue(forum.title); }}
