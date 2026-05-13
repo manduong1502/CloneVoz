@@ -192,12 +192,16 @@ export async function moveAllThreadsToParent(forumId) {
     data: { nodeId: forum.parentId }
   });
 
+  // Xóa forum nhỏ (giờ đã trống)
+  await prisma.node.delete({
+    where: { id: forumId }
+  });
+
   const { deleteCachePattern } = await import('@/lib/redis');
   await deleteCachePattern('voz_homepage_*');
 
   revalidatePath("/");
   revalidatePath("/admin/nodes");
-  revalidatePath(`/admin/nodes/${forumId}`);
   revalidatePath(`/category/${forum.parentId}`);
 
   return { moved: result.count, parentId: forum.parentId, forumTitle: forum.title };
@@ -222,6 +226,11 @@ export async function moveAllThreadsFromCategory(categoryId) {
   const result = await prisma.thread.updateMany({
     where: { nodeId: { in: childIds } },
     data: { nodeId: categoryId }
+  });
+
+  // Xóa tất cả forum nhỏ (giờ đã trống)
+  await prisma.node.deleteMany({
+    where: { id: { in: childIds } }
   });
 
   const { deleteCachePattern } = await import('@/lib/redis');
