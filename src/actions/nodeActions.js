@@ -202,3 +202,34 @@ export async function moveAllThreadsToParent(forumId) {
 
   return { moved: result.count, parentId: forum.parentId, forumTitle: forum.title };
 }
+
+// 8. Chuyển tất cả bài viết từ TẤT CẢ forum nhỏ ra Category cha
+export async function moveAllThreadsFromCategory(categoryId) {
+  await requireAdminOrMod();
+  if (!categoryId) throw new Error("Thiếu thông tin category");
+
+  // Lấy tất cả forum nhỏ thuộc category này
+  const childForums = await prisma.node.findMany({
+    where: { parentId: categoryId },
+    select: { id: true, title: true }
+  });
+
+  if (childForums.length === 0) throw new Error("Category này không có forum nhỏ nào");
+
+  const childIds = childForums.map(f => f.id);
+
+  // Chuyển tất cả threads từ các forum nhỏ ra category cha
+  const result = await prisma.thread.updateMany({
+    where: { nodeId: { in: childIds } },
+    data: { nodeId: categoryId }
+  });
+
+  const { deleteCachePattern } = await import('@/lib/redis');
+  await deleteCachePattern('voz_homepage_*');
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+  revalidatePath(`/category/${categoryId}`);
+
+  return { moved: result.count, forumCount: childForums.length };
+}
