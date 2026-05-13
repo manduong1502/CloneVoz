@@ -93,10 +93,17 @@ export default async function Home({ searchParams }) {
         pinned: t.isPinned
       }));
 
-      // Combine and sort: pinned first, then by sortDate desc
+      // Combine and sort: pinned first, then unpinned forums, then unpinned threads by sortDate desc
       const allItems = [...forumItems, ...threadItems].sort((a, b) => {
+        // 1. Pinned items always come first
         if (a.pinned && !b.pinned) return -1;
         if (!a.pinned && b.pinned) return 1;
+        // 2. Among unpinned: forums come before threads
+        if (!a.pinned && !b.pinned) {
+          if (a.type === 'forum' && b.type !== 'forum') return -1;
+          if (a.type !== 'forum' && b.type === 'forum') return 1;
+        }
+        // 3. Within same priority group: sort by date desc
         return b.sortDate - a.sortDate;
       });
 

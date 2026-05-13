@@ -173,3 +173,32 @@ export async function renameNode(nodeId, newTitle) {
   revalidatePath("/");
   revalidatePath("/admin/nodes");
 }
+
+// 7. Chuyển tất cả bài viết từ Forum con ra Forum cha (Category)
+export async function moveAllThreadsToParent(forumId) {
+  await requireAdminOrMod();
+  if (!forumId) throw new Error("Thiếu thông tin forum");
+
+  const forum = await prisma.node.findUnique({
+    where: { id: forumId },
+    select: { id: true, parentId: true, title: true }
+  });
+
+  if (!forum) throw new Error("Forum không tồn tại");
+  if (!forum.parentId) throw new Error("Forum này không có Category cha");
+
+  const result = await prisma.thread.updateMany({
+    where: { nodeId: forumId },
+    data: { nodeId: forum.parentId }
+  });
+
+  const { deleteCachePattern } = await import('@/lib/redis');
+  await deleteCachePattern('voz_homepage_*');
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+  revalidatePath(`/admin/nodes/${forumId}`);
+  revalidatePath(`/category/${forum.parentId}`);
+
+  return { moved: result.count, parentId: forum.parentId, forumTitle: forum.title };
+}

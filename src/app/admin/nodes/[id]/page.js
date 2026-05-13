@@ -3,14 +3,20 @@ import Link from 'next/link';
 import { ArrowLeft, MessageSquare, Eye } from 'lucide-react';
 import DeleteThreadButton from './DeleteThreadButton';
 import PinThreadButton from '@/components/thread/PinThreadButton';
+import MoveAllThreadsButton from './MoveAllThreadsButton';
+import Pagination from '@/components/ui/Pagination';
 
-export default async function AdminNodeDetail({ params }) {
+const ITEMS_PER_PAGE = 20;
+
+export default async function AdminNodeDetail({ params, searchParams }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const page = parseInt(sp?.page) || 1;
 
   try {
     const node = await prisma.node.findUnique({
       where: { id },
-      select: { id: true, title: true, parentId: true }
+      select: { id: true, title: true, parentId: true, nodeType: true }
     });
 
     if (!node) {
@@ -23,9 +29,15 @@ export default async function AdminNodeDetail({ params }) {
       parentTitle = parent?.title || '';
     }
 
+    const totalThreads = await prisma.thread.count({ where: { nodeId: id } });
+    const totalPages = Math.ceil(totalThreads / ITEMS_PER_PAGE) || 1;
+    const skip = (page - 1) * ITEMS_PER_PAGE;
+
     const threads = await prisma.thread.findMany({
       where: { nodeId: id },
       orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
+      skip,
+      take: ITEMS_PER_PAGE,
       select: {
         id: true,
         title: true,
@@ -49,16 +61,26 @@ export default async function AdminNodeDetail({ params }) {
             </h1>
             <p className="text-sm text-[var(--voz-text-muted)]">
               {parentTitle && <span>{parentTitle} › </span>}
-              {threads.length} chủ đề
+              {totalThreads} chủ đề
             </p>
           </div>
         </div>
+
+        {/* Action Bar */}
+        {node.parentId && totalThreads > 0 && (
+          <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center justify-between gap-3">
+            <div className="text-[13px] text-amber-800 dark:text-amber-300">
+              <strong>{totalThreads}</strong> bài viết đang nằm trong forum "{node.title}". Bạn có thể chuyển tất cả ra ngoài Category cha "{parentTitle}".
+            </div>
+            <MoveAllThreadsButton forumId={id} forumTitle={node.title} threadCount={totalThreads} />
+          </div>
+        )}
 
         {/* Thread List */}
         <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
           <div className="bg-[var(--voz-accent)] px-4 py-3 border-b border-[var(--voz-border)] flex justify-between items-center">
             <span className="font-semibold text-[14px]">Danh sách chủ đề</span>
-            <span className="text-xs text-[var(--voz-text-muted)]">{threads.length} threads</span>
+            <span className="text-xs text-[var(--voz-text-muted)]">{totalThreads} threads · Trang {page}/{totalPages}</span>
           </div>
 
           {threads.length === 0 ? (
@@ -99,6 +121,13 @@ export default async function AdminNodeDetail({ params }) {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="bg-[var(--voz-accent)] border-t border-[var(--voz-border)] px-4 py-3 flex justify-end">
+              <Pagination basePath={`/admin/nodes/${id}`} currentPage={page} totalPages={totalPages} />
             </div>
           )}
         </div>
