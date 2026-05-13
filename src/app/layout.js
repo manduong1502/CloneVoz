@@ -30,53 +30,56 @@ export default async function RootLayout({ children }) {
   let notifications = [];
   let unreadNotificationsCount = 0;
   let bannedUser = null;
-
-  if (session?.user?.id) {
-    const currentUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { isBanned: true, banReason: true, banExpiresAt: true, bannedAt: true }
-    });
-
-    // Check nếu ban đã hết hạn thì tự động gỡ ban
-    if (currentUser?.isBanned && currentUser.banExpiresAt && new Date(currentUser.banExpiresAt) < new Date()) {
-      await prisma.user.update({
-        where: { id: session.user.id },
-        data: { isBanned: false, banReason: null, banExpiresAt: null, bannedAt: null }
-      });
-    } else if (currentUser?.isBanned) {
-      bannedUser = currentUser;
-    }
-
-    if (!bannedUser) {
-      notifications = await prisma.notification.findMany({
-        where: { userId: session.user.id },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        include: { sender: { select: { username: true, avatar: true } } }
-      });
-      unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
-    }
-  }
-
-  // Đếm số tin nhắn cá nhân chưa đọc (notification type pm hoặc pm_reply)
   let unreadPmCount = 0;
   let adminPendingCount = 0;
 
-  if (session?.user?.id && !bannedUser) {
-    unreadPmCount = await prisma.notification.count({
-      where: { 
-        userId: session.user.id, 
-        isRead: false,
-        type: { in: ['pm', 'pm_reply'] }
-      }
-    });
+  try {
+    if (session?.user?.id) {
+      const currentUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { isBanned: true, banReason: true, banExpiresAt: true, bannedAt: true }
+      });
 
-    const isAdminOrMod = session.user.isAdmin || session.user.isMod || SUPER_ADMIN_EMAILS.includes(session.user.email);
-    if (isAdminOrMod) {
-      const pendingThreads = await prisma.thread.count({ where: { isApproved: false } });
-      const pendingReports = await prisma.report.count({ where: { status: 'pending' } });
-      adminPendingCount = pendingThreads + pendingReports;
+      // Check nếu ban đã hết hạn thì tự động gỡ ban
+      if (currentUser?.isBanned && currentUser.banExpiresAt && new Date(currentUser.banExpiresAt) < new Date()) {
+        await prisma.user.update({
+          where: { id: session.user.id },
+          data: { isBanned: false, banReason: null, banExpiresAt: null, bannedAt: null }
+        });
+      } else if (currentUser?.isBanned) {
+        bannedUser = currentUser;
+      }
+
+      if (!bannedUser) {
+        notifications = await prisma.notification.findMany({
+          where: { userId: session.user.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+          include: { sender: { select: { username: true, avatar: true } } }
+        });
+        unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
+      }
     }
+
+    if (session?.user?.id && !bannedUser) {
+      unreadPmCount = await prisma.notification.count({
+        where: { 
+          userId: session.user.id, 
+          isRead: false,
+          type: { in: ['pm', 'pm_reply'] }
+        }
+      });
+
+      const isAdminOrMod = session.user.isAdmin || session.user.isMod || SUPER_ADMIN_EMAILS.includes(session.user.email);
+      if (isAdminOrMod) {
+        const pendingThreads = await prisma.thread.count({ where: { isApproved: false } });
+        const pendingReports = await prisma.report.count({ where: { status: 'pending' } });
+        adminPendingCount = pendingThreads + pendingReports;
+      }
+    }
+  } catch (err) {
+    console.error("Layout Server Component Error:", err);
+    // Ignore error to prevent whole page crash, features will gracefully degrade to 0
   }
 
   return (

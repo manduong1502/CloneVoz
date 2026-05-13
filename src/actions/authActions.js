@@ -23,6 +23,9 @@ export async function loginWithCredentials(formData) {
     if (error.type === 'CredentialsSignin') {
       return { error: "Tài khoản không tồn tại" }
     }
+    if (error.name !== 'AuthError') {
+      throw error;
+    }
     return { error: "Lỗi đăng nhập" }
   }
 }
@@ -30,9 +33,9 @@ export async function loginWithCredentials(formData) {
 export async function registerWithCredentials(formData) {
   const username = formData.get("username");
   const email = formData.get("email");
-  // Bỏ qua password vì đang demo không mã hóa
+  const password = formData.get("password");
 
-  if (!username || !email) return { error: "Nhập đủ Username và Email" };
+  if (!username || !email || !password) return { error: "Nhập đủ Username, Email và Mật khẩu" };
 
   const { prisma } = require('@/lib/prisma');
   
@@ -44,11 +47,15 @@ export async function registerWithCredentials(formData) {
 
   if (existUser) return { error: "Username hoặc Email đã tồn tại!" };
 
+  const bcrypt = await import('bcryptjs');
+  const passwordHash = await bcrypt.hash(password, 10);
+
   await prisma.user.create({
     data: {
       username,
       email,
-      name: username
+      name: username,
+      passwordHash
     }
   });
 
@@ -56,12 +63,19 @@ export async function registerWithCredentials(formData) {
   try {
     await signIn("credentials", {
       username,
-      password: "123",
+      password,
       redirect: false
     });
     return { success: true };
   } catch (error) {
-    return { error: "Đăng ký thành công nhưng tự động đăng nhập lỗi." }
+    if (error.type === 'CredentialsSignin') {
+      return { error: "Đăng ký thành công nhưng tự động đăng nhập lỗi." }
+    }
+    // NEXT_REDIRECT might be thrown by NextAuth or Next.js, so re-throw it if it's not AuthError
+    if (error.name !== 'AuthError') {
+      throw error;
+    }
+    return { error: "Lỗi hệ thống khi đăng nhập." }
   }
 }
 
