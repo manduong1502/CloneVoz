@@ -12,12 +12,12 @@ export default function MoveAllFromCategoryButton({ categoryId, categoryTitle, t
   if (totalThreads <= 0) return null;
 
   const handleMove = () => {
-    if (!confirm(`⚠️ CẢNH BÁO: Bạn chắc chắn muốn chuyển TẤT CẢ bài viết từ các forum nhỏ trong "${categoryTitle}" ra ngoài?\n\nTổng cộng: ${totalThreads} bài viết sẽ được chuyển ra và các forum nhỏ sẽ bị XÓA.\n\nHành động này không thể hoàn tác.`)) return;
+    if (!confirm(`⚠️ Bạn chắc chắn muốn chuyển TẤT CẢ ${totalThreads} bài viết từ các forum nhỏ ra "${categoryTitle}"?\n\nCác forum nhỏ sẽ được giữ lại (trống).`)) return;
 
     startTransition(async () => {
       try {
         const result = await moveAllThreadsFromCategory(categoryId);
-        alert(`✅ Đã chuyển ${result.moved} bài viết ra "${categoryTitle}" và xóa ${result.forumCount} forum nhỏ.`);
+        alert(`✅ Đã chuyển ${result.moved} bài viết từ ${result.forumCount} forum nhỏ ra "${categoryTitle}".`);
         router.refresh();
       } catch (err) {
         alert(`❌ Lỗi: ${err.message}`);

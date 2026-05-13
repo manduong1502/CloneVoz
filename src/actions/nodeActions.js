@@ -31,7 +31,6 @@ export async function createNode(formData) {
   const nodeType = formData.get("nodeType") || "Forum";
   const parentId = formData.get("parentId") || null;
   const displayOrder = parseInt(formData.get("displayOrder") || "10", 10);
-  const cssClass = formData.get("cssClass") || "";
 
   if (!title) throw new Error("Vui lòng nhập tên diễn đàn");
 
@@ -42,7 +41,6 @@ export async function createNode(formData) {
       nodeType,
       parentId: parentId === "none" ? null : parentId,
       displayOrder,
-      // cssClass, // (nếu có bổ sung cột này ở schema)
     }
   });
 
@@ -72,15 +70,11 @@ export async function updateNode(id, formData) {
   revalidatePath("/admin/nodes");
 }
 
-// 3. Xoá hoàn toàn một Node. Rất nguy hiểm vì nó xoá sạch mọi dữ liệu con!
+// 3. Xoá hoàn toàn một Node
 export async function deleteNode(id) {
   await requireAdminOrMod();
   if (!id) return;
   
-  // Do giới hạn của SQLite môi trường dev, ta sẽ sử dụng Prisma Transaction 
-  // để tự động dọn rác thủ công cực kỳ cẩn thận từ dưới lên trên, tránh bị mồ côi (Cascade Deletion).
-  
-  // Lấy danh sách ID của tất cả Threads trong Node này
   const threads = await prisma.thread.findMany({
      where: { nodeId: id },
      select: { id: true }
@@ -89,33 +83,26 @@ export async function deleteNode(id) {
 
   if (threadIds.length > 0) {
       await prisma.$transaction([
-        // 1. Xoá toàn bộ Reactions dựa trên Post thuộc Thread
         prisma.reaction.deleteMany({
           where: { post: { threadId: { in: threadIds } } }
         }),
-        // 2. Xoá toàn bộ Báo cáo (Reports) nằm trong các Post này
         prisma.report.deleteMany({
           where: { post: { threadId: { in: threadIds } } }
         }),
-        // 3. Xóa các Bookmarks liên quan
         prisma.bookmark.deleteMany({
           where: { threadId: { in: threadIds } }
         }),
-        // 4. Xoá toàn bộ Posts
         prisma.post.deleteMany({
           where: { threadId: { in: threadIds } }
         }),
-        // 5. Xoá Threads
-         prisma.thread.deleteMany({
-            where: { nodeId: id }
-         }),
-        // 6. Xoá chính Node
-         prisma.node.delete({
-            where: { id }
-         })
+        prisma.thread.deleteMany({
+           where: { nodeId: id }
+        }),
+        prisma.node.delete({
+           where: { id }
+        })
       ]);
   } else {
-     // Nếu Node rỗng (chưa có Threads), chỉ việc xóa chính nó
      await prisma.node.delete({
        where: { id }
      });
@@ -149,7 +136,6 @@ export async function updateNodeOrder(nodeId, newOrder) {
     data: { displayOrder: parseInt(newOrder) }
   });
 
-  // Xóa cache homepage
   const { deleteCache } = await import('@/lib/redis');
   await deleteCache('voz_homepage_data');
 
@@ -174,7 +160,7 @@ export async function renameNode(nodeId, newTitle) {
   revalidatePath("/admin/nodes");
 }
 
-// 7. Chuyển tất cả bài viết từ Forum con ra Forum cha (Category)
+// 7. Chuyển tất cả bài viết từ Forum con ra Forum cha (Category) - GIỮ LẠI forum
 export async function moveAllThreadsToParent(forumId) {
   await requireAdminOrMod();
   if (!forumId) throw new Error("Thiếu thông tin forum");
@@ -192,27 +178,22 @@ export async function moveAllThreadsToParent(forumId) {
     data: { nodeId: forum.parentId }
   });
 
-  // Xóa forum nhỏ (giờ đã trống)
-  await prisma.node.delete({
-    where: { id: forumId }
-  });
-
   const { deleteCachePattern } = await import('@/lib/redis');
   await deleteCachePattern('voz_homepage_*');
 
   revalidatePath("/");
   revalidatePath("/admin/nodes");
+  revalidatePath(`/admin/nodes/${forumId}`);
   revalidatePath(`/category/${forum.parentId}`);
 
   return { moved: result.count, parentId: forum.parentId, forumTitle: forum.title };
 }
 
-// 8. Chuyển tất cả bài viết từ TẤT CẢ forum nhỏ ra Category cha
+// 8. Chuyển tất cả bài viết từ TẤT CẢ forum nhỏ ra Category cha (GIỮ LẠI forum nhỏ)
 export async function moveAllThreadsFromCategory(categoryId) {
   await requireAdminOrMod();
   if (!categoryId) throw new Error("Thiếu thông tin category");
 
-  // Lấy tất cả forum nhỏ thuộc category này
   const childForums = await prisma.node.findMany({
     where: { parentId: categoryId },
     select: { id: true, title: true }
@@ -222,15 +203,9 @@ export async function moveAllThreadsFromCategory(categoryId) {
 
   const childIds = childForums.map(f => f.id);
 
-  // Chuyển tất cả threads từ các forum nhỏ ra category cha
   const result = await prisma.thread.updateMany({
     where: { nodeId: { in: childIds } },
     data: { nodeId: categoryId }
-  });
-
-  // Xóa tất cả forum nhỏ (giờ đã trống)
-  await prisma.node.deleteMany({
-    where: { id: { in: childIds } }
   });
 
   const { deleteCachePattern } = await import('@/lib/redis');
@@ -241,4 +216,23 @@ export async function moveAllThreadsFromCategory(categoryId) {
   revalidatePath(`/category/${categoryId}`);
 
   return { moved: result.count, forumCount: childForums.length };
+}
+
+// 9. Chuyển 1 bài viết vào forum nhỏ cụ thể
+export async function moveThreadToNode(threadId, targetNodeId) {
+  await requireAdminOrMod();
+  if (!threadId || !targetNodeId) throw new Error("Thiếu thông tin");
+
+  await prisma.thread.update({
+    where: { id: threadId },
+    data: { nodeId: targetNodeId }
+  });
+
+  const { deleteCachePattern } = await import('@/lib/redis');
+  await deleteCachePattern('voz_homepage_*');
+
+  revalidatePath("/");
+  revalidatePath("/admin/nodes");
+
+  return { success: true };
 }

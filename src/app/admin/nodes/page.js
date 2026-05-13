@@ -1,12 +1,15 @@
 import { prisma } from '@/lib/prisma';
 import { createNode, updateNode, deleteNode } from '@/actions/nodeActions';
-import { Trash2, FolderPlus, Plus, AlertTriangle, Eye } from 'lucide-react';
+import { Trash2, FolderPlus, Plus, AlertTriangle, Eye, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { revalidatePath } from 'next/cache';
 import DraggableForumList from './DraggableForumList';
 import RenameButton from './RenameButton';
 import DeleteCategoryButton from './DeleteCategoryButton';
 import MoveAllFromCategoryButton from './MoveAllFromCategoryButton';
+import MoveThreadSelect from './MoveThreadSelect';
+import PinThreadButton from '@/components/thread/PinThreadButton';
+import DeleteThreadButton from './[id]/DeleteThreadButton';
 
 export default async function AdminNodesPage() {
   // Fetch all nodes
@@ -19,9 +22,27 @@ export default async function AdminNodesPage() {
     }
   });
 
-  // Organize nodes conceptually Categories and basic Forums
+  // Organize nodes
   const categories = nodes.filter(n => n.nodeType === "Category");
   const unassignedForums = nodes.filter(n => n.nodeType !== "Category" && !n.parentId);
+
+  // Fetch threads directly in each category (max 20 per category for preview)
+  const categoryThreads = {};
+  for (const cat of categories) {
+    categoryThreads[cat.id] = await prisma.thread.findMany({
+      where: { nodeId: cat.id },
+      orderBy: [{ isPinned: 'desc' }, { createdAt: 'desc' }],
+      take: 20,
+      select: {
+        id: true,
+        title: true,
+        isPinned: true,
+        createdAt: true,
+        replyCount: true,
+        author: { select: { username: true, avatar: true } },
+      }
+    });
+  }
   
   return (
     <div className="flex flex-col gap-6 text-[var(--voz-text)]">
@@ -38,6 +59,9 @@ export default async function AdminNodesPage() {
            {categories.map(category => {
               const childrenNodes = nodes.filter(n => n.parentId === category.id);
               const totalChildThreads = childrenNodes.reduce((sum, n) => sum + (n._count?.threads || 0), 0);
+              const directThreads = categoryThreads[category.id] || [];
+              const childForumsForSelect = childrenNodes.map(f => ({ id: f.id, title: f.title }));
+
               return (
                  <div key={category.id} className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] overflow-hidden">
                     <div className="bg-[var(--voz-accent)] px-4 py-3 border-b border-[var(--voz-border)] flex justify-between items-center">
@@ -46,7 +70,9 @@ export default async function AdminNodesPage() {
                          <Link href={`/admin/nodes/${category.id}`} className="text-[12px] text-blue-500 hover:underline flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
                            <Eye size={12} /> {category._count?.threads || 0} bài viết
                          </Link>
-                         <MoveAllFromCategoryButton categoryId={category.id} categoryTitle={category.title} totalThreads={totalChildThreads} />
+                         {totalChildThreads > 0 && (
+                           <MoveAllFromCategoryButton categoryId={category.id} categoryTitle={category.title} totalThreads={totalChildThreads} />
+                         )}
                        </div>
                        
                        <div className="flex gap-2 items-center">
@@ -66,6 +92,54 @@ export default async function AdminNodesPage() {
                       categories={categories.map(c => ({ id: c.id, title: c.title }))}
                       categoryId={category.id}
                     />
+
+                    {/* Direct threads in this category */}
+                    {directThreads.length > 0 && (
+                      <div className="border-t border-[var(--voz-border)]">
+                        <div className="bg-[var(--voz-bg)] px-4 py-2 border-b border-[var(--voz-border-light)] flex items-center gap-2">
+                          <FileText size={14} className="text-[var(--voz-text-muted)]" />
+                          <span className="text-[12px] font-semibold text-[var(--voz-text-muted)]">
+                            Bài viết trực tiếp ({category._count?.threads || 0})
+                          </span>
+                        </div>
+                        <div className="divide-y divide-[var(--voz-border-light)]">
+                          {directThreads.map(thread => (
+                            <div key={thread.id} className="px-4 py-2 flex items-center justify-between hover:bg-[var(--voz-hover)] transition-colors gap-2">
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <img 
+                                  src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username || 'U'}&background=random`} 
+                                  className="w-6 h-6 rounded-full shrink-0" 
+                                />
+                                <div className="min-w-0">
+                                  <Link href={`/thread/${thread.id}`} target="_blank" className="text-[var(--voz-link)] hover:underline font-medium text-[12px] line-clamp-1 block">
+                                    {thread.isPinned && <span className="text-amber-500 mr-1">📌</span>}
+                                    {thread.title}
+                                  </Link>
+                                  <div className="text-[10px] text-[var(--voz-text-muted)]">
+                                    {thread.author?.username} · {thread.replyCount || 0} trả lời
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                {childForumsForSelect.length > 0 && (
+                                  <MoveThreadSelect threadId={thread.id} forums={childForumsForSelect} />
+                                )}
+                                <PinThreadButton threadId={thread.id} isPinned={thread.isPinned} />
+                                <DeleteThreadButton threadId={thread.id} threadTitle={thread.title} nodeId={category.id} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {(category._count?.threads || 0) > 20 && (
+                          <div className="bg-[var(--voz-bg)] px-4 py-2 text-center border-t border-[var(--voz-border-light)]">
+                            <Link href={`/admin/nodes/${category.id}`} className="text-[12px] text-blue-500 hover:underline">
+                              Xem tất cả {category._count?.threads} bài viết →
+                            </Link>
+                          </div>
+                        )}
+                      </div>
+                    )}
                  </div>
               );
            })}
@@ -81,7 +155,7 @@ export default async function AdminNodesPage() {
                     {unassignedForums.map(forum => (
                         <div key={forum.id} className="px-4 py-3 flex justify-between items-center bg-[var(--voz-bg)] hover:bg-[var(--voz-hover)] transition">
                            <div className="flex items-center gap-3">
-                              <LayoutList className="text-[var(--voz-link)]" size={18} />
+                              <FileText className="text-[var(--voz-link)]" size={18} />
                               <div>
                                 <div className="font-semibold text-[14px]">{forum.title}</div>
                               </div>
