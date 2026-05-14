@@ -230,6 +230,7 @@ export default async function CategoryPage({ params, searchParams }) {
                 } else {
                   const thread = item.data;
                   const lastPoster = thread.posts[0] ? thread.posts[0].author : thread.author;
+                  const lastActivityTime = thread.posts?.[0]?.createdAt || thread.createdAt;
                   const lpa = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
                   return (
                     <div key={`t-${thread.id}`} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-start">
@@ -241,7 +242,7 @@ export default async function CategoryPage({ params, searchParams }) {
                           <Link href={`/thread/${thread.id}`} className={`text-[17px] leading-snug font-semibold hover:underline ${thread.isPinned ? 'text-red-500' : ''}`} style={{ color: thread.isPinned ? undefined : 'var(--voz-link)' }}><span>{thread.title}</span></Link>
                         </div>
                         <div className="text-[13px]" style={{ color: '#8c9197' }}><Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link></div>
-                        <div className="md:hidden text-[12px] mt-[2px]" style={{ color: '#8c9197' }}>Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}</div>
+                        <div className="md:hidden text-[12px] mt-[2px]" style={{ color: '#8c9197' }}>Trả lời: {thread.replyCount} · {formatRelativeTime(lastActivityTime)}</div>
                       </div>
                       <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[13px] text-[var(--voz-text-muted)] w-[130px]">
                         <div>Trả lời: <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>
@@ -249,7 +250,7 @@ export default async function CategoryPage({ params, searchParams }) {
                       </div>
                       <div className="hidden sm:flex items-center gap-2.5 w-[200px] shrink-0 min-w-0 justify-end">
                         <div className="flex-1 min-w-0 text-right text-[13px]">
-                          <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(thread.updatedAt)}</div>
+                          <div className="text-[var(--voz-text)] truncate">{formatRelativeTime(lastActivityTime)}</div>
                           <Link href={`/profile/${lastPoster.username}`} className="hover:underline truncate inline-block max-w-full" style={{ color: '#8c9197' }}>{lastPoster.username}</Link>
                         </div>
                         <img src={lpa} className="w-[32px] h-[32px] rounded-full shrink-0 object-cover" />
