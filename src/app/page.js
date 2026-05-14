@@ -184,7 +184,7 @@ export default async function Home({ searchParams }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-4 w-full">
       {/* Main Column */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 min-w-0 overflow-hidden">
         {categoriesDb.map(category => {
           const combinedItems = category._combinedItems || [];
           const currentPage = category._currentPage || 1;
