@@ -238,7 +238,7 @@ export default async function CategoryPage({ params, searchParams }) {
                         <div className="leading-snug mb-[5px]">
                           {thread.isPinned && <span className="mr-1 text-red-500">📌</span>}
                           {thread.prefix && <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>{thread.prefix.title}</span>}
-                          <Link href={`/thread/${thread.id}`} className={`text-[17px] leading-snug font-semibold hover:underline ${thread.isPinned ? 'text-red-500' : ''}`} style={{ color: thread.isPinned ? undefined : '#176093' }}><span>{thread.title}</span></Link>
+                          <Link href={`/thread/${thread.id}`} className={`text-[17px] leading-snug font-semibold hover:underline ${thread.isPinned ? 'text-red-500' : ''}`} style={{ color: thread.isPinned ? undefined : 'var(--voz-link)' }}><span>{thread.title}</span></Link>
                         </div>
                         <div className="text-[13px]" style={{ color: '#8c9197' }}><Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link></div>
                         <div className="md:hidden text-[12px] mt-[2px]" style={{ color: '#8c9197' }}>Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}</div>

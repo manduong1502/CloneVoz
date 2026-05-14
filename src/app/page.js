@@ -253,7 +253,7 @@ export default async function Home({ searchParams }) {
                           <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
                         </div>
                         <div className="flex-1 flex flex-col min-w-0 pr-2 md:pr-4">
-                          <Link href={`/thread/${thread.id}`} className={`block text-[17px] font-semibold hover:underline leading-snug mb-[3px] truncate ${item.pinned ? 'text-red-500' : ''}`} style={{ color: item.pinned ? undefined : '#176093' }}>
+                          <Link href={`/thread/${thread.id}`} className={`block text-[17px] font-semibold hover:underline leading-snug mb-[3px] truncate ${item.pinned ? 'text-red-500' : ''}`} style={{ color: item.pinned ? undefined : 'var(--voz-link)' }}>
                             {item.pinned && <span className="mr-1">📌</span>}{thread.title}
                           </Link>
                           <div className="text-[12px]"><Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c8c8c' }}>{thread.author.username}</Link></div>
