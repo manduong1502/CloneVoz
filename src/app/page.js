@@ -253,11 +253,11 @@ export default async function Home({ searchParams }) {
                           <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
                         </div>
                         <div className="flex-1 flex flex-col min-w-0 pr-2 md:pr-4">
-                          <Link href={`/thread/${thread.id}`} className={`text-[14px] font-bold thread-title-link leading-snug mb-[2px] truncate ${item.pinned ? 'text-red-500' : ''}`}>
+                          <Link href={`/thread/${thread.id}`} className={`block text-[17px] font-semibold hover:underline leading-snug mb-[3px] truncate ${item.pinned ? 'text-red-500' : ''}`} style={{ color: item.pinned ? undefined : '#176093' }}>
                             {item.pinned && <span className="mr-1">📌</span>}{thread.title}
                           </Link>
-                          <div className="text-[12px] text-[var(--voz-text-muted)]"><Link href={`/profile/${thread.author.username}`} className="hover:underline text-[var(--voz-text-muted)]">{thread.author.username}</Link></div>
-                          <div className="md:hidden text-[11px] mt-[2px] text-[var(--voz-text-muted)]">Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}</div>
+                          <div className="text-[12px]"><Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c8c8c' }}>{thread.author.username}</Link></div>
+                          <div className="md:hidden text-[11px] mt-[2px]" style={{ color: '#8c8c8c' }}>Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}</div>
                         </div>
                         <div className="hidden md:flex flex-col items-end shrink-0 pr-4 text-[12px] text-[var(--voz-text-muted)] w-[120px]">
                           <div>Trả lời: <span className="text-[var(--voz-text-strong)] font-medium">{thread.replyCount}</span></div>

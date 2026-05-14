@@ -235,10 +235,10 @@ export default async function CategoryPage({ params, searchParams }) {
                     <div key={`t-${thread.id}`} className="flex py-3.5 px-3 border-b border-[var(--voz-border-light)] hover:bg-[var(--voz-hover)] last:border-0 transition-colors items-start">
                       <div className="shrink-0 mr-3"><img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[42px] h-[42px] rounded-full object-cover" /></div>
                       <div className="flex-1 flex flex-col min-w-0 pr-2 md:pr-4">
-                        <div className="leading-snug mb-[4px]">
+                        <div className="leading-snug mb-[5px]">
                           {thread.isPinned && <span className="mr-1 text-red-500">📌</span>}
                           {thread.prefix && <span className={`mr-[6px] ${thread.prefix.cssClass || 'voz-badge-info'}`}>{thread.prefix.title}</span>}
-                          <Link href={`/thread/${thread.id}`} className={`text-[16px] leading-snug font-bold hover:underline thread-title-link ${thread.isPinned ? 'text-red-500' : ''}`}><span>{thread.title}</span></Link>
+                          <Link href={`/thread/${thread.id}`} className={`text-[17px] leading-snug font-semibold hover:underline ${thread.isPinned ? 'text-red-500' : ''}`} style={{ color: thread.isPinned ? undefined : '#176093' }}><span>{thread.title}</span></Link>
                         </div>
                         <div className="text-[13px]" style={{ color: '#8c9197' }}><Link href={`/profile/${thread.author.username}`} className="hover:underline" style={{ color: '#8c9197' }}>{thread.author.username}</Link></div>
                         <div className="md:hidden text-[12px] mt-[2px]" style={{ color: '#8c9197' }}>Trả lời: {thread.replyCount} · {formatRelativeTime(thread.updatedAt)}</div>
