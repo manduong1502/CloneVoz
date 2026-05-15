@@ -194,7 +194,7 @@ export default async function Home({ searchParams }) {
             <div key={category.id} className="voz-card overflow-hidden">
               {/* Header */}
               <div className="bg-[var(--voz-blue-dark)] border-b border-[var(--voz-blue-dark)] px-4 py-2.5 flex justify-between items-center shadow-sm">
-                <Link href={`/category/${category.id}`} className="text-[18px] font-bold m-0 hover:underline cursor-pointer text-white tracking-wide">
+                <Link href={`/category/${category.id}`} className="text-[18px] font-bold m-0 hover:underline cursor-pointer text-white tracking-wide" style={{ color: '#ffffff' }}>
                   {category.title}
                 </Link>
                 <Link href={`/category/${category.id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-[4px] px-4 py-[5px] font-medium text-[13px] shadow-sm flex items-center gap-1 border-b-[2px] border-[#c07306] active:border-b-0 active:translate-y-[1px] transition-all">
