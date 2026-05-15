@@ -237,21 +237,27 @@ export default async function CategoryPage({ params, searchParams }) {
                             {item.pinned && <span className="text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded font-bold">📌</span>}
                             <Link href={`/category/${child.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">{child.title}</Link>
                             
-                            {child.threadsCount > 15 && (
-                              <div className="hidden sm:flex gap-[3px] items-center ml-1">
-                                {Array.from({ length: Math.min(3, Math.ceil((child.threadsCount || 0) / 15)) }).map((_, idx) => (
-                                  <Link key={idx} href={`/category/${child.id}?page=${idx + 1}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
-                                    {idx + 1}
-                                  </Link>
-                                ))}
-                                {Math.ceil((child.threadsCount || 0) / 15) > 4 && <span className="text-[10px] text-[var(--voz-text-muted)] px-0.5">...</span>}
-                                {Math.ceil((child.threadsCount || 0) / 15) > 3 && (
-                                  <Link href={`/category/${child.id}?page=${Math.ceil((child.threadsCount || 0) / 15)}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
-                                    {Math.ceil((child.threadsCount || 0) / 15)}
-                                  </Link>
-                                )}
-                              </div>
-                            )}
+                            {child.threadsCount > 15 && (() => {
+                              const totalPages = Math.ceil((child.threadsCount || 0) / 15);
+                              let pagesToRender = [];
+                              if (totalPages <= 4) {
+                                for (let i = 1; i <= totalPages; i++) pagesToRender.push(i);
+                              } else {
+                                pagesToRender = [1, 2, '...', totalPages - 1, totalPages];
+                              }
+                              return (
+                                <div className="hidden sm:flex gap-[3px] items-center ml-1">
+                                  {pagesToRender.map((p, idx) => {
+                                    if (p === '...') return <span key={idx} className="text-[10px] text-[var(--voz-text-muted)] px-0.5 font-bold">...</span>;
+                                    return (
+                                      <Link key={idx} href={`/category/${child.id}?page=${p}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
+                                        {p}
+                                      </Link>
+                                    );
+                                  })}
+                                </div>
+                              );
+                            })()}
                           </div>
                           {child.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{child.description}</div>}
                           <div className="flex sm:hidden flex-col gap-0.5 mt-1.5"><div className="text-[11px] text-[var(--voz-text-muted)]">Chủ đề: <span className="font-medium text-[var(--voz-text)]">{child.threadsCount || 0}</span> · Bình luận: <span className="font-medium text-[var(--voz-text)]">{child.postsCount || 0}</span></div></div>

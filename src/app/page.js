@@ -197,25 +197,32 @@ export default async function Home({ searchParams }) {
                   <Link href={`/category/${category.id}`} className="text-[18px] font-bold m-0 hover:underline cursor-pointer text-white tracking-wide" style={{ color: '#ffffff' }}>
                     {category.title}
                   </Link>
-                  {category._totalPages > 1 && (
-                    <div className="hidden sm:flex gap-[3px] items-center ml-2">
-                      {Array.from({ length: Math.min(3, category._totalPages) }).map((_, idx) => {
-                        const qp = buildExistingParams(category.id);
-                        const href = `/?cp_${category.id}=${idx + 1}${qp ? '&' + qp : ''}`;
-                        return (
-                          <Link key={idx} href={href} className="text-[11px] bg-white/10 hover:bg-white/20 border border-white/20 rounded-[3px] px-1.5 py-[2px] text-white leading-none transition-colors" style={{ color: '#ffffff' }}>
-                            {idx + 1}
-                          </Link>
-                        );
-                      })}
-                      {category._totalPages > 4 && <span className="text-[11px] text-white/70 px-0.5">...</span>}
-                      {category._totalPages > 3 && (
-                        <Link href={`/?cp_${category.id}=${category._totalPages}${buildExistingParams(category.id) ? '&' + buildExistingParams(category.id) : ''}`} className="text-[11px] bg-white/10 hover:bg-white/20 border border-white/20 rounded-[3px] px-1.5 py-[2px] text-white leading-none transition-colors" style={{ color: '#ffffff' }}>
-                          {category._totalPages}
-                        </Link>
-                      )}
-                    </div>
-                  )}
+                  {category._totalPages > 1 && (() => {
+                    const totalPages = category._totalPages;
+                    let pagesToRender = [];
+                    if (totalPages <= 4) {
+                      for (let i = 1; i <= totalPages; i++) pagesToRender.push(i);
+                    } else {
+                      pagesToRender = [1, 2, '...', totalPages - 1, totalPages];
+                    }
+                    const currentPage = category._currentPage || 1;
+                    
+                    return (
+                      <div className="hidden sm:flex gap-1.5 items-center ml-3">
+                        {pagesToRender.map((p, idx) => {
+                          if (p === '...') return <span key={idx} className="text-[13px] text-white/70 px-0.5 font-bold">...</span>;
+                          const qp = buildExistingParams(category.id);
+                          const href = `/?cp_${category.id}=${p}${qp ? '&' + qp : ''}`;
+                          const isCurrent = p === currentPage;
+                          return (
+                            <Link key={idx} href={href} className={`text-[13px] font-bold border rounded-[4px] px-3 h-[30px] flex items-center justify-center transition-colors ${isCurrent ? 'bg-white/30 border-white/50 text-white' : 'bg-white/10 hover:bg-white/20 border-white/20 text-white/90'}`} style={{ color: '#ffffff' }}>
+                              {p}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
                 <Link href={`/category/${category.id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-[4px] px-4 py-[5px] font-medium text-[13px] shadow-sm flex items-center gap-1 border-b-[2px] border-[#c07306] active:border-b-0 active:translate-y-[1px] transition-all">
                   <PenSquare size={14} /> Đăng bài
@@ -242,21 +249,27 @@ export default async function Home({ searchParams }) {
                               {item.pinned && <span className="text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded font-bold">📌</span>}
                               <Link href={`/category/${node.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">{node.title}</Link>
                               
-                              {node.threadsCount > 15 && (
-                                <div className="hidden sm:flex gap-[3px] items-center ml-1">
-                                  {Array.from({ length: Math.min(3, Math.ceil((node.threadsCount || 0) / 15)) }).map((_, idx) => (
-                                    <Link key={idx} href={`/category/${node.id}?page=${idx + 1}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
-                                      {idx + 1}
-                                    </Link>
-                                  ))}
-                                  {Math.ceil((node.threadsCount || 0) / 15) > 4 && <span className="text-[10px] text-[var(--voz-text-muted)] px-0.5">...</span>}
-                                  {Math.ceil((node.threadsCount || 0) / 15) > 3 && (
-                                    <Link href={`/category/${node.id}?page=${Math.ceil((node.threadsCount || 0) / 15)}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
-                                      {Math.ceil((node.threadsCount || 0) / 15)}
-                                    </Link>
-                                  )}
-                                </div>
-                              )}
+                              {node.threadsCount > 15 && (() => {
+                                const totalPages = Math.ceil((node.threadsCount || 0) / 15);
+                                let pagesToRender = [];
+                                if (totalPages <= 4) {
+                                  for (let i = 1; i <= totalPages; i++) pagesToRender.push(i);
+                                } else {
+                                  pagesToRender = [1, 2, '...', totalPages - 1, totalPages];
+                                }
+                                return (
+                                  <div className="hidden sm:flex gap-[3px] items-center ml-1">
+                                    {pagesToRender.map((p, idx) => {
+                                      if (p === '...') return <span key={idx} className="text-[10px] text-[var(--voz-text-muted)] px-0.5 font-bold">...</span>;
+                                      return (
+                                        <Link key={idx} href={`/category/${node.id}?page=${p}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
+                                          {p}
+                                        </Link>
+                                      );
+                                    })}
+                                  </div>
+                                );
+                              })()}
                             </div>
                             {node.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{node.description}</div>}
                             <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
