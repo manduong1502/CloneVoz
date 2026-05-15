@@ -8,6 +8,7 @@ import WatchNodeButton from '@/components/category/WatchNodeButton';
 import ThreadFilterDropdown from '@/components/category/ThreadFilterDropdown';
 import { formatRelativeTime } from '@/lib/formatTime';
 import { getCache, setCache } from '@/lib/redis';
+import LeaderboardBox from '@/components/ui/LeaderboardBox';
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -279,7 +280,29 @@ export default async function CategoryPage({ params, searchParams }) {
           </div>
           <div className="mt-2">{catPagination}</div>
         </div>
-        <div className="hidden lg:block"></div>
+        
+        {/* Sidebar */}
+        <div className="flex flex-col gap-4 pt-4 lg:pt-[32px] w-full lg:w-[300px]">
+          <div className="voz-card overflow-hidden">
+            <h3 className="bg-[var(--voz-accent)] text-[13px] font-bold px-3 py-2 border-b border-[var(--voz-border)] text-[var(--voz-link)]">Đang thịnh hành</h3>
+            <div className="bg-[var(--voz-accent)]">
+              {trendingThreads.map(t => (
+                <div key={t.id} className="flex gap-2 p-3 border-b border-[var(--voz-border-light)] last:border-0 hover:bg-[var(--voz-surface)] transition-colors">
+                  <img src={t.author.avatar || `https://ui-avatars.com/api/?name=${t.author.username.charAt(0)}&background=random`} className="w-[32px] h-[32px] rounded-full mt-1 shrink-0 bg-gray-100 object-cover" />
+                  <div className="flex-1 min-w-0">
+                    <Link href={`/thread/${t.id}`} className="text-[13px] text-[var(--voz-text)] hover:underline font-medium hover:text-[var(--voz-link)] mb-1 leading-snug flex">
+                      {t.title}
+                    </Link>
+                    <div className="text-[11px] text-[var(--voz-text-muted)]">
+                      {t.author.username} · {formatRelativeTime(t.createdAt)}<br />Trả lời: {t.replyCount}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <LeaderboardBox topUsersTotal={topUsersTotal || []} topUsersMonth={topUsersMonth || []} />
+        </div>
       </div>
     );
   }
@@ -414,6 +437,9 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   let trendingThreads = cachedData?.trendingThreads;
+  let topUsersTotal = cachedData?.topUsersTotal;
+  let topUsersMonth = cachedData?.topUsersMonth;
+  
   if (!trendingThreads) {
     trendingThreads = await prisma.thread.findMany({
       where: { isApproved: true },
@@ -421,10 +447,24 @@ export default async function CategoryPage({ params, searchParams }) {
       take: 5,
       include: { author: true }
     });
+    
+    topUsersTotal = await prisma.user.findMany({
+      where: { points: { gt: 0 } },
+      orderBy: { points: 'desc' },
+      take: 5,
+      select: { id: true, username: true, avatar: true, points: true, userGroups: { select: { name: true } } }
+    });
+
+    topUsersMonth = await prisma.user.findMany({
+      where: { monthlyPoints: { not: 0 } },
+      orderBy: { monthlyPoints: 'desc' },
+      take: 5,
+      select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, userGroups: { select: { name: true } } }
+    });
   }
 
   if (!cachedData) {
-    await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads }, 10);
+    await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads, topUsersTotal, topUsersMonth }, 10);
   }
 
   // Helper: format view count (e.g. 1234 -> 1.2K)
@@ -581,6 +621,7 @@ export default async function CategoryPage({ params, searchParams }) {
             ))}
           </div>
         </div>
+        <LeaderboardBox topUsersTotal={topUsersTotal || []} topUsersMonth={topUsersMonth || []} />
       </div>
     </div>
   );

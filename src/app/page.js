@@ -72,13 +72,12 @@ export default async function Home({ searchParams }) {
         pinned: (node.displayOrder || 10) <= 0
       }));
 
-      // Fetch all direct threads for this category
-      const directThreadCount = await prisma.thread.count({
-        where: { nodeId: category.id, isApproved: true }
-      });
+      // Get all node IDs (category itself + all its children)
+      const categoryNodeIds = [category.id, ...category.children.map(c => c.id)];
 
+      // Fetch all threads for this category and its children
       const allDirectThreads = await prisma.thread.findMany({
-        where: { nodeId: category.id, isApproved: true },
+        where: { nodeId: { in: categoryNodeIds }, isApproved: true },
         orderBy: { updatedAt: 'desc' },
         include: {
           author: true,
