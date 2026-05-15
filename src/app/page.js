@@ -143,7 +143,7 @@ export default async function Home({ searchParams }) {
 
     // 5. Kéo Forum Statistics
     const totalForumThreads = await prisma.thread.count({ where: { isApproved: true } });
-    const totalForumPosts = await prisma.post.count({ where: { thread: { isApproved: true } } });
+    const totalForumPosts = await prisma.post.count({ where: { thread: { isApproved: true }, position: { gt: 1 } } });
     const totalForumUsers = await prisma.user.count();
     const latestUser = await prisma.user.findFirst({ orderBy: { createdAt: 'desc' } });
 

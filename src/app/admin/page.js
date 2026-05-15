@@ -5,7 +5,7 @@ import Link from 'next/link';
 export default async function AdminDashboard() {
   const usersCount = await prisma.user.count();
   const threadsCount = await prisma.thread.count();
-  const postsCount = await prisma.post.count();
+  const postsCount = await prisma.post.count({ where: { position: { gt: 1 } } });
   const nodesCount = await prisma.node.count();
 
   const recentUsers = await prisma.user.findMany({
@@ -39,7 +39,7 @@ export default async function AdminDashboard() {
          </div>
          <div className="bg-[var(--voz-surface)] rounded-lg shadow-sm border border-[var(--voz-border)] p-5 flex items-center justify-between">
             <div>
-               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Tổng bài viết</p>
+               <p className="text-sm text-[var(--voz-text-muted)] font-medium mb-1">Tổng bình luận</p>
                <h3 className="text-2xl font-bold text-[var(--voz-text)]">{postsCount}</h3>
             </div>
             <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-full flex items-center justify-center">
