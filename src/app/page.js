@@ -212,15 +212,31 @@ export default async function Home({ searchParams }) {
                   if (item.type === 'forum') {
                     const node = item.data;
                     return (
-                      <div key={`f-${node.id}`} className="flex items-center p-3 hover:bg-[var(--voz-hover)] transition-colors border-b border-[var(--voz-border-light)] last:border-b-0">
+                      <div key={`f-${node.id}`} className="flex items-center p-2 hover:bg-[var(--voz-hover)] transition-colors border-b border-[var(--voz-border-light)] last:border-b-0">
                         <div className="flex-1 flex items-center min-w-0 pr-2 sm:pr-4">
                           <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center mr-3 text-[var(--voz-link)]">
                             <MessageCircle strokeWidth={1.5} size={32} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center flex-wrap gap-2">
                               {item.pinned && <span className="text-[10px] bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded font-bold">📌</span>}
                               <Link href={`/category/${node.id}`} className="text-[15px] font-bold hover:no-underline hover:text-[var(--voz-link-hover)] text-[var(--voz-link)]">{node.title}</Link>
+                              
+                              {node.threadsCount > 15 && (
+                                <div className="hidden sm:flex gap-[3px] items-center ml-1">
+                                  {Array.from({ length: Math.min(3, Math.ceil((node.threadsCount || 0) / 15)) }).map((_, idx) => (
+                                    <Link key={idx} href={`/category/${node.id}?page=${idx + 1}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
+                                      {idx + 1}
+                                    </Link>
+                                  ))}
+                                  {Math.ceil((node.threadsCount || 0) / 15) > 4 && <span className="text-[10px] text-[var(--voz-text-muted)] px-0.5">...</span>}
+                                  {Math.ceil((node.threadsCount || 0) / 15) > 3 && (
+                                    <Link href={`/category/${node.id}?page=${Math.ceil((node.threadsCount || 0) / 15)}`} className="text-[10px] bg-[var(--voz-accent)] hover:bg-[var(--voz-border-light)] border border-[var(--voz-border)] rounded-[3px] px-1.5 py-[2px] text-[var(--voz-text-muted)] leading-none transition-colors">
+                                      {Math.ceil((node.threadsCount || 0) / 15)}
+                                    </Link>
+                                  )}
+                                </div>
+                              )}
                             </div>
                             {node.description && <div className="text-xs text-[var(--voz-text-muted)] mt-1">{node.description}</div>}
                             <div className="flex sm:hidden flex-col gap-0.5 mt-1.5">
@@ -249,7 +265,7 @@ export default async function Home({ searchParams }) {
                     const lastActivityTime = thread.posts?.[0]?.createdAt || thread.createdAt;
                     const lpa = lastPoster.avatar || `https://ui-avatars.com/api/?name=${lastPoster.username?.charAt(0) || 'U'}&background=random`;
                     return (
-                      <div key={`t-${thread.id}`} className="flex py-3 px-3 hover:bg-[var(--voz-hover)] transition-colors items-center border-b border-[var(--voz-border-light)] last:border-b-0">
+                      <div key={`t-${thread.id}`} className="flex p-2 hover:bg-[var(--voz-hover)] transition-colors items-center border-b border-[var(--voz-border-light)] last:border-b-0">
                         <div className="shrink-0 mr-3">
                           <img src={thread.author?.avatar || `https://ui-avatars.com/api/?name=${thread.author?.username?.charAt(0) || 'U'}&background=random`} className="w-[36px] h-[36px] rounded-full object-cover" />
                         </div>
