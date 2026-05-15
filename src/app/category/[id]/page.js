@@ -199,8 +199,8 @@ export default async function CategoryPage({ params, searchParams }) {
             <Link href="/" className="hover:text-[var(--voz-link-hover)] transition-colors text-[var(--voz-link)]">Diễn đàn</Link>
             <span className="mx-1">›</span>
           </div>
-          <div className="flex items-center justify-between mb-4 gap-4 bg-[var(--voz-blue-dark)] px-5 py-4 rounded-md shadow-sm">
-            <h1 className="text-[26px] tracking-tight font-bold text-white">{node.title}</h1>
+          <div className="flex items-center justify-between mb-4 gap-4 bg-[var(--voz-blue-dark)] p-4 rounded-md shadow-sm">
+            <h1 className="text-[22px] tracking-tight font-bold text-white">{node.title}</h1>
             <div className="flex gap-3 items-center shrink-0">
               {session && <WatchNodeButton nodeId={id} initialIsWatching={isWatchingCategory} />}
               <Link href={`/category/${id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-[4px] px-5 py-[8px] font-medium text-[14px] shadow-sm flex items-center gap-1.5 border-b-[3px] border-[#c07306] active:border-b-0 active:translate-y-[2px] transition-all h-[36px]">

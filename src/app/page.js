@@ -7,7 +7,7 @@ import { getRankInfo } from '@/lib/rank';
 import LeaderboardBox from '@/components/ui/LeaderboardBox';
 import Pagination from '@/components/ui/Pagination';
 
-const ITEMS_PER_CATEGORY = 20;
+const ITEMS_PER_CATEGORY = 15;
 
 export default async function Home({ searchParams }) {
   const sp = await searchParams;
@@ -193,9 +193,30 @@ export default async function Home({ searchParams }) {
             <div key={category.id} className="voz-card overflow-hidden">
               {/* Header */}
               <div className="bg-[var(--voz-blue-dark)] border-b border-[var(--voz-blue-dark)] px-4 py-2.5 flex justify-between items-center shadow-sm">
-                <Link href={`/category/${category.id}`} className="text-[18px] font-bold m-0 hover:underline cursor-pointer text-white tracking-wide" style={{ color: '#ffffff' }}>
-                  {category.title}
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link href={`/category/${category.id}`} className="text-[18px] font-bold m-0 hover:underline cursor-pointer text-white tracking-wide" style={{ color: '#ffffff' }}>
+                    {category.title}
+                  </Link>
+                  {category._totalPages > 1 && (
+                    <div className="hidden sm:flex gap-[3px] items-center ml-2">
+                      {Array.from({ length: Math.min(3, category._totalPages) }).map((_, idx) => {
+                        const qp = buildExistingParams(category.id);
+                        const href = `/?cp_${category.id}=${idx + 1}${qp ? '&' + qp : ''}`;
+                        return (
+                          <Link key={idx} href={href} className="text-[11px] bg-white/10 hover:bg-white/20 border border-white/20 rounded-[3px] px-1.5 py-[2px] text-white leading-none transition-colors" style={{ color: '#ffffff' }}>
+                            {idx + 1}
+                          </Link>
+                        );
+                      })}
+                      {category._totalPages > 4 && <span className="text-[11px] text-white/70 px-0.5">...</span>}
+                      {category._totalPages > 3 && (
+                        <Link href={`/?cp_${category.id}=${category._totalPages}${buildExistingParams(category.id) ? '&' + buildExistingParams(category.id) : ''}`} className="text-[11px] bg-white/10 hover:bg-white/20 border border-white/20 rounded-[3px] px-1.5 py-[2px] text-white leading-none transition-colors" style={{ color: '#ffffff' }}>
+                          {category._totalPages}
+                        </Link>
+                      )}
+                    </div>
+                  )}
+                </div>
                 <Link href={`/category/${category.id}/post-thread`} className="bg-[#f2930d] hover:bg-[#d88107] hover:no-underline text-white rounded-[4px] px-4 py-[5px] font-medium text-[13px] shadow-sm flex items-center gap-1 border-b-[2px] border-[#c07306] active:border-b-0 active:translate-y-[1px] transition-all">
                   <PenSquare size={14} /> Đăng bài
                 </Link>
