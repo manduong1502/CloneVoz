@@ -92,6 +92,34 @@ export default async function CategoryPage({ params, searchParams }) {
     return <div className="p-8 text-center text-red-500 text-xl font-bold">DanOngThongMinh Error: The requested forum could not be found.</div>;
   }
 
+  // ========== COMMON SIDEBAR DATA ==========
+  let trendingThreads = cachedData?.trendingThreads;
+  let topUsersTotal = cachedData?.topUsersTotal;
+  let topUsersMonth = cachedData?.topUsersMonth;
+  
+  if (!trendingThreads) {
+    trendingThreads = await prisma.thread.findMany({
+      where: { isApproved: true },
+      orderBy: { replyCount: 'desc' },
+      take: 5,
+      include: { author: true }
+    });
+    
+    topUsersTotal = await prisma.user.findMany({
+      where: { points: { gt: 0 } },
+      orderBy: { points: 'desc' },
+      take: 5,
+      select: { id: true, username: true, avatar: true, points: true, userGroups: { select: { name: true } } }
+    });
+
+    topUsersMonth = await prisma.user.findMany({
+      where: { monthlyPoints: { not: 0 } },
+      orderBy: { monthlyPoints: 'desc' },
+      take: 5,
+      select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, userGroups: { select: { name: true } } }
+    });
+  }
+
   // ========== CATEGORY VIEW ==========
   if (node.nodeType === 'Category') {
     const catPage = parseInt(sp.page) || 1;
@@ -436,32 +464,7 @@ export default async function CategoryPage({ params, searchParams }) {
     }
   }
 
-  let trendingThreads = cachedData?.trendingThreads;
-  let topUsersTotal = cachedData?.topUsersTotal;
-  let topUsersMonth = cachedData?.topUsersMonth;
-  
-  if (!trendingThreads) {
-    trendingThreads = await prisma.thread.findMany({
-      where: { isApproved: true },
-      orderBy: { replyCount: 'desc' },
-      take: 5,
-      include: { author: true }
-    });
-    
-    topUsersTotal = await prisma.user.findMany({
-      where: { points: { gt: 0 } },
-      orderBy: { points: 'desc' },
-      take: 5,
-      select: { id: true, username: true, avatar: true, points: true, userGroups: { select: { name: true } } }
-    });
 
-    topUsersMonth = await prisma.user.findMany({
-      where: { monthlyPoints: { not: 0 } },
-      orderBy: { monthlyPoints: 'desc' },
-      take: 5,
-      select: { id: true, username: true, avatar: true, points: true, monthlyPoints: true, userGroups: { select: { name: true } } }
-    });
-  }
 
   if (!cachedData) {
     await setCache(cacheKey, { node, availablePrefixes, threadsDb, trendingThreads, topUsersTotal, topUsersMonth }, 10);
