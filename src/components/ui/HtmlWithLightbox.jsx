@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
+import twemoji from 'twemoji';
 import 'yet-another-react-lightbox/styles.css';
 
 export default function HtmlWithLightbox({ html, className = '' }) {
@@ -15,7 +16,7 @@ export default function HtmlWithLightbox({ html, className = '' }) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const imgElements = Array.from(containerRef.current.querySelectorAll('img'));
+    const imgElements = Array.from(containerRef.current.querySelectorAll('img:not(.twemoji)'));
     
     // Create an array of images for the lightbox
     const imageList = imgElements.map(img => ({ src: img.src, alt: img.alt }));
@@ -23,7 +24,7 @@ export default function HtmlWithLightbox({ html, className = '' }) {
 
     // Click handler using event delegation on the container
     const handleImageClick = (e) => {
-      if (e.target.tagName === 'IMG') {
+      if (e.target.tagName === 'IMG' && !e.target.classList.contains('twemoji')) {
         const clickedSrc = e.target.src;
         const index = imageList.findIndex(img => img.src === clickedSrc);
         if (index !== -1) {
@@ -46,12 +47,19 @@ export default function HtmlWithLightbox({ html, className = '' }) {
     };
   }, [html]);
 
+  const parsedHtml = twemoji.parse(html || '', {
+    base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
+    folder: '72x72',
+    ext: '.png',
+    className: 'twemoji inline-block w-5 h-5 align-middle mx-0.5'
+  });
+
   return (
     <>
       <div 
         ref={containerRef}
         className={className}
-        dangerouslySetInnerHTML={{ __html: html }} 
+        dangerouslySetInnerHTML={{ __html: parsedHtml }} 
       />
       
       {images.length > 0 && (

@@ -5,6 +5,7 @@ import { getPusherClient } from '@/lib/pusher.client';
 import { getRecentShouts, postShout, toggleShoutboxReaction, deleteShout, getChatPauseState, toggleChatPause } from '@/actions/shoutboxActions';
 import { MessageCircle, X, AlertTriangle, Send, SmilePlus, Image as ImageIcon, Mic, Sticker, Smile, Trash2, Lock, Unlock, Reply, Plus } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
+import twemoji from 'twemoji';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
 import { STICKER_PACKS } from '@/lib/stickers';
@@ -662,11 +663,21 @@ export default function GlobalChatbox({ session }) {
                                  )}
 
                                  {/* Text Area */}
-                                 {textContent && (
-                                   <div className={`text-[15px] font-[400] leading-tight px-[14px] py-[8px] w-fit ${isMine ? 'ml-auto bg-[#4e5dff] text-white rounded-[20px]' : 'mr-auto bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
-                                     <span className="whitespace-pre-wrap">{textContent}</span>
-                                   </div>
-                                 )}
+                                 {textContent && (() => {
+                                   const escapeHtml = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                                   const safeText = escapeHtml(textContent);
+                                   const twemojiHtml = twemoji.parse(safeText, {
+                                     base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
+                                     folder: '72x72',
+                                     ext: '.png',
+                                     className: 'twemoji inline-block w-5 h-5 align-middle mx-0.5'
+                                   });
+                                   return (
+                                     <div className={`text-[15px] font-[400] leading-tight px-[14px] py-[8px] w-fit ${isMine ? 'ml-auto bg-[#4e5dff] text-white rounded-[20px]' : 'mr-auto bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
+                                       <span className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: twemojiHtml }} />
+                                     </div>
+                                   );
+                                 })()}
                                </div>
                              );
                           })()}
@@ -674,12 +685,20 @@ export default function GlobalChatbox({ session }) {
                           {/* Reaction Badges (Từng icon kèm số riêng biệt) */}
                           {totalReactions > 0 && (
                             <div className={`absolute bottom-[-10px] ${isMine ? 'right-2' : 'left-2'} flex items-center gap-[4px] z-10 scale-90 ${isMine ? 'origin-bottom-right' : 'origin-bottom-left'}`}>
-                              {reactionTypes.slice(0, 3).map(t => (
-                                <div key={t} className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center gap-[4px] shadow-sm whitespace-nowrap">
-                                  <span>{t}</span>
-                                  <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">{reactionCounts[t]}</span>
-                                </div>
-                              ))}
+                              {reactionTypes.slice(0, 3).map(t => {
+                                const twemojiBadge = twemoji.parse(t, {
+                                  base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
+                                  folder: '72x72',
+                                  ext: '.png',
+                                  className: 'twemoji inline-block w-3.5 h-3.5 align-middle'
+                                });
+                                return (
+                                  <div key={t} className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center gap-[4px] shadow-sm whitespace-nowrap">
+                                    <span dangerouslySetInnerHTML={{ __html: twemojiBadge }} />
+                                    <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">{reactionCounts[t]}</span>
+                                  </div>
+                                );
+                              })}
                               {/* Số lượng các react còn lại (nếu có hơn 3 loại) */}
                               {reactionTypes.length > 3 && (
                                 <div className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center shadow-sm whitespace-nowrap">
