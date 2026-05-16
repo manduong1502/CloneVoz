@@ -145,7 +145,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
           <SmilePlus size={16} />
         </button>
         {showEmojiPicker && (
-          <div className="absolute bottom-full left-0 mb-1 shadow-2xl rounded-lg overflow-hidden border border-[var(--voz-border)] z-[9999]">
+          <div className="absolute bottom-full right-0 sm:left-0 sm:right-auto mb-1 shadow-2xl rounded-lg overflow-hidden border border-[var(--voz-border)] z-[9999]">
             <EmojiPicker
               onEmojiClick={onEmojiClick}
               theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
@@ -169,7 +169,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
           <Sticker size={16} />
         </button>
         {showStickerPicker && (
-          <div className="absolute bottom-full left-0 mb-1 shadow-2xl bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg flex flex-col z-[9999] w-[300px] overflow-hidden">
+          <div className="absolute bottom-full right-0 sm:left-0 sm:right-auto mb-1 shadow-2xl bg-[var(--voz-surface)] border border-[var(--voz-border)] rounded-lg flex flex-col z-[9999] w-[300px] overflow-hidden">
             {/* Sticker Grid */}
             <div className="p-3 max-h-[220px] overflow-y-auto custom-scrollbar">
               <div className="grid grid-cols-4 gap-2">
