@@ -145,7 +145,7 @@ const MenuBar = ({ editor, onUploadWithLoading, isUploading }) => {
           <SmilePlus size={16} />
         </button>
         {showEmojiPicker && (
-          <div className="absolute bottom-full right-0 sm:left-0 sm:right-auto mb-1 shadow-2xl rounded-lg overflow-hidden border border-[var(--voz-border)] z-[9999]">
+          <div className="absolute bottom-full right-[-15px] sm:left-0 sm:right-auto mb-1 shadow-2xl rounded-lg overflow-hidden border border-[var(--voz-border)] z-[9999]">
             <EmojiPicker
               onEmojiClick={onEmojiClick}
               theme={resolvedTheme === 'dark' ? 'dark' : 'light'}
@@ -306,7 +306,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
               view.dispatch(view.state.tr.setSelection(
                 view.state.selection.constructor.near(resolvedPos)
               ));
-            } catch {}
+            } catch { }
             return true;
           }
         }
@@ -393,7 +393,7 @@ export const RichTextEditor = forwardRef(({ content, onChange, onImageUpload, pl
       <MenuBar editor={editor} onUploadWithLoading={uploadWithLoading} isUploading={isUploading} />
       <div className="flex-1 cursor-text bg-[var(--voz-surface)] relative" onClick={() => editor?.commands.focus()}>
         <EditorContent editor={editor} />
-        
+
         {/* Upload Overlay */}
         {isUploading && (
           <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] flex items-center justify-center z-10 rounded-b-[2px]">
