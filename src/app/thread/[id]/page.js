@@ -130,7 +130,7 @@ export default async function ThreadPage({ params, searchParams }) {
   const { getCache, setCache } = await import('@/lib/redis');
   const alreadyViewed = await getCache(viewKey);
   if (!alreadyViewed) {
-    await prisma.thread.update({
+    await prisma.thread.updateMany({
       where: { id },
       data: { viewCount: { increment: 1 } }
     });

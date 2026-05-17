@@ -85,10 +85,22 @@ export default async function Home({ searchParams }) {
         }
       });
 
+      // Self-healing: Fix updatedAt in database if it was corrupted by viewCount
+      for (const t of allDirectThreads) {
+        const trueLastTime = t.posts?.[0]?.createdAt || t.createdAt;
+        if (Math.abs(new Date(t.updatedAt).getTime() - new Date(trueLastTime).getTime()) > 5000) {
+          await prisma.thread.updateMany({
+            where: { id: t.id },
+            data: { updatedAt: trueLastTime }
+          });
+          t.updatedAt = trueLastTime;
+        }
+      }
+
       const threadItems = allDirectThreads.map(t => ({
         type: 'thread',
         data: t,
-        sortDate: new Date(t.updatedAt),
+        sortDate: t.posts?.[0]?.createdAt ? new Date(t.posts[0].createdAt) : new Date(t.createdAt),
         pinned: t.isPinned
       }));
 

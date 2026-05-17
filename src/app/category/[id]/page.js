@@ -165,9 +165,21 @@ export default async function CategoryPage({ params, searchParams }) {
       include: { author: true, prefix: true, posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } } }
     });
 
+    // Self-healing: Fix updatedAt in database if it was corrupted by viewCount
+    for (const t of directThreads) {
+      const trueLastTime = t.posts?.[0]?.createdAt || t.createdAt;
+      if (Math.abs(new Date(t.updatedAt).getTime() - new Date(trueLastTime).getTime()) > 5000) {
+        await prisma.thread.updateMany({
+          where: { id: t.id },
+          data: { updatedAt: trueLastTime }
+        });
+        t.updatedAt = trueLastTime;
+      }
+    }
+
     const threadItems = directThreads.map(t => ({
       type: 'thread', data: t,
-      sortDate: new Date(t.updatedAt),
+      sortDate: t.posts?.[0]?.createdAt ? new Date(t.posts[0].createdAt) : new Date(t.createdAt),
       pinned: t.isPinned
     }));
 
@@ -467,6 +479,18 @@ export default async function CategoryPage({ params, searchParams }) {
           posts: { take: 1, orderBy: { position: 'desc' }, include: { author: true } }
         }
       });
+    }
+
+    // Self-healing: Fix updatedAt in database if it was corrupted by viewCount
+    for (const t of threadsDb) {
+      const trueLastTime = t.posts?.[0]?.createdAt || t.createdAt;
+      if (Math.abs(new Date(t.updatedAt).getTime() - new Date(trueLastTime).getTime()) > 5000) {
+        await prisma.thread.updateMany({
+          where: { id: t.id },
+          data: { updatedAt: trueLastTime }
+        });
+        t.updatedAt = trueLastTime;
+      }
     }
   }
 
