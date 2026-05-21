@@ -43,6 +43,19 @@ export async function generateMetadata({ params }) {
     }
   }
   
+  let ogImage = "/og-image.png";
+  if (thread.posts.length > 0) {
+    const content = thread.posts[0].content;
+    const imgRegex = /<img[^>]+src="([^">]+)"/i;
+    const match = imgRegex.exec(content);
+    if (match) {
+      const src = match[1];
+      if (!src.includes('/stickers/') && !src.includes('emoji') && !src.includes('twemoji')) {
+        ogImage = src;
+      }
+    }
+  }
+  
   return {
     title: `${thread.title} | DanOngThongMinh`,
     description: description,
@@ -51,7 +64,18 @@ export async function generateMetadata({ params }) {
       description: description,
       siteName: "DanOngThongMinh Forum",
       type: "article",
-    }
+      images: [
+        {
+          url: ogImage,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: thread.title,
+      description: description,
+      images: [ogImage],
+    },
   };
 }
 

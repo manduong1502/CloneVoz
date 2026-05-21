@@ -14,13 +14,28 @@ const inter = Inter({ subsets: ["latin"], display: 'swap' });
 export const metadata = {
   title: "Diễn đàn DanOngThongMinh - Cộng đồng phái mạnh lớn nhất",
   description: "Trang web diễn đàn chia sẻ kiến thức, giao lưu trực tuyến công nghệ, đời sống hàng đầu Việt Nam",
+  metadataBase: new URL('https://danongthongminh.vn'),
   openGraph: {
     title: "Diễn đàn DanOngThongMinh",
     description: "Nơi tụ hội của những bộ óc nhạy bén.",
     url: "https://danongthongminh.vn",
     siteName: "DanOngThongMinh Forum",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Diễn đàn DanOngThongMinh",
+      },
+    ],
     locale: "vi_VN",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Diễn đàn DanOngThongMinh",
+    description: "Nơi tụ hội của những bộ óc nhạy bén.",
+    images: ["/og-image.png"],
   },
 };
 

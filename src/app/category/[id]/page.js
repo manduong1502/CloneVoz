@@ -16,14 +16,30 @@ export async function generateMetadata({ params }) {
 
   if (!node) return { title: 'Box không tồn tại | DanOngThongMinh' };
 
+  const description = node.description || `Tham gia thảo luận về ${node.title} tại diễn đàn DanOngThongMinh.`;
+
   return {
     title: `${node.title} | DanOngThongMinh`,
-    description: node.description || `Tham gia thảo luận về ${node.title} tại diễn đàn DanOngThongMinh.`,
+    description: description,
     openGraph: {
       title: `${node.title} | DanOngThongMinh`,
-      description: node.description || `Tham gia thảo luận về ${node.title}.`,
+      description: description,
       siteName: "DanOngThongMinh Forum",
-    }
+      images: [
+        {
+          url: "/og-image.png",
+          width: 1200,
+          height: 630,
+          alt: node.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${node.title} | DanOngThongMinh`,
+      description: description,
+      images: ["/og-image.png"],
+    },
   };
 }
 
