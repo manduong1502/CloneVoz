@@ -108,6 +108,47 @@ function ChatHint({ unreadCount }) {
   );
 }
 
+const formatBubbleTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const formatCenterTime = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return "";
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+  const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const timeStr = `${hours}:${minutes}`;
+
+  const dayOfWeek = date.getDay();
+  const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  const dayLabel = dayNames[dayOfWeek];
+
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const dateFormatted = `${day}/${month}/${year}`;
+
+  if (targetDate.getTime() === today.getTime()) {
+    return timeStr;
+  } else if (targetDate.getTime() === yesterday.getTime()) {
+    return `${timeStr} Hôm qua`;
+  } else {
+    return `${dayLabel} ${dateFormatted}`;
+  }
+};
+
 export default function GlobalChatbox({ session }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
@@ -577,9 +618,16 @@ export default function GlobalChatbox({ session }) {
                 const prevMsg = messages[index - 1];
                 const nextMsg = messages[index + 1];
 
-                // Logic gom nhóm tin nhắn
-                const isConsecutivePrev = prevMsg && prevMsg.authorId === msg.authorId;
-                const isConsecutiveNext = nextMsg && nextMsg.authorId === msg.authorId;
+                const msgTime = new Date(msg.createdAt);
+                const prevMsgTime = prevMsg ? new Date(prevMsg.createdAt) : null;
+                const nextMsgTime = nextMsg ? new Date(nextMsg.createdAt) : null;
+
+                const isTimeGapPrev = prevMsgTime && (msgTime.getTime() - prevMsgTime.getTime() >= 2 * 60 * 60 * 1000);
+                const isTimeGapNext = nextMsgTime && (nextMsgTime.getTime() - msgTime.getTime() >= 2 * 60 * 60 * 1000);
+
+                // Logic gom nhóm tin nhắn (không gom nhóm nếu khoảng cách tin nhắn >= 2 tiếng)
+                const isConsecutivePrev = prevMsg && prevMsg.authorId === msg.authorId && !isTimeGapPrev;
+                const isConsecutiveNext = nextMsg && nextMsg.authorId === msg.authorId && !isTimeGapNext;
                 const showName = !isMine && !isConsecutivePrev;
                 const showAvatar = !isMine && !isConsecutiveNext;
 
@@ -598,188 +646,209 @@ export default function GlobalChatbox({ session }) {
                 // Sắp xếp icon nhiều người thả nhất lên đầu
                 const reactionTypes = Object.keys(reactionCounts).sort((a, b) => reactionCounts[b] - reactionCounts[a]);
 
-                return (
-                  <div key={msg.id} className={`group relative flex flex-col ${marginBottomClass}`} style={{ alignItems: isMine ? 'flex-end' : 'flex-start' }}>
+                const showTimeSeparator = !prevMsg || isTimeGapPrev;
 
-                    {/* Tên người gửi (chỉ xuất hiện ở tin đầu của nhóm) */}
-                    {showName && (
-                      <div className="text-[11px] mb-[2px] ml-[36px] flex items-center gap-1 justify-start">
-                        <Link href={`/profile/${msg.author.username}`} className="font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                          {msg.author.username}
-                        </Link>
-                        {msg.author.userGroups?.some(g => g.name === 'Admin') && (
-                          <span className="text-[9px] font-bold bg-red-500 text-white px-1.5 py-[1px] rounded">ADMIN</span>
-                        )}
-                        {msg.author.userGroups?.some(g => g.name === 'Moderator') && !msg.author.userGroups?.some(g => g.name === 'Admin') && (
-                          <span className="text-[9px] font-bold bg-blue-500 text-white px-1.5 py-[1px] rounded">MOD</span>
-                        )}
+                return (
+                  <React.Fragment key={msg.id}>
+                    {showTimeSeparator && (
+                      <div className="flex justify-center my-4 w-full select-none animate-fade-in">
+                        <span className="bg-[#e9eff6] dark:bg-[#1f2c3f] text-[#4b6584] dark:text-[#a5b1c2] text-[11px] font-semibold px-3 py-1 rounded-full shadow-sm">
+                          {formatCenterTime(msg.createdAt)}
+                        </span>
                       </div>
                     )}
+                    <div className={`group relative flex flex-col ${marginBottomClass}`} style={{ alignItems: isMine ? 'flex-end' : 'flex-start' }}>
 
-                    {/* Khối Avatar + (Bubble & Actions) */}
-                    <div className={`flex items-end gap-2 max-w-[90%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-
-                      {/* Avatar (chỉ xuất hiện ở tin cuối của nhóm, ngược lại chừa chỗ trống) */}
-                      {!isMine && (
-                        showAvatar ? (
-                          <img src={msg.author.avatar || `https://ui-avatars.com/api/?name=${msg.author.username}`} className="w-7 h-7 rounded-full object-cover shrink-0" />
-                        ) : (
-                          <div className="w-7 h-7 shrink-0" /> /* Giữ layout cho thẳng hàng */
-                        )
-                      )}
-
-                      {/* Nhóm [Bong bóng] và [Bộ nút Actions] nằm ngang nhau, căn chính giữa */}
-                      <div className={`flex items-center gap-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
-
-                        {/* Bóng Chat và Badge (Không chứa tên) */}
-                        <div className="relative w-fit max-w-[260px] md:max-w-[300px]">
-                          {/* Reply context */}
-                          {msg.replyTo && (
-                            <div className={`text-[11px] mb-1 px-3 py-1.5 rounded-xl ${isMine ? 'bg-[#3a4abd] text-white/60' : 'bg-[#e0e0e0] dark:bg-[#1e1e1e] text-gray-500 dark:text-gray-400'}`}>
-                              <div className="font-semibold text-[10px] mb-0.5">
-                                {isMine ? 'Bạn' : msg.author.username} đã trả lời {msg.replyTo.author?.username === session?.user?.username ? 'bạn' : msg.replyTo.author?.username || '...'}
-                              </div>
-                              <div className="truncate max-w-[200px] opacity-80">{msg.replyTo.content?.replace(/\[IMG\].*?\[\/IMG\]/g, '[Hình ảnh]').substring(0, 60)}</div>
-                            </div>
+                      {/* Tên người gửi (chỉ xuất hiện ở tin đầu của nhóm) */}
+                      {showName && (
+                        <div className="text-[11px] mb-[2px] ml-[36px] flex items-center gap-1 justify-start">
+                          <Link href={`/profile/${msg.author.username}`} className="font-semibold text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                            {msg.author.username}
+                          </Link>
+                          {msg.author.userGroups?.some(g => g.name === 'Admin') && (
+                            <span className="text-[9px] font-bold bg-red-500 text-white px-1.5 py-[1px] rounded">ADMIN</span>
                           )}
-                          {/* Parse Content */}
-                          {(() => {
-                             const { textContent, images } = parseMessageContent(msg.content);
-                             return (
-                               <div className="flex flex-col gap-[4px]">
-                                 {/* Images Area (Above text) */}
-                                 {images.length > 0 && (
-                                   <div className={`flex flex-wrap gap-[4px] ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                     {images.map((imgUrl, i) => (
-                                       <img 
-                                         key={i} 
-                                         src={imgUrl} 
-                                         alt="Attached image" 
-                                         className="max-w-full rounded-[14px] cursor-zoom-in hover:opacity-90 max-h-[250px] object-cover border border-black/5 dark:border-white/5" 
-                                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxImage(imgUrl); }} 
-                                       />
-                                     ))}
-                                   </div>
-                                 )}
-
-                                 {/* Text Area */}
-                                 {textContent && (() => {
-                                   const escapeHtml = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-                                   const safeText = escapeHtml(textContent);
-                                   const twemojiHtml = twemoji.parse(safeText, {
-                                     base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
-                                     folder: '72x72',
-                                     ext: '.png',
-                                     className: 'twemoji inline-block w-5 h-5 align-middle mx-0.5'
-                                   });
-                                   return (
-                                     <div className={`text-[15px] font-[400] leading-tight px-[14px] py-[8px] w-fit ${isMine ? 'ml-auto bg-[#4e5dff] text-white rounded-[20px]' : 'mr-auto bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
-                                       <span className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: twemojiHtml }} />
-                                     </div>
-                                   );
-                                 })()}
-                               </div>
-                             );
-                          })()}
-
-                          {/* Reaction Badges (Từng icon kèm số riêng biệt) */}
-                          {totalReactions > 0 && (
-                            <div className={`absolute bottom-[-10px] ${isMine ? 'right-2' : 'left-2'} flex items-center gap-[4px] z-10 scale-90 ${isMine ? 'origin-bottom-right' : 'origin-bottom-left'}`}>
-                              {reactionTypes.slice(0, 3).map(t => {
-                                const twemojiBadge = twemoji.parse(t, {
-                                  base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
-                                  folder: '72x72',
-                                  ext: '.png',
-                                  className: 'twemoji inline-block w-3.5 h-3.5 align-middle'
-                                });
-                                return (
-                                  <div key={t} className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center gap-[4px] shadow-sm whitespace-nowrap">
-                                    <span dangerouslySetInnerHTML={{ __html: twemojiBadge }} />
-                                    <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">{reactionCounts[t]}</span>
-                                  </div>
-                                );
-                              })}
-                              {/* Số lượng các react còn lại (nếu có hơn 3 loại) */}
-                              {reactionTypes.length > 3 && (
-                                <div className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center shadow-sm whitespace-nowrap">
-                                  <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">+{totalReactions - reactionTypes.slice(0, 3).reduce((sum, type) => sum + reactionCounts[type], 0)}</span>
-                                </div>
-                              )}
-                            </div>
+                          {msg.author.userGroups?.some(g => g.name === 'Moderator') && !msg.author.userGroups?.some(g => g.name === 'Admin') && (
+                            <span className="text-[9px] font-bold bg-blue-500 text-white px-1.5 py-[1px] rounded">MOD</span>
                           )}
                         </div>
+                      )}
 
-                        {/* Hover Actions Menu (Căn đúng giữa Bóng Chat) */}
-                        {session?.user?.id && (
-                          <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 p-[2px] rounded-full shrink-0 relative ${activeReactMsgId === msg.id ? '!opacity-100' : ''}`}>
-                            {/* Nút Thả Cảm Xúc */}
-                            <div className="relative flex items-center">
-                              <button onClick={(e) => { e.stopPropagation(); setActiveReactMsgId(activeReactMsgId === msg.id ? null : msg.id); setReactEmojiPickerMsgId(null); }} className={`p-1 text-gray-400 hover:text-yellow-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${activeReactMsgId === msg.id ? 'text-yellow-500 bg-gray-100 dark:bg-gray-800' : ''}`}>
-                                <SmilePlus size={14} />
-                              </button>
-                              {/* Bảng chọn Cảm xúc nổi (lên trên) - Hiện bằng click */}
-                              {activeReactMsgId === msg.id && (
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 flex items-center bg-white dark:bg-[#262626] shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-full px-2 py-1 gap-1 border border-gray-200 dark:border-[#3a3b3c] z-50">
-                                  {['👍', '❤️', '😂', '😡', '😭'].map(emo => {
-                                    const hasReacted = msg.reactions?.some(r => r.userId === session?.user?.id && r.type === emo);
-                                    return (
-                                      <button
-                                        key={emo}
-                                        onClick={(e) => { e.stopPropagation(); toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); setReactEmojiPickerMsgId(null); }}
-                                        className={`text-[18px] transition-all outline-none rounded-lg p-[4px] ${hasReacted ? 'bg-[#e5e5e5] dark:bg-[#3a3b3c] scale-[1.15]' : 'hover:scale-125 hover:-translate-y-1'}`}
-                                      >
-                                        {emo}
-                                      </button>
-                                    )
-                                  })}
-                                  {/* Dấu + mở full Emoji */}
-                                  <button
-                                    onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); setActiveReactMsgId(null); }}
-                                    className={`w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus ${reactEmojiPickerMsgId === msg.id ? 'bg-gray-300 dark:bg-gray-500' : ''}`}
-                                  >
-                                    <Plus size={16} className="text-gray-600 dark:text-gray-300 group-hover/plus:text-gray-900 dark:group-hover/plus:text-white" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
+                      {/* Khối Avatar + (Bubble & Actions) */}
+                      <div className={`flex items-end gap-2 max-w-[90%] ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
 
-                            {/* Nút Report */}
-                            {!isMine && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleReport(msg.id); }}
-                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                                title="Báo cáo vi phạm"
-                              >
-                                <AlertTriangle size={14} />
-                              </button>
-                            )}
-
-                            {/* Nút Reply */}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); setReplyingTo({ id: msg.id, content: msg.content, author: msg.author }); textareaRef.current?.focus(); }}
-                              className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                              title="Trả lời"
-                            >
-                              <Reply size={14} />
-                            </button>
-
-                            {/* Nút Xóa (Cho Owner, Admin, Mod) */}
-                            {(isMine || session?.user?.isAdmin || session?.user?.isMod) && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); handleDelete(msg.id); }}
-                                className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
-                                title="Xóa tin nhắn"
-                              >
-                                <Trash2 size={14} />
-                              </button>
-                            )}
-                          </div>
+                        {/* Avatar (chỉ xuất hiện ở tin cuối của nhóm, ngược lại chừa chỗ trống) */}
+                        {!isMine && (
+                          showAvatar ? (
+                            <img src={msg.author.avatar || `https://ui-avatars.com/api/?name=${msg.author.username}`} className="w-7 h-7 rounded-full object-cover shrink-0" />
+                          ) : (
+                            <div className="w-7 h-7 shrink-0" /> /* Giữ layout cho thẳng hàng */
+                          )
                         )}
 
-                      </div>
+                        {/* Nhóm [Bong bóng] và [Bộ nút Actions] nằm ngang nhau, căn chính giữa */}
+                        <div className={`flex items-center gap-1 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
 
+                          {/* Bóng Chat và Badge (Không chứa tên) */}
+                          <div className="relative w-fit max-w-[260px] md:max-w-[300px]">
+                            {/* Reply context */}
+                            {msg.replyTo && (
+                              <div className={`text-[11px] mb-1 px-3 py-1.5 rounded-xl ${isMine ? 'bg-[#3a4abd] text-white/60' : 'bg-[#e0e0e0] dark:bg-[#1e1e1e] text-gray-500 dark:text-gray-400'}`}>
+                                <div className="font-semibold text-[10px] mb-0.5">
+                                  {isMine ? 'Bạn' : msg.author.username} đã trả lời {msg.replyTo.author?.username === session?.user?.username ? 'bạn' : msg.replyTo.author?.username || '...'}
+                                </div>
+                                <div className="truncate max-w-[200px] opacity-80">{msg.replyTo.content?.replace(/\[IMG\].*?\[\/IMG\]/g, '[Hình ảnh]').substring(0, 60)}</div>
+                              </div>
+                            )}
+                            {/* Parse Content */}
+                            {(() => {
+                               const { textContent, images } = parseMessageContent(msg.content);
+                               return (
+                                 <div className="flex flex-col gap-[4px]">
+                                   {/* Images Area (Above text) */}
+                                   {images.length > 0 && (
+                                     <div className={`flex flex-col gap-[2px] ${isMine ? 'items-end' : 'items-start'}`}>
+                                       <div className={`flex flex-wrap gap-[4px] ${isMine ? 'justify-end' : 'justify-start'}`}>
+                                         {images.map((imgUrl, i) => (
+                                           <img 
+                                             key={i} 
+                                             src={imgUrl} 
+                                             alt="Attached image" 
+                                             className="max-w-full rounded-[14px] cursor-zoom-in hover:opacity-90 max-h-[250px] object-cover border border-black/5 dark:border-white/5" 
+                                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); setLightboxImage(imgUrl); }} 
+                                           />
+                                         ))}
+                                       </div>
+                                       {!textContent && (
+                                         <div className="text-[10px] text-gray-400 dark:text-gray-500 px-1 select-none">
+                                           {formatBubbleTime(msg.createdAt)}
+                                         </div>
+                                       )}
+                                     </div>
+                                   )}
+
+                                   {/* Text Area */}
+                                   {textContent && (() => {
+                                     const escapeHtml = (str) => str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+                                     const safeText = escapeHtml(textContent);
+                                     const twemojiHtml = twemoji.parse(safeText, {
+                                       base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
+                                       folder: '72x72',
+                                       ext: '.png',
+                                       className: 'twemoji inline-block w-5 h-5 align-middle mx-0.5'
+                                     });
+                                     return (
+                                       <div className={`text-[15px] font-[400] leading-tight px-[14px] py-[8px] pb-[6px] w-fit ${isMine ? 'ml-auto bg-[#4e5dff] text-white rounded-[20px]' : 'mr-auto bg-[#efefef] dark:bg-[#262626] text-black dark:text-[#f5f5f5] rounded-[20px]'}`} style={{ wordBreak: 'break-word', letterSpacing: '-0.2px' }}>
+                                         <span className="whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: twemojiHtml }} />
+                                         <div className={`text-[9px] mt-1 select-none text-right ${isMine ? 'text-white/60' : 'text-gray-400 dark:text-gray-500'}`}>
+                                           {formatBubbleTime(msg.createdAt)}
+                                         </div>
+                                       </div>
+                                     );
+                                   })()}
+                                 </div>
+                               );
+                            })()}
+
+                            {/* Reaction Badges (Từng icon kèm số riêng biệt) */}
+                            {totalReactions > 0 && (
+                              <div className={`absolute bottom-[-10px] ${isMine ? 'right-2' : 'left-2'} flex items-center gap-[4px] z-10 scale-90 ${isMine ? 'origin-bottom-right' : 'origin-bottom-left'}`}>
+                                {reactionTypes.slice(0, 3).map(t => {
+                                  const twemojiBadge = twemoji.parse(t, {
+                                    base: 'https://cdnjs.cloudflare.com/ajax/libs/twemoji/14.0.2/',
+                                    folder: '72x72',
+                                    ext: '.png',
+                                    className: 'twemoji inline-block w-3.5 h-3.5 align-middle'
+                                  });
+                                  return (
+                                    <div key={t} className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center gap-[4px] shadow-sm whitespace-nowrap">
+                                      <span dangerouslySetInnerHTML={{ __html: twemojiBadge }} />
+                                      <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">{reactionCounts[t]}</span>
+                                    </div>
+                                  );
+                                })}
+                                {/* Số lượng các react còn lại (nếu có hơn 3 loại) */}
+                                {reactionTypes.length > 3 && (
+                                  <div className="bg-white dark:bg-[#18191a] border border-gray-200 dark:border-[#3a3b3c] rounded-full px-[6px] py-[2px] text-[12px] flex items-center shadow-sm whitespace-nowrap">
+                                    <span className="font-bold text-gray-500 dark:text-gray-400 text-[11px]">+{totalReactions - reactionTypes.slice(0, 3).reduce((sum, type) => sum + reactionCounts[type], 0)}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Hover Actions Menu (Căn đúng giữa Bóng Chat) */}
+                          {session?.user?.id && (
+                            <div className={`opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 p-[2px] rounded-full shrink-0 relative ${activeReactMsgId === msg.id ? '!opacity-100' : ''}`}>
+                              {/* Nút Thả Cảm Xúc */}
+                              <div className="relative flex items-center">
+                                <button onClick={(e) => { e.stopPropagation(); setActiveReactMsgId(activeReactMsgId === msg.id ? null : msg.id); setReactEmojiPickerMsgId(null); }} className={`p-1 text-gray-400 hover:text-yellow-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 ${activeReactMsgId === msg.id ? 'text-yellow-500 bg-gray-100 dark:bg-gray-800' : ''}`}>
+                                  <SmilePlus size={14} />
+                                </button>
+                                {/* Bảng chọn Cảm xúc nổi (lên trên) - Hiện bằng click */}
+                                {activeReactMsgId === msg.id && (
+                                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 flex items-center bg-white dark:bg-[#262626] shadow-[0_0_10px_rgba(0,0,0,0.1)] rounded-full px-2 py-1 gap-1 border border-gray-200 dark:border-[#3a3b3c] z-50">
+                                    {['👍', '❤️', '😂', '😡', '😭'].map(emo => {
+                                      const hasReacted = msg.reactions?.some(r => r.userId === session?.user?.id && r.type === emo);
+                                      return (
+                                        <button
+                                          key={emo}
+                                          onClick={(e) => { e.stopPropagation(); toggleShoutboxReaction(msg.id, emo); setActiveReactMsgId(null); setReactEmojiPickerMsgId(null); }}
+                                          className={`text-[18px] transition-all outline-none rounded-lg p-[4px] ${hasReacted ? 'bg-[#e5e5e5] dark:bg-[#3a3b3c] scale-[1.15]' : 'hover:scale-125 hover:-translate-y-1'}`}
+                                        >
+                                          {emo}
+                                        </button>
+                                      )
+                                    })}
+                                    {/* Dấu + mở full Emoji */}
+                                    <button
+                                      onClick={(e) => { e.stopPropagation(); setReactEmojiPickerMsgId(reactEmojiPickerMsgId === msg.id ? null : msg.id); setActiveReactMsgId(null); }}
+                                      className={`w-[28px] h-[28px] flex items-center justify-center rounded-full bg-gray-100 dark:bg-[#3a3b3c] hover:bg-gray-200 dark:hover:bg-gray-600 ml-1 transition-colors group/plus ${reactEmojiPickerMsgId === msg.id ? 'bg-gray-300 dark:bg-gray-500' : ''}`}
+                                    >
+                                      <Plus size={16} className="text-gray-600 dark:text-gray-300 group-hover/plus:text-gray-900 dark:group-hover/plus:text-white" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Nút Report */}
+                              {!isMine && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleReport(msg.id); }}
+                                  className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                                  title="Báo cáo vi phạm"
+                                >
+                                  <AlertTriangle size={14} />
+                                </button>
+                              )}
+
+                              {/* Nút Reply */}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setReplyingTo({ id: msg.id, content: msg.content, author: msg.author }); textareaRef.current?.focus(); }}
+                                className="p-1 text-gray-400 hover:text-blue-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                                title="Trả lời"
+                              >
+                                <Reply size={14} />
+                              </button>
+
+                              {/* Nút Xóa (Cho Owner, Admin, Mod) */}
+                              {(isMine || session?.user?.isAdmin || session?.user?.isMod) && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); handleDelete(msg.id); }}
+                                  className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                                  title="Xóa tin nhắn"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </div>
+                          )}
+
+                        </div>
+
+                      </div>
                     </div>
-                  </div>
+                  </React.Fragment>
                 );
               })
             )}
