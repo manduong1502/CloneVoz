@@ -27,7 +27,15 @@ export default function EarnTogetherPage() {
         </div>
 
         {/* CTA */}
-        <div>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+          <a
+            href="https://shop.danongthongminh.vn/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-6 py-2.5 rounded-lg text-[14px] font-bold shadow-md hover:shadow-lg transition-all"
+          >
+            Ghé thăm Shop ngay
+          </a>
           <Link 
             href="/" 
             className="inline-flex items-center gap-2 text-[var(--voz-link)] hover:underline text-[14px] font-medium"

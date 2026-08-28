@@ -114,9 +114,9 @@ const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 
                 <Link href="/" className={pathname === '/' || pathname.startsWith('/category') || pathname.startsWith('/thread') ? "header-tab-active bg-[var(--voz-accent)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Diễn đàn
                 </Link>
-                <Link href="/earn" className={pathname.startsWith('/earn') ? "header-tab-active bg-[var(--voz-accent)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
+                <a href="https://shop.danongthongminh.vn/" target="_blank" rel="noopener noreferrer" className="px-4 py-[14px] text-[15px] font-bold transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent">
                   Cùng nhau kiếm tiền
-                </Link>
+                </a>
                 <Link href="/leaderboard" className={pathname.startsWith('/leaderboard') ? "header-tab-active bg-[var(--voz-accent)] px-4 py-[14px] text-[15px] font-bold border-t-[3px] border-[var(--voz-text-strong)] hover:no-underline rounded-t-sm" : "px-4 py-[14px] text-[15px] font-bold transition hover:no-underline rounded-t-sm border-t-[3px] border-transparent"}>
                   Xếp hạng
                 </Link>
@@ -275,7 +275,7 @@ const Header = ({ session, notifications = [], unreadCount = 0, unreadPmCount = 
           <div className="md:hidden absolute top-[50px] left-0 w-full bg-[var(--voz-blue-dark)] border-t border-white/10 z-40 text-white flex flex-col shadow-lg transition-all duration-300 transform origin-top header-dark">
             <Link href="/" className="px-4 py-3 border-b border-white/10 font-bold hover:bg-[var(--voz-surface)]/10 block">Diễn đàn</Link>
             <Link href="/whats-new" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Bài viết mới</Link>
-            <Link href="/earn" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Cùng nhau kiếm tiền</Link>
+            <a href="https://shop.danongthongminh.vn/" target="_blank" rel="noopener noreferrer" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Cùng nhau kiếm tiền</a>
             <Link href="/leaderboard" className="px-4 py-3 border-b border-white/10 hover:bg-[var(--voz-surface)]/10 block font-bold">Xếp hạng</Link>
             <div className="px-4 py-3 border-b border-white/10 font-bold flex justify-between items-center bg-black/20">
               <input type="text" placeholder="Tìm kiếm..." className="bg-[var(--voz-surface)]/10 border border-white/20 px-2 py-1 outline-none rounded-sm w-full placeholder-white/50 text-sm" />
